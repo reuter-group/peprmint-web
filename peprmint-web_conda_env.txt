@@ -1,0 +1,36 @@
+name: peprmint-web
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - biopandas=0.2.7
+  - ca-certificates=2020.12.5
+  - certifi=2020.12.5
+  - libblas=3.9.0
+  - libcblas=3.9.0
+  - libcxx=11.0.1
+  - libffi=3.3
+  - libgfortran=5.0.0
+  - libgfortran5=9.3.0
+  - liblapack=3.9.0
+  - libopenblas=0.3.12
+  - llvm-openmp=11.0.1
+  - ncurses=6.2
+  - numpy=1.19.5
+  - openssl=1.1.1i
+  - pandas=1.2.1
+  - pip=20.3.3
+  - python=3.8.6
+  - python-dateutil=2.8.1
+  - python_abi=3.8
+  - pytz=2020.5
+  - readline=8.0
+  - scipy=1.6.0
+  - setuptools=49.6.0
+  - six=1.15.0
+  - sqlite=3.34.0
+  - tk=8.6.10
+  - wheel=0.36.2
+  - xz=5.2.5
+  - zlib=1.2.11
+prefix: /Users/dxu084/miniconda3/envs/peprmint-web

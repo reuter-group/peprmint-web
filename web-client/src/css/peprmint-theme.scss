@@ -1,0 +1,42 @@
+@import "../../node_modules/bootstrap/scss/functions";
+@import "../../node_modules/bootstrap/scss/variables";
+@import "../../node_modules/bootstrap/scss/mixins";
+
+//from Bootstrap 5.0
+// Tint a color: mix a color with white
+@function tint-color($color, $weight) {
+  @return mix(white, $color, $weight);
+}
+
+// Shade a color: mix a color with black
+@function shade-color($color, $weight) {
+  @return mix(black, $color, $weight);
+}
+
+// Color theme used for PePrMInt
+$teal-100: tint-color($teal, 80%) !default;
+$teal-200: tint-color($teal, 60%) !default;
+$teal-300: tint-color($teal, 40%) !default;
+$teal-400: tint-color($teal, 20%) !default;
+$teal-500: $teal !default;
+$teal-600: shade-color($teal, 20%) !default;
+$teal-700: shade-color($teal, 40%) !default;
+$teal-800: shade-color($teal, 60%) !default;
+$teal-900: shade-color($teal, 80%) !default;
+
+
+$theme-colors: (
+  "primary": $teal-300 ,
+);
+
+// // Create your own map
+$custom-colors: (
+  // "custom-color": #900,
+  // "primary": #20c997 ,
+);
+
+
+// Merge the maps
+// $theme-colors: map-merge($theme-colors, $custom-colors);
+
+@import "../../node_modules/bootstrap/scss/bootstrap";
