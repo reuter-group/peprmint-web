@@ -40,7 +40,7 @@
     "@popperjs/core": "^2.8.6",
     "antd": "^4.13.1",
     "bootstrap": "^4.6.0",
-    "molstar": "^2.0.3",
+    "molstar": "^2.0.5",
     "quickhull3d": "^2.0.4",
     "react": "^17.0.1",
     "react-bootstrap": "^1.5.0",

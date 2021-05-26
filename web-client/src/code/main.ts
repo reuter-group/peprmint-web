@@ -17,7 +17,7 @@ export const PluginWrapper = new MolStarWrapper();
 PluginWrapper.init('molstar-wrapper');
 
 PluginWrapper.load({
-    pdbId: '1h0a', 
+    pdbId: '1rlw', 
     // format: 'pdb', 
     // isBinary: false, 
 });
