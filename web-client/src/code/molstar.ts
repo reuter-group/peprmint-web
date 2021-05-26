@@ -118,12 +118,11 @@ export class MolStarWrapper {
     async load({pdbId, format = 'pdb', isBinary = false, assemblyId = ''}: LoadParams) {
         let url = format == 'pdb'? URL_PDB(pdbId): URL_BCIF(pdbId);
         const state = this.plugin!.state.data;
-        console.log(`loading structure.... ${pdbId}: ${format}`);
 
         if (this.loadedParams.pdbId !== pdbId || this.loadedParams.format !== format) {
             // remove current whole tree
             await PluginCommands.State.RemoveObject(this.plugin, { state, ref: state.tree.root.ref });
-            const modelTree = this.model(this.download(state.build().toRoot(), url, isBinary), format);
+            const modelTree = this.model(this.download(state.build().toRoot(), url, isBinary, pdbId.toUpperCase()), format);
             await this.applyState(modelTree);                
             const structureTree = this.structure(assemblyId);
             await this.applyState(structureTree);
@@ -160,9 +159,9 @@ export class MolStarWrapper {
         return b.apply(StateTransforms.Data.ReadFile , { file: Asset.File(file) , isBinary });
     }
 
-    private download(b: StateBuilder.To<PSO.Root>, url: string, isBinary: boolean) {
+    private download(b: StateBuilder.To<PSO.Root>, url: string, isBinary: boolean, label?: string) {
         // StateTransforms.Data.ReadFile
-        return b.apply(StateTransforms.Data.Download, { url: Asset.Url(url), isBinary });
+        return b.apply(StateTransforms.Data.Download, { url: Asset.Url(url), label: label, isBinary });
     }
 
 
