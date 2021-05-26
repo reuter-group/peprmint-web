@@ -15,7 +15,7 @@ import { InputArea, ControlArea } from "./PeprmintControl";
 import MolStarWrapper from './Molstar';
 import { References } from './Utils';
 
-import Logo from '../../image/logo.png';
+// import Logo from '../../image/logo.png';
 import LogoLarge from '../../image/logo_large.png';
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
@@ -56,35 +56,35 @@ function BaseLayout (){
     
 }
 
-class Header extends Component {
-    render() {
-        return (
-            <Container id="peprmint-header" fluid className="mb-2 mx-0 px-0 ">
-                <Navbar className="navbar-expand-md mx-0 pb-1 " bg="primary" variant="dark">
-                    <Col className="col-1"></Col>
-                    <Col className="col-2 ml-5 ">
-                        <Navbar.Brand href="" className="py-0 my-0">
-                            <p className="fs-1 py-0 my-0"> <img
-                                alt=""
-                                src={Logo}
-                                width="60"
-                                height="60"
-                                className="d-inline-block align-top"
-                            />{' '}
-                       PePrMInt</p>
-                        </Navbar.Brand>
-                    </Col>
-                    {/* <Col className="col-auto">
-                        <Nav className="mr-auto">
-                            <Nav.Link href="#home">Home</Nav.Link>
-                            <Nav.Link href="#about">About</Nav.Link>
-                        </Nav>
-                    </Col> */}
-                </Navbar>
-            </Container>
-        )
-    }
-}
+// class Header extends Component {
+//     render() {
+//         return (
+//             <Container id="peprmint-header" fluid className="mb-2 mx-0 px-0 ">
+//                 <Navbar className="navbar-expand-md mx-0 pb-1 " bg="primary" variant="dark">
+//                     <Col className="col-1"></Col>
+//                     <Col className="col-2 ml-5 ">
+//                         <Navbar.Brand href="" className="py-0 my-0">
+//                             <p className="fs-1 py-0 my-0"> <img
+//                                 alt=""
+//                                 src={Logo}
+//                                 width="60"
+//                                 height="60"
+//                                 className="d-inline-block align-top"
+//                             />{' '}
+//                        PePrMInt</p>
+//                         </Navbar.Brand>
+//                     </Col>
+//                     {/* <Col className="col-auto">
+//                         <Nav className="mr-auto">
+//                             <Nav.Link href="#home">Home</Nav.Link>
+//                             <Nav.Link href="#about">About</Nav.Link>
+//                         </Nav>
+//                     </Col> */}
+//                 </Navbar>
+//             </Container>
+//         )
+//     }
+// }
 
 
 

@@ -43,9 +43,6 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
     const data = new FormData(form);
     const pdbId = data.get('pdbId')! as string;
 
-    // const tree = (controlTreeRefs.current);
-    // console.log('tree', tree);
-
     setErrorMessage(''); 
     setCheckedKeys([]) // clean all the keys
     setConvexHullKey([])
@@ -105,21 +102,7 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
 
 
 function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHullKey }: any) {
-  // const [checkedKeys, setCheckedKeys] = useState<React.Key[]>(checkedKeysExt);
-  // function onChange(checked: any) {
-  //   console.log(`switch to ${checked}`);
-  //   checked? PluginWrapper.showProtrusion():PluginWrapper.hideProtrusion()
-  //   // if(checked){
-  //   //   PluginWrapper.showProtrusion();
-  //     //  PluginWrapper.updateStyle({ 
-  //     //    sequence: { 
-  //     //     // coloring: 'proteopedia-custom' 
-  //     //     } 
-  //     //   }, true);
-  //   // }
-  // }
-
-
+ 
   const treeDataProtrusion = [
     {
       title: 'Show protrusions',

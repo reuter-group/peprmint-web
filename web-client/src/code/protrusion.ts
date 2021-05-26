@@ -33,36 +33,17 @@ type SphereProps = PD.Values<SphereParams>
 function getSphereMesh(data: SphereData, props: SphereProps, mesh?: Mesh) {
     const state = MeshBuilder.createState(1024, 256, mesh);  // ?
     
-    // Mat4.fromTranslation(tmpTranslate, tmpRef);
-    // const cellCage = transformCage(cloneCage(unitCage), tmpTranslate);
-
-    // const radius = (Math.cbrt(data.symmetry.spacegroup.cell.volume) / 300) * props.cellScale;
-    // state.currentGroup = 1;
-    // for(let i = 0; i < data.centers.length - 5; i+=3) {
-
-    // }
-    // const sphere1 = Sphere3D.create(Vec3.create(data.centers[0],data.centers[1],data.centers[2]), 10);
-
-    // Vec3.transformMat4(tmpRef, tmpRef, fromFractional);
-    // Sphere3D.translate(sphere, sphere, tmpRef);
-    // Sphere3D.expand(sphere, sphere, radius);
-
     for(let i=0; i < data.centers.length; i +=3){
         state.currentGroup = i;
         addSphere(state, Vec3.create(data.centers[i],data.centers[i+1],data.centers[i+2]), data.radius, 3);
     }
     console.log(`in getSphereMesh created ${data.centers.length/3} spheres`)
-
-    // MeshBuilder.addTriangle(state, data.center)
-    // MeshBuilder.addPrimitive(state, )
     return MeshBuilder.getMesh(state);
-
 }
 
 function getSphereShape(ctx: RuntimeContext, data: SphereData, props: SphereProps, shape?: Shape<Mesh>) {
     const geo = getSphereMesh(data, props, shape && shape.geometry);
     const label = "sphere-label"
-    console.log(`getSphereShape: sphereColor ${data.sphereColor}`)
     return Shape.create(label, data, geo, () => data.sphereColor, () => 1, () => label);
 }
 
@@ -100,8 +81,6 @@ export const CreateSphere = CreateTransformer({
         return true;
     },
     apply({ a , params }, plugin: PluginContext) {
-        console.log("Protrusion L101:")
-        console.log(params);
         return Task.create('Custom Sphere', async ctx => {
             // const data = getSphereDate(a.data);
             const repr = SphereRepresentation({ 
