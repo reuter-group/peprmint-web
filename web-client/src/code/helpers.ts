@@ -98,6 +98,13 @@ export namespace RepresentationStyle {
         coloring?: ColorTheme.BuiltIn }
 }
 
+export interface ProtrusionData {
+    initProtrusionFlag: boolean,
+    caCbCoordinates: number[][],  // [][3]
+    caCbAtomIndices: number[],
+    convexHullFaces: number[][], // [][3]
+}
+
 export function pointDistance(a: number[], b: number[]) {
     const x = b[0] - a[0],
         y = b[1] - a[1],

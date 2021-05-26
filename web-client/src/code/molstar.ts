@@ -25,7 +25,7 @@ import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import qh from 'quickhull3d';
 import { StateTransformParameters } from "molstar/lib/mol-plugin-ui/state/common";
 
-import { ProtrusionVisualRef } from './helpers'
+import { ProtrusionVisualRef, ProtrusionData } from './helpers'
 import { StructureQueryHelper } from "molstar/lib/mol-plugin-state/helpers/structure-query";
 
 export const LOW_DENSITY_THRESHOLD = 22;
@@ -37,23 +37,16 @@ const URL_BCIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/down
 const URL_PDB = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb' + pdbId + '.ent'
 
 
+
 export class MolStarWrapper {
     
     // private _ev = RxEventHelper.create();
     // readonly events = {
     //     modelInfo: this._ev<ModelInfo>()
     // };
-    private caCbCoordinates: number[][] = [];
-    private caCbAtomIndices: number[] = [];
-    private hydrophobicCaCbIndices: number [] = [];
-
-    private convexHullFaces: number[][] = [];
-    private protrusionCbAtomIndices: number [] = [];
-    private hydroProtrusionCbAtomIndices: number[] = [];
-
-    private initProtrusionFlag = false; 
-
+   
     private defaultSpec: PluginUISpec; 
+    private protrusionData: ProtrusionData; 
     plugin: PluginUIContext;
     
     representationStyle: RepresentationStyle = {
@@ -75,11 +68,17 @@ export class MolStarWrapper {
             layout: {
                 initial: {
                     isExpanded: false,
-                    showControls: false
+                    showControls: false,
+                    // regionState: {
+                    //     left: "hidden",
+                    //     top: "full",
+                    //     right: "hidden",
+                    //     bottom: "hidden",
+                    // }
                 },
                 // controls:{
                 // }
-                // controls:{ left: 'none', bottom: 'none' }   // hide state tree and messages
+                // controls:{ left: 'none', bottom: 'none' },   // hide state tree and messages
                 // kept for debug
             },
             // components: {
@@ -92,6 +91,14 @@ export class MolStarWrapper {
         }
 
         this.plugin = new PluginUIContext(this.defaultSpec);
+
+        this.protrusionData = {
+            initProtrusionFlag: false,
+            caCbCoordinates: [],  
+            caCbAtomIndices: [],
+            convexHullFaces: [],    
+        }
+
     }
 
     // call to bind HTMLElement
@@ -120,32 +127,31 @@ export class MolStarWrapper {
             await this.applyState(modelTree);                
             const structureTree = this.structure(assemblyId);
             await this.applyState(structureTree);
-            
+
+            this.protrusionData.initProtrusionFlag  = false;
         } 
 
         await this.updateStyle(this.representationStyle);  // show the model
-        const model = this.getObj<PluginStateObject.Molecule.Model>('model');
-
+        // const model = this.getObj<PluginStateObject.Molecule.Model>('model');
         this.loadedParams = { pdbId, format, assemblyId };
-
     }
 
     
     async loadFile(file:File, isBinary = false, assemblyId = '') {
         const state = this.plugin!.state.data;
         const format = file.name.endsWith('.cif')? 'cif':'pdb';
-
+        
         // remove current whole tree
         await PluginCommands.State.RemoveObject(this.plugin, { state, ref: state.tree.root.ref });
         const modelTree = this.model(this.openFile(state.build().toRoot(), file, isBinary), format);
         await this.applyState(modelTree);
-
         const structureTree = this.structure(assemblyId);
         await this.applyState(structureTree);
 
         await this.updateStyle(this.representationStyle);  // show the model
         const model = this.getObj<PluginStateObject.Molecule.Model>('model');
 
+        this.protrusionData.initProtrusionFlag = false;
         // this.loadedParams = { pdbId, format, assemblyId };
     }
 
@@ -277,11 +283,11 @@ export class MolStarWrapper {
         await PluginCommands.State.Update(this.plugin, { state: this.plugin.state.data, tree });
     }
 
-    private selectCaCb(){
-        //select all CA and CB atoms
+    private calculateProtrusion(){
         const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
         if (!data) return;
         
+        //select all CA and CB atoms
         const selection= Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
             'atom-test': Q.core.logic.or([Q.core.rel.eq(['CA', Q.ammp('label_atom_id')]),  
                                          Q.core.rel.eq(['CB', Q.ammp('label_atom_id')])]),                     
@@ -292,9 +298,8 @@ export class MolStarWrapper {
             const x = loci.elements[0].unit.conformation.coordinates.x[i];
             const y = loci.elements[0].unit.conformation.coordinates.y[i];
             const z = loci.elements[0].unit.conformation.coordinates.z[i];
-            this.caCbCoordinates.push([x,y,z]);
-
-            this.caCbAtomIndices.push(i);
+            this.protrusionData.caCbCoordinates.push([x,y,z]);
+            this.protrusionData.caCbAtomIndices.push(i);
         })
 
         // hydrophobic Ca Cb
@@ -304,19 +309,14 @@ export class MolStarWrapper {
             'residue-test': Q.core.set.has([Q.set(...HYDROPHOBICS), Q.ammp('auth_comp_id')]),                    
         }), data);
 
+        const hydrophobicCaCbIndices: number[] = [];
         const lociHydroCaCb = StructureSelection.toLociWithSourceUnits(selectionHydroCaCb);
         OrderedSet.forEach(lociHydroCaCb.elements[0].indices, i => { 
-            this.hydrophobicCaCbIndices.push(i);
+            hydrophobicCaCbIndices.push(i);
         });
-
-        console.log(`selected ${this.caCbCoordinates.length} Ca Cb atoms`);
-        console.log(`including ${this.hydrophobicCaCbIndices.length} hydrophobic Ca Cb atoms`);
-    }
-
-
-    private calculateProtrusion(){
-        const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
-        if (!data) return;
+        console.log(`selected ${this.protrusionData.caCbCoordinates.length} Ca Cb atoms`);
+        console.log(`including ${hydrophobicCaCbIndices.length} hydrophobic Ca Cb atoms`);
+    // }
 
          //select only C-b atoms as protrusion candidates
         const selectionCb = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
@@ -337,63 +337,69 @@ export class MolStarWrapper {
 
         // calculate convec hull
         console.time('calculating convex hull');
-        this.convexHullFaces = qh(this.caCbCoordinates);
+        this.protrusionData.convexHullFaces = qh(this.protrusionData.caCbCoordinates);
         console.timeEnd('calculating convex hull');
 
         // identify (hydrophobic) protrusions
-        const convexHullIndices = new Set(this.convexHullFaces.flat());  // 39
-        console.log(`convex hull info: faces ${this.convexHullFaces.length}, vertices ${convexHullIndices.size}`);
+        const convexHullIndices = new Set(this.protrusionData.convexHullFaces.flat());  // 39
+        console.log(`convex hull info: faces ${this.protrusionData.convexHullFaces.length}, vertices ${convexHullIndices.size}`);
        
+        const protrusionCbAtomIndices: number[] = [];
+        const hydroProtrusionCbAtomIndices: number[] = [];
         convexHullIndices.forEach(i => {
-            const atomId = this.caCbAtomIndices[i];
+            const atomId = this.protrusionData.caCbAtomIndices[i];
             
             if(OrderedSet.has(lociCb.elements[0].indices, atomId)){ // find a Cb vertex
                 let neiborCount = 0;
-                for(let j=0; j< this.caCbCoordinates.length; j++){
-                    if(i != j && pointDistance(this.caCbCoordinates[i], this.caCbCoordinates[j]) < DISTANCE_CUTOFF )
+                for(let j=0; j< this.protrusionData.caCbCoordinates.length; j++){
+                    if(i != j && pointDistance(this.protrusionData.caCbCoordinates[i], this.protrusionData.caCbCoordinates[j]) < DISTANCE_CUTOFF )
                         neiborCount += 1;
                 }
                 if(neiborCount < LOW_DENSITY_THRESHOLD){  
-                    this.protrusionCbAtomIndices.push(atomId);
+                    protrusionCbAtomIndices.push(atomId);
                     
                     // hydrophobic protusion check
                     if(OrderedSet.has(lociHydroCb.elements[0].indices, atomId)){
-                        this.hydroProtrusionCbAtomIndices.push(atomId);
+                        hydroProtrusionCbAtomIndices.push(atomId);
                     }
                 }
             }            
         })
 
         console.log(`normal protrusions: `);
-        console.log(this.protrusionCbAtomIndices.sort((a,b) => a - b));
+        console.log(protrusionCbAtomIndices.sort((a,b) => a - b));
 
         console.log(`hydrophobic indices: `);  // [ 652, 146, 177, 169, 671 ]
-        console.log(this.hydroProtrusionCbAtomIndices);
+        console.log(hydroProtrusionCbAtomIndices);
 
         // const coInsertPairs = new Array();
+        return {
+            hydrophobicCaCbIndices: hydrophobicCaCbIndices,
+            protrusionCbAtomIndices: protrusionCbAtomIndices,
+            hydroProtrusionCbAtomIndices: hydroProtrusionCbAtomIndices
+         }
     }
 
 
     private async initProtrusion(){
-        this.selectCaCb();
-        this.calculateProtrusion();       
+        const atomIndices = this.calculateProtrusion()!;
+        // this.calculateProtrusion();       
         
         // const normalCaCb = []; 
-        const hydroCaCb = [];
+        const hydroCaCb: number[] = [];
+        const normalProtrusions: number[] = []; //
+        const hydrophobicProtrusions: number[] = [];
 
-        const normalProtrusions = []; //
-        const hydrophobicProtrusions = [];
+        for(let i=0; i < this.protrusionData.caCbCoordinates.length; i++){
+            const atomId = this.protrusionData.caCbAtomIndices[i];
+            if(atomIndices.hydroProtrusionCbAtomIndices.includes(atomId))
+                hydrophobicProtrusions.push(...this.protrusionData.caCbCoordinates[i]);
 
-        for(let i=0; i < this.caCbCoordinates.length; i++){
-            const atomId = this.caCbAtomIndices[i];
-            if(this.hydroProtrusionCbAtomIndices.includes(atomId))
-                hydrophobicProtrusions.push(...this.caCbCoordinates[i]);
+            if(atomIndices.protrusionCbAtomIndices.includes(atomId) )
+                normalProtrusions.push(...this.protrusionData.caCbCoordinates[i]) 
 
-            if(this.protrusionCbAtomIndices.includes(atomId) )
-                normalProtrusions.push(...this.caCbCoordinates[i]) 
-
-            if(this.hydrophobicCaCbIndices.includes(atomId))
-                hydroCaCb.push(...this.caCbCoordinates[i])
+            if(atomIndices.hydrophobicCaCbIndices.includes(atomId))
+                hydroCaCb.push(...this.protrusionData.caCbCoordinates[i])
         }
         console.log(normalProtrusions.length/3) // 5
       
@@ -411,7 +417,7 @@ export class MolStarWrapper {
 
         // normal Ca Cb: small, gray
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalCaCb, CreateSphere, {
-            centers: this.caCbCoordinates.flat(),  
+            centers: this.protrusionData.caCbCoordinates.flat(),  
             radius: 0.5,
             sphereColor: ColorNames.gray,
             label: ProtrusionVisualLabel.NormalCaCb
@@ -436,8 +442,8 @@ export class MolStarWrapper {
 
         // convex hull
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
-            vertices: this.caCbCoordinates.flat(),  
-            indices: this.convexHullFaces.flat(),
+            vertices: this.protrusionData.caCbCoordinates.flat(),  
+            indices: this.protrusionData.convexHullFaces.flat(),
             opacity: 0.7
         }).commit();       
 
@@ -449,12 +455,16 @@ export class MolStarWrapper {
                 { state: reprList[i].cell.parent!, ref: reprList[i].cell.transform.ref });
         }
 
-        this.initProtrusionFlag = true
+        this.protrusionData.initProtrusionFlag = true
     }
 
     async toggleProtrusion(reprRef: string){
-        if(!this.initProtrusionFlag)
+        if(!this.protrusionData.initProtrusionFlag){
+            this.protrusionData.caCbAtomIndices = [];
+            this.protrusionData.caCbCoordinates = []
+            this.protrusionData.convexHullFaces = []
             await this.initProtrusion();
+        }
 
         const model = this.plugin.managers.structure.hierarchy.current.structures[0].model;
         if(!model) return 
@@ -482,8 +492,8 @@ export class MolStarWrapper {
     async changeOpacity(opacity:number) {
         console.log('changing opactiy')
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
-            vertices: this.caCbCoordinates.flat(),  
-            indices: this.convexHullFaces.flat(),
+            vertices: this.protrusionData.caCbCoordinates.flat(),  
+            indices: this.protrusionData.convexHullFaces.flat(),
             opacity: opacity
         }).commit();       
     }

@@ -1,6 +1,6 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
-import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider } from "antd";
+import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider, TreeProps } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { PluginWrapper } from "../main"
@@ -16,7 +16,7 @@ function validPdbID(pdbId:any) {
   return validPDB.test(pdbId) && (pdbId.length == 4)
 }
 
-function InputArea() {
+function InputArea({setCheckedKeys, setConvexHullKey} : any) {
   const colwidth = 3;
   const [selectedFile, setSelectedFile] = useState<File>();
   //** this React-bootstrap validation does not work well here **//
@@ -43,7 +43,12 @@ function InputArea() {
     const data = new FormData(form);
     const pdbId = data.get('pdbId')! as string;
 
+    // const tree = (controlTreeRefs.current);
+    // console.log('tree', tree);
+
     setErrorMessage(''); 
+    setCheckedKeys([]) // clean all the keys
+    setConvexHullKey([])
 
     if(validPdbID(pdbId)){
         PluginWrapper.load({
@@ -99,8 +104,8 @@ function InputArea() {
 
 
 
-function ControlArea() {
-  
+function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHullKey }: any) {
+  // const [checkedKeys, setCheckedKeys] = useState<React.Key[]>(checkedKeysExt);
   // function onChange(checked: any) {
   //   console.log(`switch to ${checked}`);
   //   checked? PluginWrapper.showProtrusion():PluginWrapper.hideProtrusion()
@@ -114,7 +119,6 @@ function ControlArea() {
   //   // }
   // }
 
-  const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
 
   const treeDataProtrusion = [
     {
@@ -159,6 +163,7 @@ function ControlArea() {
                   defaultValue={70} 
                   tipFormatter={ v => `${v?v/100:0}`}
                   onChange={onChangeOpacity}
+                  // value={sliderValue}
                   /> 
                 </Space> ,
         key: '0-0-0',
@@ -201,12 +206,14 @@ function ControlArea() {
   };
 
 
-  const onCheckConvexHull = (checkedKeys:any, info:any) => {
+  const onCheckConvexHull = async (checkedKeys:any, info:any) => {
     const checkedKey = info.node.key
-    const checked = info.checked 
     if(checkedKey === '0-0')
-      PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull)
+      await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull)
+    
+    setConvexHullKey(checkedKeys)
   };
+    
 
 //   useEffect ( () => {
 //     if(parentRef.current){
@@ -246,7 +253,8 @@ function ControlArea() {
       defaultCheckedKeys={[]}
       onExpand={onExpandConvexHull}
       onCheck={onCheckConvexHull}
-      treeData={treeDataConvexHull}      
+      treeData={treeDataConvexHull}
+      checkedKeys={convexHullKey}      
     />
 
       <Divider />

@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, useRef, useState } from "react";
 import * as ReactDOM from "react-dom";
 
 import Container from 'react-bootstrap/Container';
@@ -20,8 +20,10 @@ import LogoLarge from '../../image/logo_large.png';
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
 
-class BaseLayout extends Component {
-    render() {
+function BaseLayout (){
+    const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
+    const [convexHullKey, setconvexHullKey] = useState<React.Key[]>([]);
+    // TODO: set slider value also controlled
         return (
             <Container fluid className="px-0 py-0">
                 {/* <Header /> */}
@@ -37,8 +39,9 @@ class BaseLayout extends Component {
                     </Row>
                     <Row >
                         <Col className="col-4">
-                            <InputArea />   
-                            <ControlArea />                            
+                            <InputArea setCheckedKeys={setCheckedKeys}  setConvexHullKey={setconvexHullKey}/>   
+                            <ControlArea checkedKeys ={checkedKeys} setCheckedKeys={setCheckedKeys} 
+                                         convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey} />                            
                         </Col>
                         <Col> <MolStarWrapper pdbId='2da0'/>  </Col>
                     </Row>
@@ -50,7 +53,7 @@ class BaseLayout extends Component {
             </Container>
 
         );
-    }
+    
 }
 
 class Header extends Component {
