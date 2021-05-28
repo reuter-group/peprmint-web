@@ -11,8 +11,6 @@ import Jumbotron from 'react-bootstrap/Jumbotron';
 import Button from 'react-bootstrap/Button';
 
 import { InputArea, ControlArea } from "./PeprmintControl";
-// import MolstarPlugin from './Molstar';
-import MolStarWrapper from './Molstar';
 import { References } from './Utils';
 
 // import Logo from '../../image/logo.png';
@@ -33,7 +31,7 @@ function BaseLayout (){
                         <Col className="col-7"> <Image src={LogoLarge} fluid/>  </Col>
                     </Row>
                     <Row className="justify-content-md-center mb-3"> 
-                        <p className="font-weight-lighter h4"> Web server for calculating and visualizing 
+                        <p className="font-weight-lighter h4"> Web-tool for calculating and visualizing 
                         <span className="text-primary text-large"> hydrophobic protrusions </span>
                         </p> 
                     </Row>
@@ -43,7 +41,7 @@ function BaseLayout (){
                             <ControlArea checkedKeys ={checkedKeys} setCheckedKeys={setCheckedKeys} 
                                          convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey} />                            
                         </Col>
-                        <Col> <MolStarWrapper pdbId='2da0'/>  </Col>
+                        <Col className="pt-4"> <div id="molstar-div" style={{ height: 600 }} /> </Col>
                     </Row>
                 </Container>
 

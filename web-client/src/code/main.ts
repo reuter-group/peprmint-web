@@ -14,7 +14,7 @@ layoutInit('root');
 
 export const PluginWrapper = new MolStarWrapper();
 
-PluginWrapper.init('molstar-wrapper');
+PluginWrapper.init('molstar-div');
 
 PluginWrapper.load({
     pdbId: '1rlw', 
