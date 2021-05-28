@@ -240,10 +240,10 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       checkedKeys={convexHullKey}      
     />
 
-      <Divider />
+      {/* <Divider />
       <Space size={10}> <Switch/>
-      Recalculate for selected residues </Space>
-      </Container>
+      Recalculate for selected residues </Space> */}
+    </Container>
   )
 }
 
