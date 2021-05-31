@@ -1,6 +1,5 @@
 import { createPlugin } from "molstar/lib/mol-plugin-ui";
 import { AnimateCameraSpin } from 'molstar/lib/mol-plugin-state/animation/built-in/camera-spin';
-
 import { createStructureRepresentationParams } from 'molstar/lib/mol-plugin-state/helpers/structure-representation-params';
 import { PluginStateObject, PluginStateObject as PSO } from 'molstar/lib/mol-plugin-state/objects';
 import { StateTransforms } from 'molstar/lib/mol-plugin-state/transforms';
@@ -14,19 +13,21 @@ import { PluginConfig } from "molstar/lib/mol-plugin/config";
 import { Script } from "molstar/lib/mol-script/script";
 import { StructureSelection } from "molstar/lib/mol-model/structure/query";
 import { ColorNames } from "molstar/lib/mol-util/color/names";
-import { OrderedSet } from "molstar/lib/mol-data/int";
+import { OrderedSet, Segmentation } from "molstar/lib/mol-data/int";
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
-
-import { CreateSphere } from "./protrusion";
-import { CreateConvexHull } from "./convexhull";
 import { DefaultPluginUISpec, PluginUISpec } from "molstar/lib/mol-plugin-ui/spec";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
-
-import qh from 'quickhull3d';
+import { ResidueSet } from 'molstar/lib/mol-model/structure/model/properties/utils/residue-set';
+import { Location } from "molstar/lib/mol-model/structure/structure/element/location";
+import { StructureQueryHelper } from "molstar/lib/mol-plugin-state/helpers/structure-query";
+import { ElementIndex, Structure, StructureElement, StructureProperties, Unit } from "molstar/lib/mol-model/structure";
 import { StateTransformParameters } from "molstar/lib/mol-plugin-ui/state/common";
 
+import qh from 'quickhull3d';
+
 import { ProtrusionVisualRef, ProtrusionData } from './helpers'
-import { StructureQueryHelper } from "molstar/lib/mol-plugin-state/helpers/structure-query";
+import { CreateSphere } from "./protrusion";
+import { CreateConvexHull } from "./convexhull";
 
 export const LOW_DENSITY_THRESHOLD = 22;
 export const DISTANCE_CUTOFF = 10;  // 1 nm
@@ -37,6 +38,18 @@ const URL_BCIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/down
 const URL_PDB = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb' + pdbId + '.ent'
 
 
+type CaCbSelectionParam = {
+    chains: string [] | 'ALL';
+    residues: string[] | 'ALL';
+    atomNames: 'CA' | 'CB' | 'BOTH';
+}
+
+type AtomSelectionInfo = {   
+    id: number;
+    name: string;    
+    resName: string; 
+    coordinate: number[];
+}
 
 export class MolStarWrapper {
     
@@ -69,17 +82,14 @@ export class MolStarWrapper {
                 initial: {
                     isExpanded: false,
                     showControls: false,
-                    // regionState: {
-                    //     left: "hidden",
-                    //     top: "full",
-                    //     right: "hidden",
-                    //     bottom: "hidden",
-                    // }
+                    controlsDisplay: 'reactive',
+                    regionState: {
+                        left: "collapsed",
+                        top: "full",
+                        right: "full",
+                        bottom: "hidden",
+                    }
                 },
-                // controls:{
-                // }
-                // controls:{ left: 'none', bottom: 'none' },   // hide state tree and messages
-                // kept for debug
             },
             // components: {
             //     remoteState: 'none', //remote server 
@@ -282,58 +292,100 @@ export class MolStarWrapper {
         await PluginCommands.State.Update(this.plugin, { state: this.plugin.state.data, tree });
     }
 
+    
+
+    selectAtomicElement(structure: Structure, selParm: CaCbSelectionParam) {
+        // check https://github.com/molstar/molstar/commit/a8541d5967e2374d0831855643c98f9c8de21405
+        const l = StructureElement.Location.create<Unit.Atomic>(structure);
+        let atomInfoArray: AtomSelectionInfo[] = [];
+        // let coodsArray: number[][] = [];
+
+        if(selParm.chains != 'ALL' && selParm.chains.length == 0) return atomInfoArray  ;  // selParm.chains = []
+        if(selParm.residues != 'ALL' && selParm.residues.length == 0) return atomInfoArray ;  // selParm.residues = []
+
+        for (const unit of structure.units) {
+            if (unit.kind !== Unit.Kind.Atomic) continue;
+
+            l.unit = unit;
+
+            const { elements } = unit;
+            const chainsIt = Segmentation.transientSegments(unit.model.atomicHierarchy.chainAtomSegments, elements);
+            const residuesIt = Segmentation.transientSegments(unit.model.atomicHierarchy.residueAtomSegments, elements);
+            let count=0;
+
+            while (chainsIt.hasNext) {
+                const chainSegment = chainsIt.move();                                
+                l.element = elements[chainSegment.start];  
+                if (selParm.chains == 'ALL' || selParm.chains.includes(StructureProperties.chain.label_asym_id(l))) {                 
+
+                    residuesIt.setSegment(chainSegment);
+                    while (residuesIt.hasNext) {
+                        const residueSegment = residuesIt.move();
+                        l.element = elements[residueSegment.start];
+                    
+                        for (let j = residueSegment.start, _j = residueSegment.end; j < _j; j++) {
+                            l.element = elements[j];
+                            const resName = StructureProperties.atom.label_comp_id(l);
+                            const atomName = StructureProperties.atom.label_atom_id(l);
+
+                            if(selParm.residues == 'ALL' || selParm.residues.includes(resName)){
+                                if(selParm.atomNames == 'BOTH' || selParm.atomNames == atomName){
+                                    const i = l.element
+                                    const coordinate = [ 
+                                        l.unit.conformation.coordinates.x[i],
+                                        l.unit.conformation.coordinates.y[i],
+                                        l.unit.conformation.coordinates.z[i]
+                                    ];
+                                    atomInfoArray.push({
+                                        id: i,
+                                        name: atomName,
+                                        resName: resName,
+                                        coordinate: coordinate
+                                    });
+                                    count += 1;  
+                                }                                                                               
+                            }                                               
+                        } // residue               
+                    }             
+                } // chain   
+            }        
+        }
+        return atomInfoArray;
+    }
+
     private calculateProtrusion(){
         const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
         if (!data) return;
+
+        //select all CA and CB atoms from the protein
+        const selectionCaCb = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({            
+            'atom-test':    Q.core.logic.and([
+                                Q.core.logic.not([Q.ammp('isHet')]), 
+                                Q.core.logic.or([
+                                        Q.core.rel.eq(['CA', Q.ammp('label_atom_id')]),  
+                                        Q.core.rel.eq(['CB', Q.ammp('label_atom_id')])
+                                ])
+                            ]),                                      
+            }), data);        
+
+        // const loci = StructureSelection.toLociWithSourceUnits(selectionCaCb);
+        // OrderedSet.forEach(loci.elements[0].indices, i => { // elements[0] refers to Entity 0, i.e, protein(?)
+        //     const x = loci.elements[0].unit.conformation.coordinates.x[i];
+        //     const y = loci.elements[0].unit.conformation.coordinates.y[i];
+        //     const z = loci.elements[0].unit.conformation.coordinates.z[i];
+        //     this.protrusionData.caCbCoordinates.push([x,y,z]);
+        //     this.protrusionData.caCbAtomIndices.push(i);
+        // })
+
+        // convert the selected atoms into an AtomInfo array
+        const caCbAtomArray = this.selectAtomicElement(StructureSelection.unionStructure(selectionCaCb), 
+            {chains: 'ALL', residues: 'ALL', atomNames: 'BOTH'} )
         
-        //select all CA and CB atoms
-        const selection= Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
-            'atom-test': Q.core.logic.or([Q.core.rel.eq(['CA', Q.ammp('label_atom_id')]),  
-                                         Q.core.rel.eq(['CB', Q.ammp('label_atom_id')])]),                     
-        }), data);
+        console.log(`selected ${caCbAtomArray.length} Ca Cb atoms`);
+
+        this.protrusionData.caCbAtomIndices = caCbAtomArray.map(atomInfo => atomInfo.id )
+        this.protrusionData.caCbCoordinates = caCbAtomArray.map(atomInfo => atomInfo.coordinate)
         
-        const loci = StructureSelection.toLociWithSourceUnits(selection);
-        OrderedSet.forEach(loci.elements[0].indices, i => {
-            const x = loci.elements[0].unit.conformation.coordinates.x[i];
-            const y = loci.elements[0].unit.conformation.coordinates.y[i];
-            const z = loci.elements[0].unit.conformation.coordinates.z[i];
-            this.protrusionData.caCbCoordinates.push([x,y,z]);
-            this.protrusionData.caCbAtomIndices.push(i);
-        })
-
-        // hydrophobic Ca Cb
-        const selectionHydroCaCb = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
-            'atom-test': Q.core.logic.or([Q.core.rel.eq(['CA', Q.ammp('label_atom_id')]),  
-                                         Q.core.rel.eq(['CB', Q.ammp('label_atom_id')])]),                              
-            'residue-test': Q.core.set.has([Q.set(...HYDROPHOBICS), Q.ammp('auth_comp_id')]),                    
-        }), data);
-
-        const hydrophobicCaCbIndices: number[] = [];
-        const lociHydroCaCb = StructureSelection.toLociWithSourceUnits(selectionHydroCaCb);
-        OrderedSet.forEach(lociHydroCaCb.elements[0].indices, i => { 
-            hydrophobicCaCbIndices.push(i);
-        });
-        console.log(`selected ${this.protrusionData.caCbCoordinates.length} Ca Cb atoms`);
-        console.log(`including ${hydrophobicCaCbIndices.length} hydrophobic Ca Cb atoms`);
-    // }
-
-         //select only C-b atoms as protrusion candidates
-        const selectionCb = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
-            'atom-test': Q.core.rel.eq(['CB', Q.ammp('label_atom_id')]),                                         
-        }), data);
-        const lociCb = StructureSelection.toLociWithSourceUnits(selectionCb);
-        console.log(`selected Cb: ${OrderedSet.size(lociCb.elements[0].indices)}`);
-        console.log(lociCb.elements[0].indices);
-
-        // hydrophobic C-b
-        const selectionHydroCb = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
-            'atom-test': Q.core.rel.eq(['CB', Q.ammp('label_atom_id')]),                                         
-            'residue-test': Q.core.set.has([Q.set(...HYDROPHOBICS), Q.ammp('auth_comp_id')]),                    
-        }), data);
-        
-        const lociHydroCb = StructureSelection.toLociWithSourceUnits(selectionHydroCb);
-        console.log(`selected hydrophobic Cb: ${OrderedSet.size(lociHydroCb.elements[0].indices)}`)  // 32 hydrophobic Cb / residues
-
         // calculate convec hull
         console.time('calculating convex hull');
         this.protrusionData.convexHullFaces = qh(this.protrusionData.caCbCoordinates);
@@ -343,22 +395,23 @@ export class MolStarWrapper {
         const convexHullIndices = new Set(this.protrusionData.convexHullFaces.flat());  // 39
         console.log(`convex hull info: faces ${this.protrusionData.convexHullFaces.length}, vertices ${convexHullIndices.size}`);
        
+        const cbIndices =  caCbAtomArray.filter(a => a.name == 'CB').map(a => a.id)
+        const hydroCbIndices = caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName) && a.name == 'CB').map(a => a.id)
+
         const protrusionCbAtomIndices: number[] = [];
         const hydroProtrusionCbAtomIndices: number[] = [];
+       
         convexHullIndices.forEach(i => {
             const atomId = this.protrusionData.caCbAtomIndices[i];
-            
-            if(OrderedSet.has(lociCb.elements[0].indices, atomId)){ // find a Cb vertex
+            if(cbIndices.includes(atomId)){ // find a Cb vertex
                 let neiborCount = 0;
                 for(let j=0; j< this.protrusionData.caCbCoordinates.length; j++){
                     if(i != j && pointDistance(this.protrusionData.caCbCoordinates[i], this.protrusionData.caCbCoordinates[j]) < DISTANCE_CUTOFF )
                         neiborCount += 1;
                 }
                 if(neiborCount < LOW_DENSITY_THRESHOLD){  
-                    protrusionCbAtomIndices.push(atomId);
-                    
-                    // hydrophobic protusion check
-                    if(OrderedSet.has(lociHydroCb.elements[0].indices, atomId)){
+                    protrusionCbAtomIndices.push(atomId);                                        
+                    if(hydroCbIndices.includes(atomId)){ // hydrophobic protusion
                         hydroProtrusionCbAtomIndices.push(atomId);
                     }
                 }
@@ -371,9 +424,9 @@ export class MolStarWrapper {
         console.log(`hydrophobic indices: `);  // [ 652, 146, 177, 169, 671 ]
         console.log(hydroProtrusionCbAtomIndices);
 
-        // const coInsertPairs = new Array();
+        // TODO: addcoInsertablePair
         return {
-            hydrophobicCaCbIndices: hydrophobicCaCbIndices,
+            hydrophobicCaCbIndices: caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName)).map(a => a.id),
             protrusionCbAtomIndices: protrusionCbAtomIndices,
             hydroProtrusionCbAtomIndices: hydroProtrusionCbAtomIndices
          }
@@ -382,7 +435,6 @@ export class MolStarWrapper {
 
     private async initProtrusion(){
         const atomIndices = this.calculateProtrusion()!;
-        // this.calculateProtrusion();       
         
         // const normalCaCb = []; 
         const hydroCaCb: number[] = [];
