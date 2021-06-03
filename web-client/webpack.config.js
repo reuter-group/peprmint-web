@@ -6,6 +6,7 @@ module.exports = {
     entry: "./src/code/main.ts",
 
     mode: "development",
+    // mode: "production", // for github webpage
 
     resolve: {
         modules: [

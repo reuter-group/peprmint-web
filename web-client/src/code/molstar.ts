@@ -327,9 +327,14 @@ export class MolStarWrapper {
                             l.element = elements[j];
                             const resName = StructureProperties.atom.label_comp_id(l);
                             const atomName = StructureProperties.atom.label_atom_id(l);
-
+                            
                             if(selParm.residues == 'ALL' || selParm.residues.includes(resName)){
                                 if(selParm.atomNames == 'BOTH' || selParm.atomNames == atomName){
+                                    
+                                    const alt_id = StructureProperties.atom.label_alt_id(l);
+                                    if(selParm.atomNames != 'CA' && alt_id != "" && alt_id != 'A')
+                                        continue // seleting only one CB when there are multiple
+
                                     const i = l.element
                                     const coordinate = [ 
                                         l.unit.conformation.coordinates.x[i],
@@ -452,7 +457,6 @@ export class MolStarWrapper {
             if(atomIndices.hydrophobicCaCbIndices.includes(atomId))
                 hydroCaCb.push(...this.protrusionData.caCbCoordinates[i])
         }
-        console.log(normalProtrusions.length/3) // 5
       
         // Note: for spheres drawing at the same center with same radius,
         // the one drawn earlier will cover the one later
