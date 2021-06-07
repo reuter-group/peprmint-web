@@ -13,7 +13,7 @@ import Button from 'react-bootstrap/Button';
 import { InputArea, ControlArea } from "./PeprmintControl";
 import { References } from './Utils';
 
-// import Logo from '../../image/logo.png';
+import GithubLogo from '../../image/GitHub-64px.png';
 import LogoLarge from '../../image/logo_large.png';
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
@@ -30,11 +30,19 @@ function BaseLayout (){
                     <Row className="justify-content-md-center mt-5"> 
                         <Col className="col-7"> <Image src={LogoLarge} fluid/>  </Col>
                     </Row>
+
                     <Row className="justify-content-md-center mb-3"> 
-                        <p className="font-weight-lighter h4"> Web-tool for calculating and visualizing 
-                        <span className="text-primary text-large"> hydrophobic protrusions </span>
-                        </p> 
+                        <Col className="col-7"> 
+                            <p className="font-weight-lighter h4"> Web-tool for calculating and visualizing 
+                                <span className="text-primary text-large"> hydrophobic protrusions </span>
+                            </p> 
+                        </Col>
+                        <Col className="col-1"> 
+                            <a href="https://github.com/reuter-group/peprmint-web" 
+                               title="Source code repository">
+                            <Image src={GithubLogo} width={30}/> </a> </Col>
                     </Row>
+
                     <Row >
                         <Col className="col-4">
                             <InputArea setCheckedKeys={setCheckedKeys}  setConvexHullKey={setconvexHullKey}/>   
