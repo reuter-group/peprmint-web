@@ -115,23 +115,25 @@ class Footer extends Component {
             <Container className="footer border-top">
                 <Navbar >
                     <Col className="col-3" >
-                        <Nav defaultActiveKey="peprmint" className="flex-column">
-                            <Nav.Link href="#" eventKey="peprmint" >PePrMInt</Nav.Link>
-                            <Nav.Link href="http://www.cbu.uib.no/reuter/"> 2021 Reuter Lab</Nav.Link>
-                            <Nav.Link disabled> Version 1.0</Nav.Link>
+                        <Nav className="flex-column">
+                            <Nav.Item> PePrMInt-web</Nav.Item>
+                            <Nav.Link className="py-0 font-weight-light" href="https://github.com/reuter-group/peprmint-web"> Version 1.0 </Nav.Link> 
+                            <Nav.Link className="py-0 font-weight-light" href="http://www.cbu.uib.no/reuter/"> &copy; 2021 Reuter Lab </Nav.Link> 
                         </Nav>
                     </Col>
                     <Col className="col-4">
-                        <Nav defaultActiveKey="contacts" className="flex-column">
-                            <Nav.Link eventKey="contacts">Contacts</Nav.Link>
-                            <Nav.Link href="mailto:dandan.xue@uib.no" title="Send an email to this contact">Dandan Xue, engineer</Nav.Link>
-                            <Nav.Link href="mailto:Nathalie.Reuter@uib.no" title="Send an email to this contact">Nathalie Reuter, Prof./Group leader </Nav.Link>
+                        <Nav className="flex-column" >
+                            <Nav.Item> Contacts </Nav.Item>
+                            <Nav.Link className="py-0 font-weight-light" href="mailto:dandan.xue@uib.no" title="Send an email to this contact"> Dandan Xue, engineer  </Nav.Link> 
+                            <Nav.Link className="py-0 font-weight-light" href="mailto:Nathalie.Reuter@uib.no" title="Send an email to this contact">Nathalie Reuter, Prof./Group leader  </Nav.Link> 
                         </Nav>
                     </Col>
 
-                    <Col className="col-3 text-center"> <Image src={CbuLogo} width={110} />  </Col>
-                    <Col className="col-2"> <Image src={UibLogo} width={80} /></Col>
+                    <Col className="col-3 text-center"> <a href="http://www.cbu.uib.no/">
+                        <Image src={CbuLogo} width={110} /> </a> </Col>
+                    <Col className="col-2"> <a href="https://www.uib.no/en"> <Image src={UibLogo} width={80} /> </a> </Col>                    
                 </Navbar>
+                <br />
             </Container>
 
 
