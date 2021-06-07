@@ -93,9 +93,7 @@ export const CreateConvexHull = CreateTransformer({
         return true;
     },
     apply({ a , params }, plugin: PluginContext) {
-        // const model = a.data 
-        const center = Model.getCenter(a.data);
-        console.log(`center ${center}`);
+        // const center = Model.getCenter(a.data);
         return Task.create('Custom Convex Hull', async ctx => {
             const repr = ConvexHullRepresentation({ 
                 webgl: plugin.canvas3d?.webgl, 

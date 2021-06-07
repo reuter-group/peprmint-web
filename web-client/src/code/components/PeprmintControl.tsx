@@ -1,6 +1,6 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
-import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider, TreeProps } from "antd";
+import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider, TreeProps, Typography } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { PluginWrapper } from "../main"
@@ -74,7 +74,7 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
         <Col sm={4} className="pl-0">
           <Form.Control type="text" name="pdbId" placeholder="e.g. 1rlw" maxLength={4} />
         </Col>
-        <Col className="px-0"> <Form.Text muted> 4-letter PDB entry ID</Form.Text> </Col>
+        <Col className="px-0"> <Form.Text muted> 4-letter entry ID</Form.Text> </Col>
       </Form.Group>
 
       <Form.Group controlId="formInputPdb" as={Row}>
@@ -218,7 +218,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
 
   return (
     <Container className="my-3 p-3 bg-light border" > 
-    <div className="h5 mb-3 border-black border-bottom" ref={parentRef}> Settings </div> 
+    <div className="h5 mb-3 border-black border-bottom" ref={parentRef}> Basic settings </div> 
     
     <Tree
       className="bg-light"
@@ -239,10 +239,14 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       treeData={treeDataConvexHull}
       checkedKeys={convexHullKey}      
     />
+   
+    <br/>
 
-      {/* <Divider />
-      <Space size={10}> <Switch/>
-      Recalculate for selected residues </Space> */}
+    <div className="h5 border-black border-bottom"> Advanced settings </div> 
+    <small> Click the icons on the viewer plugin to explore more advanced features provided by <a 
+        href={ 'https://molstar.org/viewer-docs/' }> Mol* </a> </small>
+      {/* <IconButton small={true} svg={BuildOutlinedSvg} toggleState={false} onClick={()=>{}} style={{ background: 'transparent' }} />  */} 
+
     </Container>
   )
 }

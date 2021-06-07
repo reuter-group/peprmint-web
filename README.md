@@ -3,7 +3,7 @@
 
 ## V1.0
 ### Featuers to add:
-- [ ] display the information of each protrusion in a proper way/interactive [design]
+- [x] display the information of each protrusion in a proper way/interactive [design]
 - [ ] (?) automatic web deploy pipeline
 
 ## V1.1

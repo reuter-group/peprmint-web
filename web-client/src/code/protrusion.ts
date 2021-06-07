@@ -14,6 +14,7 @@ import { RuntimeContext, Task } from "molstar/lib/mol-task";
 import { Color } from "molstar/lib/mol-util/color";
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
+import { ProtrusionVisualLabel } from "./helpers";
 
 
 interface SphereData{
@@ -45,8 +46,15 @@ function getSphereMesh(data: SphereData, props: SphereProps, mesh?: Mesh) {
 
 function getSphereShape(ctx: RuntimeContext, data: SphereData, props: SphereProps, shape?: Shape<Mesh>) {
     const geo = getSphereMesh(data, props, shape && shape.geometry);
-
-    const getLabel = (groupId:number) =>  `${data.centersLabel[groupId]}`                   
+    const getLabel = (groupId:number) =>  { 
+        if(data.stateLabel == ProtrusionVisualLabel.NormalProtrusion){
+            return `PROTRUSION <br/> ${data.centersLabel[groupId]}`
+        }else if (data.stateLabel == ProtrusionVisualLabel.HydroProtrusion){
+            return `HYDROPHOBIC PROTRUSION <br/> ${data.centersLabel[groupId]}`
+        } else {
+            return `${data.centersLabel[groupId]}`
+        }
+    }
     return Shape.create("Sphere group", data, geo, () => data.sphereColor, () => 1, getLabel);
 }
 
@@ -80,8 +88,6 @@ export const CreateSphere = CreateTransformer({
         radius: PD.Numeric(3),
         sphereColor: PD.Color(ColorNames.gray),
         stateLabel: PD.Text(`Ca-Cb`),  
-        
-        // sphereType: PD.Text('Protrusion'),  
     }  
 })({
     canAutoUpdate({ oldParams, newParams }) {
