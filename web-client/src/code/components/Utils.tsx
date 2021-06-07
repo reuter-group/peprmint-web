@@ -68,27 +68,32 @@ class References extends Component {
             <Container className="my-3 p-3 bg-light">
                 <h5> References: </h5>
                 <ul>
-                    <ReferenceItem title={"Fuglebakk E, Reuter N (2018) A model for hydrophobic protrusions on peripheral membrane proteins. PLoS Comput Biol 14(7): e1006325."} 
-                    href={"https://doi.org/10.1371/journal.pcbi.1006325"} />
-                    {/* <ReferenceItem title={"publication 2"} href={"xxx"} /> */}
+                    <ReferenceItem authors={"Fuglebakk E, Reuter N (2018) "}
+                        title="A model for hydrophobic protrusions on peripheral membrane proteins."
+                        url="https://doi.org/10.1371/journal.pcbi.1006325"
+                        journal="PLoS Comput Biol 14(7): e1006325."
+                        />                   
+                    <ReferenceItem 
+                        description="The molecule viewer plugin used on this website is developed based on Mol* Viewer: "
+                        authors="David Sehnal, Sebastian Bittrich, Mandar Deshpande, Radka Svobodová, Karel Berka, Václav Bazgier, Sameer Velankar, Stephen K Burley, Jaroslav Koča, Alexander S Rose"
+                        title = " Mol* Viewer: modern web app for 3D visualization and analysis of large biomolecular structures" 
+                        url="https://doi.org/10.1093/nar/gkab314"
+                        journal= "Nucleic Acids Research, 2021"
+                    /> 
                 </ul>
             </Container>
         )
     }
 }
 
-class ReferenceItem extends Component<any, any>{
-    constructor(props: any) {
-        super(props);
-    }
-    title = this.props.title;
-    href = this.props.href;
-
-    render() {
-        return (<li> <a className="text-primary" href={this.props.href}> {this.title} </a> </li>
-        );
-    }
+function ReferenceItem(props: { authors: string, title: string, url?: string, journal?:string, description?:string}){
+    return (<li> 
+            {props.description} 
+            <span className="font-weight-light">{props.authors} </span>
+            <a className="text-primary" href={props.url}> {props.title} </a> 
+            <span className="font-weight-light font-italic"> {props.journal} </span>
+            </li>
+    );
 }
 
 export { References }
-// export { PeprmintUpload } ;

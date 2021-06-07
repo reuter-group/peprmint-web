@@ -2,12 +2,8 @@ const HtmlWebPackPlugin = require("html-webpack-plugin");
 const path = require('path');
 
 module.exports = {
-
     entry: "./src/code/main.ts",
-
     mode: "development",
-    // mode: "production", // for github webpage
-
     resolve: {
         modules: [
             path.join(__dirname, 'node_modules')

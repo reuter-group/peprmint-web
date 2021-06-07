@@ -3,11 +3,12 @@
 
 ## V1.0
 ### Featuers to add:
-- [x] display the information of each protrusion in a proper way/interactive [design]
-- [ ] (?) automatic web deploy pipeline
+- [x] display the information of each protrusion in a proper way/interactive design
+- [x] auto-deploy script added
 
 ## V1.1
 ### Features to add:
+ - [ ] visualize edges for convex hull (and thus co-insertables)
  - [ ] re-calculate for user selected sequence/chains
 
 ## V1.2
