@@ -54,7 +54,7 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
 function getConvexHullShape(ctx: RuntimeContext, data: ConvexHullData, props: ConvexHullProps, shape?: Shape<Mesh>) {
     const geo = getConvexHullMesh(data, props, shape && shape.geometry);
     const label = (groupId: number) => `Convex-hull ${groupId}`;
-    console.log(`props.alpha ${props.alpha}`);
+    // console.log(`props.alpha ${props.alpha}`);
     return Shape.create("Convex hull", data, geo, () => data.convexHullColor, () => 1, 
         label);
 }
@@ -108,21 +108,19 @@ export const CreateConvexHull = CreateTransformer({
                );
             await repr.createOrUpdate({}, params).runInContext(ctx);
             return new SO.Shape.Representation3D(
-                { repr, sourceData: a.data }, 
+                { repr, sourceData: params }, 
                 { label: `Convex Hull` });
         });
     },
-    // update({ a, b, newParams }) {
-    //     console.log('Updating...')
-    //     return Task.create('Custom Convex Hull', async ctx => {
-    //         const props = { ...b.data.repr.props, ...newParams };
-    //         // const data = getUnitcellData(a.data, symmetry, props);
-    //         await b.data.repr.createOrUpdate(props, newParams).runInContext(ctx);
-    //         b.data.sourceData = newParams;
-    //         return StateTransformer.UpdateResult.Updated;
-    //     });
+    update({ a, b, newParams }) {
+        // a is Model, b is representation, newParams: { vertices: [], indices: [], opacity: 0.2 }
+        return Task.create('Custom Convex Hull', async ctx => {
+            const props = { ...b.data.sourceData as object, alpha: newParams.opacity };
+            await b.data.repr.createOrUpdate(props, props).runInContext(ctx);
+            return StateTransformer.UpdateResult.Updated;
+        });
      
-    // }
+    }
 });
 
 

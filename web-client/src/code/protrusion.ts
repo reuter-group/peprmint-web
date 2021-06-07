@@ -16,11 +16,13 @@ import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 
 
-
 interface SphereData{
     centers: number[],
+    centersLabel: string [],
+
     radius: number,
     sphereColor: Color,
+    stateLabel: string,
 }
 
 const SphereParams = {
@@ -34,7 +36,7 @@ function getSphereMesh(data: SphereData, props: SphereProps, mesh?: Mesh) {
     const state = MeshBuilder.createState(1024, 256, mesh);  // ?
     
     for(let i=0; i < data.centers.length; i +=3){
-        state.currentGroup = i;
+        state.currentGroup = i/3;
         addSphere(state, Vec3.create(data.centers[i],data.centers[i+1],data.centers[i+2]), data.radius, 3);
     }
     console.log(`in getSphereMesh created ${data.centers.length/3} spheres`)
@@ -43,8 +45,9 @@ function getSphereMesh(data: SphereData, props: SphereProps, mesh?: Mesh) {
 
 function getSphereShape(ctx: RuntimeContext, data: SphereData, props: SphereProps, shape?: Shape<Mesh>) {
     const geo = getSphereMesh(data, props, shape && shape.geometry);
-    const label = "sphere-label"
-    return Shape.create(label, data, geo, () => data.sphereColor, () => 1, () => label);
+
+    const getLabel = (groupId:number) =>  `${data.centersLabel[groupId]}`                   
+    return Shape.create("Sphere group", data, geo, () => data.sphereColor, () => 1, getLabel);
 }
 
 
@@ -57,7 +60,7 @@ const SphereVisuals = {
 type SphereRepresentation = Representation<SphereData, SphereParams>
 
 function SphereRepresentation(ctx: RepresentationContext, getParams: RepresentationParamsGetter<SphereData, SphereParams>): SphereRepresentation {
-    return Representation.createMulti('Unit Cell', ctx, getParams, 
+    return Representation.createMulti('Sphere Group', ctx, getParams, 
                 Representation.StateBuilder, 
                 SphereVisuals as unknown as Representation.Def<SphereData, SphereParams>
     );
@@ -72,9 +75,13 @@ export const CreateSphere = CreateTransformer({
     to: PluginStateObject.Shape.Representation3D,
     params: {
         centers: PD.Value([] as number[]),
+        centersLabel: PD.Value([] as string[]),
+
         radius: PD.Numeric(3),
         sphereColor: PD.Color(ColorNames.gray),
-        label: PD.Text(`Ca-Cb`) ,
+        stateLabel: PD.Text(`Ca-Cb`),  
+        
+        // sphereType: PD.Text('Protrusion'),  
     }  
 })({
     canAutoUpdate({ oldParams, newParams }) {
@@ -88,11 +95,12 @@ export const CreateSphere = CreateTransformer({
                 ...plugin.representation.structure.themes }, 
                 () => SphereParams
                );
+            
 
-            await repr.createOrUpdate( {}, params).runInContext(ctx);
+               await repr.createOrUpdate( {}, params).runInContext(ctx);                                                                                                                             
             return new PluginStateObject.Shape.Representation3D(
                 { repr, sourceData: a.data}, 
-                { label: params.label }
+                { label: params.stateLabel }
             );
         });
     }
