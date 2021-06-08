@@ -244,6 +244,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
 
     <div className="h5 border-black border-bottom"> Advanced settings </div> 
     <small> Click the icons on the viewer plugin to explore more advanced features provided by <a 
+        className="text-primary"
         href={ 'https://molstar.org/viewer-docs/' }> Mol* </a> </small>
       {/* <IconButton small={true} svg={BuildOutlinedSvg} toggleState={false} onClick={()=>{}} style={{ background: 'transparent' }} />  */} 
 

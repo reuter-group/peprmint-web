@@ -492,7 +492,8 @@ export class MolStarWrapper {
 
     async changeOpacity(opacity:number) {
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
-            opacity: opacity
+            opacity: opacity,
+            // convexHullColor: ?  // small bug here
         }).commit();       
     }
     
