@@ -151,7 +151,6 @@ export class MolStarWrapper {
         // this.loadedParams = { pdbId: file.name, format, assemblyId };
     }
 
-
     private openFile(b: StateBuilder.To<PSO.Root>, file: File, isBinary: boolean){        
         return b.apply(StateTransforms.Data.ReadFile , { file: Asset.File(file) , isBinary });
     }
@@ -187,6 +186,7 @@ export class MolStarWrapper {
         if (!cell || !cell.obj) return void 0;
         return (cell.obj as T).data;
     }
+
 
     private visual(_style?: RepresentationStyle, partial?: boolean) {
         // check if structure exists 
@@ -432,7 +432,8 @@ export class MolStarWrapper {
             centersLabel: protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.atomLabel),
             radius:2,
             sphereColor: ColorNames.orange,
-            stateLabel: ProtrusionVisualLabel.HydroProtrusion
+            stateLabel: ProtrusionVisualLabel.HydroProtrusion,
+            // coinsertable : protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.id).flat() //!
         }).commit();
 
         // normal vertex Cb: large, gray
@@ -480,23 +481,31 @@ export class MolStarWrapper {
         }
     }
     
-    // async hideProtrusion(){
-    //     // Solution1: delete the visual directly (?)
-    //     // const update = this.state.build();
-    //     // const root = update.to(StateElements.Model);
-    //     // root.delete(StateElements.ProtrusionsVisual);
-    //     // // if (!update) return;
-    //     // await PluginCommands.State.Update(this.plugin, { state: this.plugin.state.data, tree:update });
-    // }
     
+    // async togggleCoinsertable(){
+    //     await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroProtrusion, CreateSphere, {
+    //         coinsertable: []
+    //     }).commit(); 
+    // }
+
+    async togggleEdges(reprRef: ProtrusionVisualRef){
+        const oldParams = this.getObj<PluginStateObject.Shape.Representation3D>(reprRef).sourceData as any;
+        const newParams = {...oldParams as object, showEdges: !oldParams.showEdges}; // flip drawEdge
+        const transfer = reprRef == ProtrusionVisualRef.ConvexHull ? CreateConvexHull : CreateSphere ;
+        await this.plugin.build().to(StateElements.Model).applyOrUpdate(reprRef, transfer, {
+            ...newParams
+        }).commit();   
+    }
 
     async changeOpacity(opacity:number) {
+        const oldParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.ConvexHull).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
+            ...oldParams,
             opacity: opacity,
-            // convexHullColor: ?  // small bug here
         }).commit();       
     }
     
+   
 
     private structure(assemblyId: string) {
         const model = this.state.build().to(StateElements.Model);

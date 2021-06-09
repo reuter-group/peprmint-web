@@ -21,7 +21,8 @@ interface ConvexHullData{
     vertices: number[],
     indices: number[],
     convexHullColor: Color, 
-    opacity: number,  
+    opacity: number, 
+    showEdges: boolean, 
 }
 
 const ConvexHullParams = {    
@@ -48,11 +49,13 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
         Vec3.fromArray(c, data.vertices, data.indices[i+2]*3);  
         MeshBuilder.addTriangle(state, a, b, c);
 
-        // to save only half of all edges // a bit ugly 
-        const sortedIndices = [data.indices[i+0],data.indices[i+1],data.indices[i+2]].sort((a, b) => a - b); // ! numeric sort
-        edges.set([sortedIndices[0], sortedIndices[1]].toString(), [sortedIndices[0], sortedIndices[1]])
-        edges.set([sortedIndices[0], sortedIndices[2]].toString(), [sortedIndices[0], sortedIndices[2]])
-        edges.set([sortedIndices[1], sortedIndices[2]].toString(), [sortedIndices[1], sortedIndices[2]])
+        // to save only half of all triangles' edges // a bit ugly 
+        if(data.showEdges){
+            const sortedIndices = [data.indices[i+0],data.indices[i+1],data.indices[i+2]].sort((a, b) => a - b); // ! numeric sort
+            edges.set([sortedIndices[0], sortedIndices[1]].toString(), [sortedIndices[0], sortedIndices[1]])
+            edges.set([sortedIndices[0], sortedIndices[2]].toString(), [sortedIndices[0], sortedIndices[2]])
+            edges.set([sortedIndices[1], sortedIndices[2]].toString(), [sortedIndices[1], sortedIndices[2]])
+        }
     }
     
     // draw edges // even uglier...
@@ -71,8 +74,8 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
 function getConvexHullShape(ctx: RuntimeContext, data: ConvexHullData, props: ConvexHullProps, shape?: Shape<Mesh>) {
     const geo = getConvexHullMesh(data, props, shape && shape.geometry);
     const label = (groupId: number) => { 
-        if(groupId < data.indices.length/3 ) return `Convex-hull ${groupId}`
-        else return `edge ${groupId}`
+        if(groupId < data.indices.length/3 ) return `Facet ${groupId}`
+        else return `Edge ${groupId}`
     };
     const coloring = (groupId: number) => { 
         if(groupId < data.indices.length/3 ) return data.convexHullColor
@@ -110,6 +113,7 @@ export const CreateConvexHull = CreateTransformer({
         indices: PD.Value([] as number[]),
         convexHullColor: PD.Color(ColorNames.blue), 
         opacity: PD.Numeric( 0.5, { min: 0, max: 1, step: 0.01 }),
+        showEdges: PD.Boolean(false),
     }  
 })({
     canAutoUpdate({ oldParams, newParams }) {
@@ -137,7 +141,8 @@ export const CreateConvexHull = CreateTransformer({
         // a is Model, b is representation, newParams: { vertices: [], indices: [], opacity: 0.2 }
         return Task.create('Custom Convex Hull', async ctx => {
             const props = { ...b.data.sourceData as object, alpha: newParams.opacity };
-            await b.data.repr.createOrUpdate(props, { ...props, convexHullColor: newParams.convexHullColor }).runInContext(ctx);
+            await b.data.repr.createOrUpdate(props, newParams).runInContext(ctx);
+            b.data.sourceData = newParams
             return StateTransformer.UpdateResult.Updated;
         });
      
