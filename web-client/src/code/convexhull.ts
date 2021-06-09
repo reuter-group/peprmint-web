@@ -18,8 +18,9 @@ import { DefaultCylinderProps } from "molstar/lib/mol-geo/primitive/cylinder";
 
 
 interface ConvexHullData{
-    vertices: number[],
-    indices: number[],
+    vertices: number[],      // coordinates of all N vertices, flatted, i.e 1D array instead of (N,3) 2D array
+    verticesLabel: string[], // labels of all N vertices
+    indices: number[],       // vertex indices of all F facets, flatted, size: 3*F
     convexHullColor: Color, 
     opacity: number, 
     showEdges: boolean, 
@@ -33,13 +34,25 @@ const ConvexHullParams = {
 type ConvexHullParams = typeof ConvexHullParams
 type ConvexHullProps = PD.Values<ConvexHullParams>
 
+function getEdges(flatFacets: number[]){
+    // to save only half of all triangles' edges // a bit ugly 
+    const edges = new Map<string, number[]>(); 
+    for (let i = 0; i < flatFacets.length; i += 3) {
+        const sortedIndices = [flatFacets[i+0],flatFacets[i+1],flatFacets[i+2]].sort((a, b) => a - b); // ! numeric sort
+        edges.set([sortedIndices[0], sortedIndices[1]].toString(), [sortedIndices[0], sortedIndices[1]])
+        edges.set([sortedIndices[0], sortedIndices[2]].toString(), [sortedIndices[0], sortedIndices[2]])
+        edges.set([sortedIndices[1], sortedIndices[2]].toString(), [sortedIndices[1], sortedIndices[2]])
+    }
+    return edges
+}
+
 function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: Mesh) {
     const state = MeshBuilder.createState(2048, 1024, mesh); 
        
     const a = Vec3();
     const b = Vec3();
     const c = Vec3();
-    const edges = new Map<string, number[]>();
+    let edges = new Map<string, number[]>();
 
     // iterate over all faces 
     for (let i = 0; i < data.indices.length; i += 3) {
@@ -47,26 +60,22 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
         Vec3.fromArray(a, data.vertices, data.indices[i+0]*3);
         Vec3.fromArray(b, data.vertices, data.indices[i+1]*3);
         Vec3.fromArray(c, data.vertices, data.indices[i+2]*3);  
-        MeshBuilder.addTriangle(state, a, b, c);
-
-        // to save only half of all triangles' edges // a bit ugly 
-        if(data.showEdges){
-            const sortedIndices = [data.indices[i+0],data.indices[i+1],data.indices[i+2]].sort((a, b) => a - b); // ! numeric sort
-            edges.set([sortedIndices[0], sortedIndices[1]].toString(), [sortedIndices[0], sortedIndices[1]])
-            edges.set([sortedIndices[0], sortedIndices[2]].toString(), [sortedIndices[0], sortedIndices[2]])
-            edges.set([sortedIndices[1], sortedIndices[2]].toString(), [sortedIndices[1], sortedIndices[2]])
-        }
+        MeshBuilder.addTriangle(state, a, b, c);       
     }
     
     // draw edges // even uglier...
-    Array.from(edges.values()).forEach((v, j) => {
-        let start = v[0], end = v[1];
-        state.currentGroup = data.indices.length + j;
-        Vec3.fromArray(a, data.vertices, start * 3)
-        Vec3.fromArray(b, data.vertices, end * 3)
-        addCylinder(state, a, b, 1, { ...DefaultCylinderProps, radiusTop:0.1, radiusBottom:0.1 })
-    });
+    if(data.showEdges){
+        edges = getEdges(data.indices)
+        Array.from(edges.values()).forEach((v, j) => {
+            state.currentGroup = data.indices.length/3 + j;  // set new group id
 
+            let start = v[0], end = v[1];
+            Vec3.fromArray(a, data.vertices, start * 3)
+            Vec3.fromArray(b, data.vertices, end * 3)
+            addCylinder(state, a, b, 1, { ...DefaultCylinderProps, radiusTop: 0.08, radiusBottom: 0.08 })
+        });
+    }
+    
     console.log(`in getConvexHullMesh created ${data.indices.length/3} triangles, ${edges.size } edges`)
     return MeshBuilder.getMesh(state);
 }
@@ -74,8 +83,19 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
 function getConvexHullShape(ctx: RuntimeContext, data: ConvexHullData, props: ConvexHullProps, shape?: Shape<Mesh>) {
     const geo = getConvexHullMesh(data, props, shape && shape.geometry);
     const label = (groupId: number) => { 
-        if(groupId < data.indices.length/3 ) return `Facet ${groupId}`
-        else return `Edge ${groupId}`
+        if(groupId < data.indices.length/3 ){
+            return `CONVEX HULL FACET ${groupId} <br/> 
+                Vertex: ${data.verticesLabel[data.indices[groupId*3]]} <br/>
+                Vertex: ${data.verticesLabel[data.indices[groupId*3+1]]} <br/>
+                Vertex: ${data.verticesLabel[data.indices[groupId*3+2]]}`
+        }
+        else{
+            const edges = Array.from(getEdges(data.indices).values())
+            const v = edges[groupId - data.indices.length/3]
+            return `CONVEX HULL EDGE <br/>
+                Vertex: ${data.verticesLabel[v[0]]} <br/>
+                Vertex: ${data.verticesLabel[v[1]]} <br/>`
+        } 
     };
     const coloring = (groupId: number) => { 
         if(groupId < data.indices.length/3 ) return data.convexHullColor
@@ -110,6 +130,7 @@ export const CreateConvexHull = CreateTransformer({
     to: SO.Shape.Representation3D,
     params: {
         vertices: PD.Value([] as number[]),
+        verticesLabel: PD.Value([] as string[]),
         indices: PD.Value([] as number[]),
         convexHullColor: PD.Color(ColorNames.blue), 
         opacity: PD.Numeric( 0.5, { min: 0, max: 1, step: 0.01 }),
@@ -139,6 +160,7 @@ export const CreateConvexHull = CreateTransformer({
     },
     update({ a, b, newParams }) {
         // a is Model, b is representation, newParams: { vertices: [], indices: [], opacity: 0.2 }
+        // Note the opacity is controlled by props 
         return Task.create('Custom Convex Hull', async ctx => {
             const props = { ...b.data.sourceData as object, alpha: newParams.opacity };
             await b.data.repr.createOrUpdate(props, newParams).runInContext(ctx);

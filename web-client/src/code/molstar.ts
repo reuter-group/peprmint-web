@@ -448,6 +448,7 @@ export class MolStarWrapper {
         // convex hull
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
             vertices: protrusionData.normalCaCbAtomInfoArray.map(a=>a.coordinate).flat(),  
+            verticesLabel: protrusionData.normalCaCbAtomInfoArray.map(a=>a.atomLabel),
             indices: protrusionData.convexHullFaces.flat(),
             opacity: 0.7
         }).commit();       
