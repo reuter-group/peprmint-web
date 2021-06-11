@@ -112,11 +112,11 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
         title: <span> <span style={{ color: 'orange' }}> hydrophobic </span> protrusions </span>,
         key: '0-0-0',
         selectable: false,
-        // children: [{
-        //     title: <span> show co-insertable pairs  </span>,
-        //     key: '0-0-0-0',
-        //     selectable: false,
-        // }]
+        children: [{
+            title: <span> co-insertable pairs  </span>,
+            key: '0-0-0-0',
+            selectable: false,
+        }]
       }, 
       { 
         title: <span> all <span style={{ color: 'gray' }}> C-α, C-β </span> atoms </span>,
@@ -148,7 +148,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
         selectable: false, 
         title: <Space> show edges </Space> ,
         key: '0-0-0',
-        // disabled: {initFlag}
         }, { 
           selectable: false, 
           title: <Space> opacity: 
@@ -161,7 +160,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
                   </Space> ,
           key: '0-0-1',
           checkable: false,
-          // disabled: {initFlag}
         },
       ],
     },
@@ -197,15 +195,13 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       }else if(checkedKey === '0-0-2'){
         PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroCaCb)
       } 
-      // else{ 
-      //   if(checkedKey === '0-0-0-0'){
-      //        PluginWrapper.togggleCoinsertable();
-      //   }
-      // }
+      else{ 
+        if(checkedKey === '0-0-0-0'){
+             PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+        }
+      }
       setCheckedKeys(checkedKeysValue.checked)
     }
-
-    
   };
 
 

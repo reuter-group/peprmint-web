@@ -8,7 +8,7 @@ import { PluginState } from 'molstar/lib/mol-plugin/state';
 import { StateBuilder, StateObject, StateObjectCell, StateSelection, StateTransformer } from 'molstar/lib/mol-state';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { Color } from 'molstar/lib/mol-util/color';
-import { LoadParams, pointDistance, ProtrusionVisualLabel, RepresentationStyle, StateElements, SupportedFormats } from './helpers';
+import { getEdges, LoadParams, pointDistance, ProtrusionVisualLabel, RepresentationStyle, StateElements, SupportedFormats } from './helpers';
 import { PluginConfig } from "molstar/lib/mol-plugin/config";
 import { Script } from "molstar/lib/mol-script/script";
 import { StructureSelection } from "molstar/lib/mol-model/structure/query";
@@ -49,6 +49,8 @@ type AtomGroupInfo = {
     id: number,
     name: string,
     resName: string,
+    resId: number,
+    chain: string,
     coordinate: number[],
     atomLabel: string,
 }
@@ -286,13 +288,14 @@ export class MolStarWrapper {
             while (chainsIt.hasNext) {
                 const chainSegment = chainsIt.move();                                
                 l.element = elements[chainSegment.start];  
-                if (selParm.chains == 'ALL' || selParm.chains.includes(StructureProperties.chain.label_asym_id(l))) {                 
-
+                const chainName = StructureProperties.chain.label_asym_id(l);
+                if (selParm.chains == 'ALL' || selParm.chains.includes(chainName)){                    
                     residuesIt.setSegment(chainSegment);
                     while (residuesIt.hasNext) {
                         const residueSegment = residuesIt.move();
                         l.element = elements[residueSegment.start];
-                    
+                        const resId = StructureProperties.residue.label_seq_id(l);
+
                         for (let j = residueSegment.start, _j = residueSegment.end; j < _j; j++) {
                             l.element = elements[j];
                             const resName = StructureProperties.atom.label_comp_id(l);
@@ -306,7 +309,7 @@ export class MolStarWrapper {
                                     if(selParm.atomNames != 'CA' && alt_id != "" && alt_id != 'A')
                                         continue 
 
-                                    const i = l.element
+                                    const i = l.element  // global unique 
                                     const coordinate = [ 
                                         l.unit.conformation.coordinates.x[i],
                                         l.unit.conformation.coordinates.y[i],
@@ -317,6 +320,8 @@ export class MolStarWrapper {
                                         id: i,
                                         name: atomName,
                                         resName: resName,
+                                        resId: resId,
+                                        chain: chainName,
                                         coordinate: coordinate,
                                         atomLabel: elementLabel(l, { granularity: 'element' })
                                     });
@@ -384,13 +389,6 @@ export class MolStarWrapper {
             }            
         })
 
-        // console.log(`normal protrusions: `);
-        // console.log(protrusionCbAtomIndices.sort((a,b) => a - b));
-
-        // console.log(`hydrophobic indices: `);  // [ 652, 146, 177, 169, 671 ]
-        // console.log(hydroProtrusionCbAtomIndices.map(a => a.id));
-
-        // TODO: addcoInsertablePair
         return {
             normalCaCbAtomInfoArray: caCbAtomArray,
             hydroCaCbAtomInfoArray: caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName)),
@@ -400,13 +398,43 @@ export class MolStarWrapper {
          }
     }
 
+   
 
     private async initProtrusion(){
         const protrusionData = this.calculateProtrusion()!;
-     
-        // Note: for spheres drawing at the same center with same radius,
+        const edgePairs: number[][] = getEdges(protrusionData.convexHullFaces.flat()) //! indices in convex hull, not atom indices
+        
+        // calculate co-insertables 
+        const edgePairAtomId = edgePairs.map((pair: number[])=> 
+            // map convex hull vertex id to atom id, as string 
+            `${protrusionData.normalCaCbAtomInfoArray[pair[0]].id}-${protrusionData.normalCaCbAtomInfoArray[pair[1]].id}`);
+        let coinsertables: number[] = []
+        let coinsertableLabels: string[] = []
+        for(let i=0; i < protrusionData.hydroProtrusionCbAtomInfoArray.length; i++){
+            const resICb = protrusionData.hydroProtrusionCbAtomInfoArray[i];
+            const resICa = protrusionData.hydroCaCbAtomInfoArray.find( a =>
+                a.chain == resICb.chain && a.resId == resICb.resId && a.name == 'CA' )!
+            for(let j=i+1; j< protrusionData.hydroProtrusionCbAtomInfoArray.length; j++){
+                const resJCb = protrusionData.hydroProtrusionCbAtomInfoArray[j];  
+                const resJCa = protrusionData.hydroCaCbAtomInfoArray.find( a =>
+                    a.chain == resJCb.chain && a.resId == resJCb.resId && a.name == 'CA' )!
+                resPairLoop:
+                for (let atomI of [resICb, resICa]){  // CB is preferred
+                    for(let atomJ of [resJCb, resJCa]){
+                        if(edgePairAtomId.includes(`${atomI.id}-${atomJ.id}`) || 
+                           edgePairAtomId.includes(`${atomJ.id}-${atomI.id}`)) {
+                            coinsertables.push(...atomI.coordinate, ...atomJ.coordinate);
+                            coinsertableLabels.push(atomI.atomLabel, atomJ.atomLabel);
+                            break resPairLoop
+                        }   
+                    }
+                }          
+            }   
+        }
+
+        // //// Note: for spheres drawing at the same center with same radius,
         // the one drawn earlier will cover the one later
-        // So here the orange ones can always cover the gray ones
+        /////// So here the orange ones can always cover the gray ones
 
         // hydrophobic Ca, Cb: small, orange
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroCaCb, CreateSphere, {
@@ -433,7 +461,8 @@ export class MolStarWrapper {
             radius:2,
             sphereColor: ColorNames.orange,
             stateLabel: ProtrusionVisualLabel.HydroProtrusion,
-            // coinsertable : protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.id).flat() //!
+            coinsertables: coinsertables,
+            coinsertableLabel: coinsertableLabels 
         }).commit();
 
         // normal vertex Cb: large, gray
@@ -450,7 +479,8 @@ export class MolStarWrapper {
             vertices: protrusionData.normalCaCbAtomInfoArray.map(a=>a.coordinate).flat(),  
             verticesLabel: protrusionData.normalCaCbAtomInfoArray.map(a=>a.atomLabel),
             indices: protrusionData.convexHullFaces.flat(),
-            opacity: 0.7
+            opacity: 0.7,
+            edgePairs: edgePairs.flat(),
         }).commit();       
 
         // hide all the new visualizations at the initial
@@ -464,11 +494,11 @@ export class MolStarWrapper {
         this.protrusionInitFlag = true
     }
 
+
     async toggleProtrusion(reprRef: string){
         if(!this.protrusionInitFlag){
             await this.initProtrusion();
         }
-
         const model = this.plugin.managers.structure.hierarchy.current.structures[0].model;
         if(!model) return 
         const reprList = model.genericRepresentations!
@@ -483,12 +513,6 @@ export class MolStarWrapper {
     }
     
     
-    // async togggleCoinsertable(){
-    //     await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroProtrusion, CreateSphere, {
-    //         coinsertable: []
-    //     }).commit(); 
-    // }
-
     async togggleEdges(reprRef: ProtrusionVisualRef){
         const oldParams = this.getObj<PluginStateObject.Shape.Representation3D>(reprRef).sourceData as any;
         const newParams = {...oldParams as object, showEdges: !oldParams.showEdges}; // flip drawEdge
