@@ -49,7 +49,7 @@ function BaseLayout (){
                             <ControlArea checkedKeys ={checkedKeys} setCheckedKeys={setCheckedKeys} 
                                          convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey} />                            
                         </Col>
-                        <Col className="pt-4"> <div id="molstar-div" style={{ height: 600 }} /> </Col>
+                        <Col className="pt-4"> <div id="molstar-div" style={{ height: 650 }} /> </Col>
                     </Row>
                 </Container>
 
