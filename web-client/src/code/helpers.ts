@@ -105,6 +105,18 @@ export function pointDistance(a: number[], b: number[]) {
     return Math.sqrt(x * x + y * y + z * z);
 }
 
+export function getEdges(flatFacets: number[]){
+    // to save only half of all triangles' edges // a bit ugly 
+    const edges = new Map<string, number[]>(); 
+    for (let i = 0; i < flatFacets.length; i += 3) {
+        const sortedIndices = [flatFacets[i+0],flatFacets[i+1],flatFacets[i+2]].sort((a, b) => a - b); // ! numeric sort
+        edges.set(`${sortedIndices[0]}-${sortedIndices[1]}`, [sortedIndices[0], sortedIndices[1]])
+        edges.set(`${sortedIndices[0]}-${sortedIndices[2]}`, [sortedIndices[0], sortedIndices[2]])
+        edges.set(`${sortedIndices[1]}-${sortedIndices[2]}`, [sortedIndices[1], sortedIndices[2]])
+    }
+    return Array.from(edges.values())  // return vertex pairs
+}
+
 export enum ProtrusionVisualLabel {
     NormalCaCb = 'Normal C-α, C-β',
     HydroCaCb = 'Hydrophobic C-α, C-β',

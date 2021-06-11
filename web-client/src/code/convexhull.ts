@@ -16,14 +16,15 @@ import { BaseGeometry } from "molstar/lib/mol-geo/geometry/base";
 import { addCylinder } from "molstar/lib/mol-geo/geometry/mesh/builder/cylinder";
 import { DefaultCylinderProps } from "molstar/lib/mol-geo/primitive/cylinder";
 
-
 interface ConvexHullData{
     vertices: number[],      // coordinates of all N vertices, flatted, i.e 1D array instead of (N,3) 2D array
     verticesLabel: string[], // labels of all N vertices
     indices: number[],       // vertex indices of all F facets, flatted, size: 3*F
     convexHullColor: Color, 
     opacity: number, 
+
     showEdges: boolean, 
+    edgePairs: number[],  // flatted
 }
 
 const ConvexHullParams = {    
@@ -34,17 +35,6 @@ const ConvexHullParams = {
 type ConvexHullParams = typeof ConvexHullParams
 type ConvexHullProps = PD.Values<ConvexHullParams>
 
-function getEdges(flatFacets: number[]){
-    // to save only half of all triangles' edges // a bit ugly 
-    const edges = new Map<string, number[]>(); 
-    for (let i = 0; i < flatFacets.length; i += 3) {
-        const sortedIndices = [flatFacets[i+0],flatFacets[i+1],flatFacets[i+2]].sort((a, b) => a - b); // ! numeric sort
-        edges.set([sortedIndices[0], sortedIndices[1]].toString(), [sortedIndices[0], sortedIndices[1]])
-        edges.set([sortedIndices[0], sortedIndices[2]].toString(), [sortedIndices[0], sortedIndices[2]])
-        edges.set([sortedIndices[1], sortedIndices[2]].toString(), [sortedIndices[1], sortedIndices[2]])
-    }
-    return edges
-}
 
 function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: Mesh) {
     const state = MeshBuilder.createState(2048, 1024, mesh); 
@@ -52,7 +42,6 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
     const a = Vec3();
     const b = Vec3();
     const c = Vec3();
-    let edges = new Map<string, number[]>();
 
     // iterate over all faces 
     for (let i = 0; i < data.indices.length; i += 3) {
@@ -63,20 +52,19 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
         MeshBuilder.addTriangle(state, a, b, c);       
     }
     
-    // draw edges // even uglier...
+    // draw edges 
     if(data.showEdges){
-        edges = getEdges(data.indices)
-        Array.from(edges.values()).forEach((v, j) => {
+        for(let j=0; j< data.edgePairs.length; j+=2 ){        
             state.currentGroup = data.indices.length/3 + j;  // set new group id
 
-            let start = v[0], end = v[1];
+            let start = data.edgePairs[j], end = data.edgePairs[j+1];
             Vec3.fromArray(a, data.vertices, start * 3)
             Vec3.fromArray(b, data.vertices, end * 3)
             addCylinder(state, a, b, 1, { ...DefaultCylinderProps, radiusTop: 0.08, radiusBottom: 0.08 })
-        });
+        }
     }
     
-    console.log(`in getConvexHullMesh created ${data.indices.length/3} triangles, ${edges.size } edges`)
+    console.log(`in getConvexHullMesh created ${data.indices.length/3} triangles, ${data.edgePairs.length/2} edges`)
     return MeshBuilder.getMesh(state);
 }
 
@@ -90,11 +78,10 @@ function getConvexHullShape(ctx: RuntimeContext, data: ConvexHullData, props: Co
                 Vertex: ${data.verticesLabel[data.indices[groupId*3+2]]}`
         }
         else{
-            const edges = Array.from(getEdges(data.indices).values())
-            const v = edges[groupId - data.indices.length/3]
+            const offset = groupId - data.indices.length/3
             return `CONVEX HULL EDGE <br/>
-                Vertex: ${data.verticesLabel[v[0]]} <br/>
-                Vertex: ${data.verticesLabel[v[1]]} <br/>`
+                Vertex: ${data.verticesLabel[data.edgePairs[offset]]} <br/>
+                Vertex: ${data.verticesLabel[data.edgePairs[offset+1]]} <br/>`
         } 
     };
     const coloring = (groupId: number) => { 
@@ -134,7 +121,9 @@ export const CreateConvexHull = CreateTransformer({
         indices: PD.Value([] as number[]),
         convexHullColor: PD.Color(ColorNames.blue), 
         opacity: PD.Numeric( 0.5, { min: 0, max: 1, step: 0.01 }),
+
         showEdges: PD.Boolean(false),
+        edgePairs: PD.Value([] as number[]),
     }  
 })({
     canAutoUpdate({ oldParams, newParams }) {
@@ -170,5 +159,3 @@ export const CreateConvexHull = CreateTransformer({
      
     }
 });
-
-
