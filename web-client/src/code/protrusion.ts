@@ -113,7 +113,7 @@ export const CreateSphere = CreateTransformer({
         sphereColor: PD.Color(ColorNames.gray),
         stateLabel: PD.Text(),  
         
-        showEdges: PD.Boolean(true),
+        showEdges: PD.Boolean(false),
         coinsertables: PD.Value([] as number[]),
         coinsertableLabel: PD.Value([] as string[]),
     }  
@@ -136,15 +136,13 @@ export const CreateSphere = CreateTransformer({
             );
         });
     },
-    // update({a, b, newParams}){
-    //     console.log(a,b,newParams)
-    //     const newParams2 = {...b.data.sourceData as object, coinsertable:newParams.coinsertable}
-    //     return Task.create('Custom sphere', async ctx => {
-    //         await b.data.repr.createOrUpdate({}, newParams2).runInContext(ctx);
-    //         b.data.sourceData = newParams
-    //         return StateTransformer.UpdateResult.Updated;
-    //     });
+    update({a, b, newParams}){
+        return Task.create('Custom sphere', async ctx => {
+            await b.data.repr.createOrUpdate({}, newParams).runInContext(ctx);
+            b.data.sourceData = newParams
+            return StateTransformer.UpdateResult.Updated;
+        });
      
-    // }
+    }
 });
 

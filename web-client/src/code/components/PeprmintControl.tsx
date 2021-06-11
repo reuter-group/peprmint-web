@@ -173,34 +173,49 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
 
     if(checkedKey === '0-0'){
        await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalProtrusion)
-
+       // broadcast the check operation from '0-0' to '0-0-0' and '0-0-0-0'
        if(checked){
-         if(!checkedKeysValue.checked.includes('0-0-0')){
-            PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion)
-            checkedKeysValue.checked.push('0-0-0');            
-         }
-        setCheckedKeys(checkedKeysValue.checked)
+          if(!checkedKeysValue.checked.includes('0-0-0')){
+              await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion)
+              checkedKeysValue.checked.push('0-0-0');            
+          }          
+          if(!checkedKeysValue.checked.includes('0-0-0-0')){
+              await PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+              checkedKeysValue.checked.push('0-0-0-0');            
+          }
+          setCheckedKeys(checkedKeysValue.checked)
        }else{
-         if(checkedKeysValue.checked.includes('0-0-0')){
-           PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion);
-          //  PluginWrapper.togggleCoinsertable();
-         }
-         setCheckedKeys(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0') )
+          if(checkedKeysValue.checked.includes('0-0-0')){
+            await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion);
+          }
+          if(checkedKeysValue.checked.includes('0-0-0-0')){
+            await PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+          }
+          setCheckedKeys(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0' && key != '0-0-0-0') )
        }       
-    }else {
-      if(checkedKey === '0-0-0'){
-        PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion)
-      }else if(checkedKey === '0-0-1'){
-        PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalCaCb)
-      }else if(checkedKey === '0-0-2'){
-        PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroCaCb)
-      } 
-      else{ 
-        if(checkedKey === '0-0-0-0'){
-             PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+    }else if(checkedKey === '0-0-0'){
+        await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion)
+        if(checked){
+            if(!checkedKeysValue.checked.includes('0-0-0-0')){
+                await PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+                checkedKeysValue.checked.push('0-0-0-0');            
+            }          
+            setCheckedKeys(checkedKeysValue.checked)
+        }else{
+            if(checkedKeysValue.checked.includes('0-0-0-0')){
+              await PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+            }
+            setCheckedKeys(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0-0') )
+        }     
+    }else {  // no broadcast
+        if(checkedKey === '0-0-1'){
+          PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalCaCb)
+        }else if(checkedKey === '0-0-2'){
+          PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroCaCb)
+        } else if(checkedKey === '0-0-0-0'){
+          PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
         }
-      }
-      setCheckedKeys(checkedKeysValue.checked)
+        setCheckedKeys(checkedKeysValue.checked)
     }
   };
 
@@ -208,16 +223,28 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
   const onCheckConvexHull = async (checkedKeys:any, info:any) => {
     const checkedKey = info.node.key;
     const checked = info.checked 
+    let checkedKeysValue = checkedKeys as { checked: Key[]; halfChecked: Key[]; }
 
     if(checkedKey === '0-0'){
-      await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull)
+      await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull);
+      if(checked){
+        if(!checkedKeysValue.checked.includes('0-0-0')){
+            await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+            checkedKeysValue.checked.push('0-0-0');            
+        }          
+        setConvexHullKey(checkedKeysValue.checked)
+     }else{
+        if(checkedKeysValue.checked.includes('0-0-0')){
+          await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+        }
+        setConvexHullKey(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0') )
+     }     
     }
     else if(checkedKey === '0-0-0'){
-      await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+        await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+        setConvexHullKey(checkedKeysValue.checked)
     }
-    setConvexHullKey(checkedKeys)
   };
-    
 
 //   useEffect ( () => {
 //     if(parentRef.current){
@@ -228,7 +255,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
 // }, [parentRef]);
 
   const onExpandConvexHull = (expandedKeys: React.Key[] , info: any) => {
-    // console.log('onExpand', expandedKeys, info);
     if(info.expanded){
       if(parentRef.current){
         let parentWidth = (parentRef.current! as HTMLDivElement).offsetWidth;

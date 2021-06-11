@@ -133,6 +133,7 @@ export class MolStarWrapper {
         await this.updateStyle(this.representationStyle);  // show the model
         // const model = this.getObj<PluginStateObject.Molecule.Model>('model');
         this.loadedParams = { pdbId, format, assemblyId };
+        this.protrusionInitFlag = false;  // reload 
     }
 
     
@@ -151,6 +152,7 @@ export class MolStarWrapper {
         const model = this.getObj<PluginStateObject.Molecule.Model>('model');
 
         // this.loadedParams = { pdbId: file.name, format, assemblyId };
+        this.protrusionInitFlag = false;
     }
 
     private openFile(b: StateBuilder.To<PSO.Root>, file: File, isBinary: boolean){        
@@ -554,27 +556,9 @@ export class MolStarWrapper {
         return s;
     }
 
-
     // setBackground(color: number) {
     //     if (!this.plugin.canvas3d) return;
     //     const renderer = this.plugin.canvas3d.props.renderer;
     //     PluginCommands.Canvas3D.SetSettings(this.plugin, { settings: { renderer: { ...renderer,  backgroundColor: Color(color) } } });
-    // }
-
-    // toggleSpin() {
-    //     if (!this.plugin.canvas3d) return;
-    //     const trackball = this.plugin.canvas3d.props.trackball;
-    //     PluginCommands.Canvas3D.SetSettings(this.plugin, { settings: { trackball: { ...trackball, spin: !trackball.spin } } });
-    // }
-
-    // viewport = {
-    //     setSettings: (settings?: Canvas3DProps) => {
-    //         PluginCommands.Canvas3D.SetSettings(this.plugin, {
-    //             settings: settings || DefaultCanvas3DParams
-    //         });
-    //     }
-    // };
-
-
     // }
 }

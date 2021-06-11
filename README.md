@@ -8,7 +8,7 @@
 
 ## V1.1
 ### Features to add:
- - [ ] visualize edges for convex hull (and thus co-insertables), related to [#3](/../../issues/3)
+ - [x] visualize edges for convex hull (and thus co-insertables), related to [#3](/../../issues/3)
  - [ ] re-calculate for user selected sequence/chains, related to [#2](/../../issues/2)
  - [ ] support download of domains from CATH, [#1](/../../issues/1)
 
