@@ -5,6 +5,8 @@ import { PluginStateObject, PluginStateObject as PSO } from 'molstar/lib/mol-plu
 import { StateTransforms } from 'molstar/lib/mol-plugin-state/transforms';
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { PluginState } from 'molstar/lib/mol-plugin/state';
+import {GeometryExport } from 'molstar/lib/extensions/geo-export'
+
 import { StateBuilder, StateObject, StateObjectCell, StateSelection, StateTransformer } from 'molstar/lib/mol-state';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { Color } from 'molstar/lib/mol-util/color';
@@ -29,6 +31,7 @@ import qh from 'quickhull3d';
 import { ProtrusionVisualRef } from './helpers'
 import { CreateSphere } from "./protrusion";
 import { CreateConvexHull } from "./convexhull";
+import { PluginSpec } from "molstar/lib/mol-plugin/spec";
 
 export const LOW_DENSITY_THRESHOLD = 22;
 export const DISTANCE_CUTOFF = 10;  // 1 nm
@@ -74,7 +77,7 @@ export class MolStarWrapper {
         this.defaultSpec = {
             ...DefaultPluginUISpec(),
             animations: [
-                // AnimateModelIndex,
+                // AnimateModelIndex, 
                 AnimateCameraSpin,
             ],
             layout: {
@@ -90,9 +93,10 @@ export class MolStarWrapper {
                     }
                 },
             },
-            // components: {
-            //     remoteState: 'none', //remote server 
-            // },
+            behaviors:[ PluginSpec.Behavior(GeometryExport) ],
+            components: {
+                remoteState: 'none', //remote server 
+            },
             config: [
                 [PluginConfig.Viewport.ShowAnimation, false],
                 [PluginConfig.VolumeStreaming.Enabled, false],  //remove volume streaming 
@@ -434,10 +438,6 @@ export class MolStarWrapper {
             }   
         }
 
-        // //// Note: for spheres drawing at the same center with same radius,
-        // the one drawn earlier will cover the one later
-        /////// So here the orange ones can always cover the gray ones
-
         // hydrophobic Ca, Cb: small, orange
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroCaCb, CreateSphere, {
             centers: protrusionData.hydroCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
@@ -451,7 +451,7 @@ export class MolStarWrapper {
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalCaCb, CreateSphere, {
             centers:  protrusionData.normalCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
             centersLabel: protrusionData.normalCaCbAtomInfoArray.map(a => a.atomLabel),
-            radius: 0.5,
+            radius: 0.4,
             sphereColor: ColorNames.gray,
             stateLabel: ProtrusionVisualLabel.NormalCaCb
         }).commit();
@@ -471,7 +471,7 @@ export class MolStarWrapper {
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalProtrusion, CreateSphere, {
             centers: protrusionData.protrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
             centersLabel: protrusionData.protrusionCbAtomInfoArray.map( a => a.atomLabel ),
-            radius: 2,
+            radius: 1.8,
             sphereColor: ColorNames.gray,
             stateLabel: ProtrusionVisualLabel.NormalProtrusion
         }).commit();
