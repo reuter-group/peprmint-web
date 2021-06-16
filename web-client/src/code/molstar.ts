@@ -73,10 +73,13 @@ export class MolStarWrapper {
     
     private loadedParams: LoadParams = { pdbId: '', format: 'pdb', isBinary: false, assemblyId: '' };
     
-    constructor(){        
+    constructor(){    
+        const defaultSpec = DefaultPluginUISpec();
+    
         this.defaultSpec = {
-            ...DefaultPluginUISpec(),
+            ...defaultSpec,
             animations: [
+                ...defaultSpec.animations || [],
                 // AnimateModelIndex, 
                 AnimateCameraSpin,
             ],
@@ -93,8 +96,12 @@ export class MolStarWrapper {
                     }
                 },
             },
-            behaviors:[ PluginSpec.Behavior(GeometryExport) ],
+            behaviors:[
+                ...defaultSpec.behaviors,
+                PluginSpec.Behavior(GeometryExport) 
+                ],
             components: {
+                ...defaultSpec.components,
                 remoteState: 'none', //remote server 
             },
             config: [
