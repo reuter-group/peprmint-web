@@ -1,20 +1,15 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
-import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider, TreeProps, Typography } from "antd";
+import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider, TreeProps, Typography, Tooltip } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { PluginWrapper } from "../main"
 import { Slider, Tree } from "antd";
-import { Transparency } from "molstar/lib/mol-theme/transparency";
 import { useRef } from "react";
 
-import { ProtrusionVisualRef } from '../helpers'
+import { ProtrusionVisualRef, validCathId, validPdbID } from '../helpers'
 import { Key } from "antd/lib/table/interface";
 
-function validPdbID(pdbId:any) {
-  const validPDB = /^[0-9][0-9|a-z|A-Z]{3}$/;
-  return validPDB.test(pdbId) && (pdbId.length == 4)
-}
 
 function InputArea({setCheckedKeys, setConvexHullKey} : any) {
   const colwidth = 3;
@@ -47,7 +42,7 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
     setCheckedKeys([]) // clean all the keys
     setConvexHullKey([])
 
-    if(validPdbID(pdbId)){
+    if(validPdbID(pdbId) || validCathId(pdbId)){
         PluginWrapper.load({
           pdbId: pdbId,
         })
@@ -70,11 +65,19 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
       <div className="h5 mb-3 border-black border-bottom"> Input a protein structure </div> 
 
       <Form.Group controlId="formPdbId" as={Row}>
-        <Form.Label className="pr-0" column sm={colwidth}> PDB ID</Form.Label>
+        <Form.Label className="pr-0" column sm={colwidth}> Entry ID</Form.Label>
         <Col sm={4} className="pl-0">
-          <Form.Control type="text" name="pdbId" placeholder="e.g. 1rlw" maxLength={4} />
+          <Form.Control type="text" name="pdbId" placeholder="e.g. 1rlw" maxLength={7} />
         </Col>
-        <Col className="px-0"> <Form.Text muted> 4-letter entry ID</Form.Text> </Col>
+
+        <Col className="px-0"> 
+          <Form.Text muted> 
+              <Tooltip placement="topLeft" title="4-character id, data source: Protein Data Bank in Europe, e.g. 1rlw"> 
+              <span>PDB ID </span> </Tooltip> or
+              <Tooltip placement="topLeft" title="7-character id, data source: CATH (Protein Structure Classification Database), e.g. 2da0A00"> 
+              <span> CATH ID</span> </Tooltip>
+          </Form.Text> 
+        </Col>
       </Form.Group>
 
       <Form.Group controlId="formInputPdb" as={Row}>
@@ -85,7 +88,7 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
            beforeUpload={beforeUpload}
            onRemove={onRemove}
           >
-          <AntdButton icon={<UploadOutlined />}>Select a structure file</AntdButton>
+          <AntdButton icon={<UploadOutlined />}>Open a structure file</AntdButton>
           <Form.Text muted > PDB or mmCIF format</Form.Text> 
         </Upload>
          </Col>

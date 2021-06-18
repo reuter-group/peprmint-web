@@ -117,6 +117,18 @@ export function getEdges(flatFacets: number[]){
     return Array.from(edges.values())  // return vertex pairs
 }
 
+
+export function validPdbID(pdbId:any) {
+    const validPDB = /^[0-9][0-9|a-z|A-Z]{3}$/;
+    return validPDB.test(pdbId) 
+  }
+  
+
+export function validCathId(cathId:string){
+    const validCathId = /^[0-9][0-9|a-z|A-Z]{3}[A-Z][0-9]{2}$/;
+    return validCathId.test(cathId)    
+  }
+
 export enum ProtrusionVisualLabel {
     NormalCaCb = 'Normal C-α, C-β',
     HydroCaCb = 'Hydrophobic C-α, C-β',

@@ -28,7 +28,7 @@ import { elementLabel } from 'molstar/lib/mol-theme/label';
 
 import qh from 'quickhull3d';
 
-import { ProtrusionVisualRef } from './helpers'
+import { ProtrusionVisualRef, validCathId } from './helpers'
 import { CreateSphere } from "./protrusion";
 import { CreateConvexHull } from "./convexhull";
 import { PluginSpec } from "molstar/lib/mol-plugin/spec";
@@ -40,7 +40,7 @@ export const HYDROPHOBICS = ['LEU', 'ILE', 'PHE', 'TYR', 'TRP', 'CYS', 'MET'];
 const URL_BCIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId + '.bcif'
 // const URL_CIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId + '.cif'
 const URL_PDB = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb' + pdbId + '.ent'
-
+const URL_CATH = (cathId: string) => `http://www.cathdb.info/version/v4_3_0/api/rest/id/${cathId}.pdb`
 
 type CaCbSelectionParam = {
     chains: string [] | 'ALL';
@@ -92,7 +92,7 @@ export class MolStarWrapper {
                         left: "collapsed",
                         top: "full",
                         right: "full",
-                        bottom: "hidden",
+                        bottom: "full",
                     }
                 },
             },
@@ -129,7 +129,7 @@ export class MolStarWrapper {
 
     // call to load a structure
     async load({pdbId, format = 'pdb', isBinary = false, assemblyId = ''}: LoadParams) {
-        let url = format == 'pdb'? URL_PDB(pdbId): URL_BCIF(pdbId);
+        let url = validCathId(pdbId)? URL_CATH(pdbId) : format == 'pdb'? URL_PDB(pdbId): URL_BCIF(pdbId) ; 
         const state = this.plugin!.state.data;
 
         if (this.loadedParams.pdbId !== pdbId || this.loadedParams.format !== format) {
