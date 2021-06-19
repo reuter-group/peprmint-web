@@ -40,7 +40,7 @@ export const HYDROPHOBICS = ['LEU', 'ILE', 'PHE', 'TYR', 'TRP', 'CYS', 'MET'];
 const URL_BCIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId + '.bcif'
 // const URL_CIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId + '.cif'
 const URL_PDB = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb' + pdbId + '.ent'
-const URL_CATH = (cathId: string) => `http://www.cathdb.info/version/v4_3_0/api/rest/id/${cathId}.pdb`
+const URL_CATH = (cathId: string) => `https://www.cathdb.info/version/v4_3_0/api/rest/id/${cathId}.pdb`
 
 type CaCbSelectionParam = {
     chains: string [] | 'ALL';
