@@ -1,6 +1,6 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
-import { Upload, Button as AntdButton, message, Switch, Form as AntdForm, Space, Divider, TreeProps, Typography, Tooltip } from "antd";
+import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { PluginWrapper } from "../main"
@@ -72,10 +72,9 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
 
         <Col className="px-0"> 
           <Form.Text muted> 
-              <Tooltip placement="topLeft" title="4-character id, data source: Protein Data Bank in Europe, e.g. 1rlw"> 
-              <span>PDB ID </span> </Tooltip> or
-              <Tooltip placement="topLeft" title="7-character id, data source: CATH (Protein Structure Classification Database), e.g. 2da0A00"> 
-              <span> CATH ID</span> </Tooltip>
+              <Popover placement="topLeft" content={(<div>4-character id, data source: <a className="text-primary" href="https://www.ebi.ac.uk/pdbe/">PDBe</a> , e.g. 1rlw</div>)}>
+              PDB ID </Popover> or <Popover placement="topLeft" content={(<div>7-character id, data source: <a className="text-primary" href="https://www.cathdb.info/">CATH</a>, e.g. 2da0A00</div>)}> 
+              CATH ID </Popover>
           </Form.Text> 
         </Col>
       </Form.Group>
@@ -165,6 +164,27 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
           checkable: false,
         },
       ],
+    },
+  ]
+
+  const content = (
+    <div> First enable the <a onClick={e => e.stopPropagation()} className="text-primary"
+            href="https://molstar.org/viewer-docs/making-selections/">selection mode</a>,
+          then make a selection 
+    </div>
+  );
+
+  const treeDataRecalculate = [
+    {
+      title: <div>Re-calculate for <Popover placement="topLeft" content={content}>my current selection </Popover> </div>,
+      key: '0-0',
+      selectable: false,
+      // children: [ { 
+      //   selectable: false, 
+      //   title: <Space> keep the whole structure </Space> ,
+      //   key: '0-0-0',
+      //   },
+      // ],
     },
   ]
 
@@ -266,6 +286,34 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     }
   };
 
+
+
+  const onCheckRecalculte = async (checkedKeys:any, info:any) => {
+    const checkedKey = info.node.key;
+    const checked = info.checked 
+    let checkedKeysValue = checkedKeys as { checked: Key[]; halfChecked: Key[]; }
+
+    if(checkedKey === '0-0'){
+        await PluginWrapper.reCalculate();
+    //   if(checked){
+    //     if(!checkedKeysValue.checked.includes('0-0-0')){
+    //         await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+    //         checkedKeysValue.checked.push('0-0-0');            
+    //     }          
+    //     setConvexHullKey(checkedKeysValue.checked)
+    //  }else{
+    //     if(checkedKeysValue.checked.includes('0-0-0')){
+    //       await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+    //     }
+    //     setConvexHullKey(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0') )
+    //  }     
+    // }
+    // else if(checkedKey === '0-0-0'){
+    //     await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+    //     setConvexHullKey(checkedKeysValue.checked)
+    }
+  };
+
   return (
     <Container className="my-3 p-3 bg-light border" > 
     <div className="h5 mb-3 border-black border-bottom" ref={parentRef}> Basic settings </div> 
@@ -293,12 +341,22 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
    
     <br/>
 
-    <div className="h5 border-black border-bottom"> Advanced settings </div> 
-    <small> Click the icons on the viewer plugin to explore more advanced features provided by <a 
-        className="text-primary"
-        href={ 'https://molstar.org/viewer-docs/' }> Mol* </a> </small>
-      {/* <IconButton small={true} svg={BuildOutlinedSvg} toggleState={false} onClick={()=>{}} style={{ background: 'transparent' }} />  */} 
+    <div className="h5 border-black border-bottom"> Advanced settings </div>    
+    <Tree 
+      className="bg-light"
+      checkable
+      defaultCheckedKeys={[]}
+      checkStrictly={true}
+      onCheck={onCheckRecalculte}
+      treeData={treeDataRecalculate}
+      // checkedKeys={convexHullKey}      
+    />
 
+     <Form.Text muted> 
+        Click the icons on the viewer plugin to explore more advanced features from <a 
+        className="text-primary"
+        href={ 'https://molstar.org/viewer-docs/' }> Mol* </a>     
+    </Form.Text>
     </Container>
   )
 }
