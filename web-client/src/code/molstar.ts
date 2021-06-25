@@ -63,6 +63,19 @@ type AtomGroupInfo = {
     atomLabel: string,
 }
 
+type ProtrusionData = {
+    normalCaCbAtomInfoArray: AtomGroupInfo[],
+    hydroCaCbAtomInfoArray: AtomGroupInfo[],
+    protrusionCbAtomInfoArray: AtomGroupInfo[],
+    hydroProtrusionCbAtomInfoArray: AtomGroupInfo[],
+    convexHullFaces: number[][],
+    edgePairs: number[][],
+    coinsertables: {
+        coordinates: number[],
+        labels: string[]
+    }
+}
+
 export class MolStarWrapper {
    
     private defaultSpec: PluginUISpec; 
@@ -77,7 +90,8 @@ export class MolStarWrapper {
     };
     
     private loadedParams: LoadParams = { pdbId: '', format: 'pdb', isBinary: false, assemblyId: '' };
-    
+    private defaultProtrusionData: ProtrusionData | undefined;
+
     constructor(){    
         const defaultSpec = DefaultPluginUISpec();
     
@@ -454,7 +468,9 @@ export class MolStarWrapper {
         return {coordinates: coinsertables, labels: coinsertableLabels}
     }
 
-    private async initOrUpdateProtrusion(data:Structure, init=true){
+    private async initProtrusion(){
+        const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
+        if (!data) return;
 
         const protrusionData = this.calculateProtrusion(data);
     
@@ -506,23 +522,22 @@ export class MolStarWrapper {
         }).commit();       
 
         // hide all the new visualizations at the initial time
-        if(init){
-            this.protrusionInitFlag = true
-            const model = this.plugin.managers.structure.hierarchy.current.structures[0].model!;
-            const reprList = model.genericRepresentations!
-            for(let i=0; i<reprList.length; i++ ){
-                PluginCommands.State.ToggleVisibility(this.plugin, 
-                    { state: reprList[i].cell.parent!, ref: reprList[i].cell.transform.ref });
-            }
+
+        const model = this.plugin.managers.structure.hierarchy.current.structures[0].model!;
+        const reprList = model.genericRepresentations!
+        for(let i=0; i<reprList.length; i++ ){
+            PluginCommands.State.ToggleVisibility(this.plugin, 
+                { state: reprList[i].cell.parent!, ref: reprList[i].cell.transform.ref });
         }
+
+        this.protrusionInitFlag = true
+        this.defaultProtrusionData = protrusionData
     }
 
 
     async toggleProtrusion(reprRef: string){
-        if(!this.protrusionInitFlag){
-            const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
-            if (!data) return;
-            await this.initOrUpdateProtrusion(data);
+        if(!this.protrusionInitFlag){           
+            await this.initProtrusion();
         }
         const model = this.plugin.managers.structure.hierarchy.current.structures[0].model;
         if(!model) return 
@@ -555,41 +570,94 @@ export class MolStarWrapper {
         }).commit();       
     }
     
-    async reCalculate(){
-        const params = StructureComponentManager.getAddParams(this.plugin);
-        const values = ParamDefinition.getDefaultValues(params);
-        values.options.checkExisting = true; 
-        values.selection
-        // console.log(values)
-        // console.log(this.plugin.managers.structure.component.currentStructures)
-        // const str = this.plugin.managers.structure.hierarchy.current.structures;
-        
-        // let component: StateObjectRef | undefined = void 0;
-        // const componentKey = UUID.create22();
 
-        // component = await this.plugin.builders.structure.tryCreateComponentFromSelection(str[0].cell, values.selection, componentKey, {
-        //     // label: params.options.label || (values.selection === StructureSelectionQueries.current ? 'Custom Selection' : ''),
-        //     label: 'Custom Selection',
-        // });
-        // console.log(component)
-        // this.plugin.managers.structure.component.add(values, str);
+     private async updateProtrusionData(data?:Structure){   
+        let protrusionData : ProtrusionData;
+        if(!data){
+            if(!this.protrusionInitFlag)
+                await this.initProtrusion()
+            protrusionData = this.defaultProtrusionData!
+        }else{ 
+            protrusionData =  this.calculateProtrusion(data);
+        }
 
+        // hydrophobic Ca, Cb
+        const oldHydroCaCbParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.HydroCaCb).sourceData as any;
+        await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroCaCb, CreateSphere, {
+            ...oldHydroCaCbParams,
+            centers: protrusionData.hydroCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: protrusionData.hydroCaCbAtomInfoArray.map(a => a.atomLabel),
+        }).commit();
+
+        // normal Ca Cb
+        const oldNormalCaCbParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.NormalCaCb).sourceData as any;
+        await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalCaCb, CreateSphere, {
+            ...oldNormalCaCbParams,            
+            centers:  protrusionData.normalCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: protrusionData.normalCaCbAtomInfoArray.map(a => a.atomLabel),           
+        }).commit();
+
+        // hydrophobe vertex: large, orange
+        const oldHydroProtrusionParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.HydroProtrusion).sourceData as any;
+        await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroProtrusion, CreateSphere, {
+            ...oldHydroProtrusionParams,
+            centers: protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.atomLabel),           
+            coinsertables: protrusionData.coinsertables.coordinates,
+            coinsertableLabel: protrusionData.coinsertables.labels 
+        }).commit();
+
+        // normal vertex Cb: large, gray
+        const oldNormalProtrusionParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.NormalProtrusion).sourceData as any;
+        await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalProtrusion, CreateSphere, {
+            ...oldNormalProtrusionParams,
+            centers: protrusionData.protrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: protrusionData.protrusionCbAtomInfoArray.map(a => a.atomLabel ),            
+        }).commit();
+
+        // convex hull
+        const oldConvexHullParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.ConvexHull).sourceData as any;
+        await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
+            ...oldConvexHullParams,            
+            vertices: protrusionData.normalCaCbAtomInfoArray.map(a=>a.coordinate).flat(),  
+            verticesLabel: protrusionData.normalCaCbAtomInfoArray.map(a=>a.atomLabel),
+            indices: protrusionData.convexHullFaces.flat(),            
+            edgePairs: protrusionData.edgePairs.flat(),
+        }).commit();       
+    }
+
+
+    async reCalculate(useDefault=false){
         const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
         if (!data) return;
-        this.plugin.runTask(
-            Task.create('Query Component', async taskCtx => {
-                const struSel = await values.selection.getSelection(this.plugin, taskCtx, data)
-                if(!StructureSelection.isEmpty(struSel)) {                          
-                    // const caCbAtomArray = this.selectAtomicElement(StructureSelection.unionStructure(struSel), 
-                    //     {chains: 'ALL', residues: 'ALL' , atomNames: 'BOTH'} )
-                    // console.log('selected: ', caCbAtomArray )                   
-                    this.initOrUpdateProtrusion(StructureSelection.unionStructure(struSel), false)
-                } else{
-                    console.log('empty selection')
-                }
-            })
-        )
 
+        if(useDefault){
+            this.updateProtrusionData()
+        }
+        else{
+            const params = StructureComponentManager.getAddParams(this.plugin);
+            const values = ParamDefinition.getDefaultValues(params);           
+            this.plugin.runTask(
+                Task.create('Query Component', async taskCtx => {
+                    const struSel = await values.selection.getSelection(this.plugin, taskCtx, data)
+                    if(!StructureSelection.isEmpty(struSel)) {                                                          
+                        this.updateProtrusionData(StructureSelection.unionStructure(struSel))
+
+                        // add new component to the state tree
+                        const str = this.plugin.managers.structure.hierarchy.current.structures;
+                        values.options.checkExisting = true; 
+                        values.representation = 'cartoon'                    
+                        this.plugin.managers.structure.component.add(values, str);
+
+                        // hide sequence
+                        PluginCommands.State.ToggleVisibility(this.plugin, 
+                            { state: str[0].model?.cell.parent!, ref: StateElements.Sequence });
+                    } else{
+                        console.log('empty selection')
+                    }
+                })
+            );
+        }
     }
 
     private structure(assemblyId: string) {
