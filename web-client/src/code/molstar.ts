@@ -7,7 +7,7 @@ import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { PluginState } from 'molstar/lib/mol-plugin/state';
 import {GeometryExport } from 'molstar/lib/extensions/geo-export'
 
-import { StateBuilder, StateObject, StateObjectCell, StateSelection, StateTransformer } from 'molstar/lib/mol-state';
+import { StateBuilder, StateObject, StateObjectCell, StateObjectRef, StateSelection, StateTransformer } from 'molstar/lib/mol-state';
 import { Asset } from 'molstar/lib/mol-util/assets';
 import { Color } from 'molstar/lib/mol-util/color';
 import { getEdges, LoadParams, pointDistance, ProtrusionVisualLabel, RepresentationStyle, StateElements, SupportedFormats } from './helpers';
@@ -16,7 +16,7 @@ import { Script } from "molstar/lib/mol-script/script";
 import { StructureSelection } from "molstar/lib/mol-model/structure/query";
 import { ColorNames } from "molstar/lib/mol-util/color/names";
 import { OrderedSet, Segmentation } from "molstar/lib/mol-data/int";
-import { ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
+import { ParamDefinition, ParamDefinition as PD } from 'molstar/lib/mol-util/param-definition';
 import { DefaultPluginUISpec, PluginUISpec } from "molstar/lib/mol-plugin-ui/spec";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { ResidueSet } from 'molstar/lib/mol-model/structure/model/properties/utils/residue-set';
@@ -32,6 +32,11 @@ import { ProtrusionVisualRef, validCathId } from './helpers'
 import { CreateSphere } from "./protrusion";
 import { CreateConvexHull } from "./convexhull";
 import { PluginSpec } from "molstar/lib/mol-plugin/spec";
+import { StructureComponentManager } from "molstar/lib/mol-plugin-state/manager/structure/component";
+import { StructureSelectionQueries, StructureSelectionQuery } from "molstar/lib/mol-plugin-state/helpers/structure-selection-query";
+import { UUID } from "molstar/lib/mol-util";
+import { Task } from "molstar/lib/mol-task";
+import { FALSE } from "node-sass";
 
 export const LOW_DENSITY_THRESHOLD = 22;
 export const DISTANCE_CUTOFF = 10;  // 1 nm
@@ -45,7 +50,7 @@ const URL_CATH = (cathId: string) => `https://www.cathdb.info/version/v4_3_0/api
 type CaCbSelectionParam = {
     chains: string [] | 'ALL';
     residues: string[] | 'ALL';
-    atomNames: 'CA' | 'CB' | 'BOTH';
+    atomNames: 'CA' | 'CB' | 'BOTH'; 
 }
 
 type AtomGroupInfo = {   
@@ -280,16 +285,16 @@ export class MolStarWrapper {
     }
 
     
-    selectAtomicElement(caCbstructure: Structure, selParm: CaCbSelectionParam) {
-        // Note: assume
-        const l = StructureElement.Location.create<Unit.Atomic>(caCbstructure);      
+    selectAtomicElement(caCbStructure: Structure, selParm: CaCbSelectionParam) {
+        // convert a ca/cb selection into an atomInfoArray
+        const l = StructureElement.Location.create<Unit.Atomic>(caCbStructure);      
 
         let atomInfoArray: AtomGroupInfo[] = [];
 
         if(selParm.chains != 'ALL' && selParm.chains.length == 0) return atomInfoArray  ;  // selParm.chains = []
         if(selParm.residues != 'ALL' && selParm.residues.length == 0) return atomInfoArray ;  // selParm.residues = []
 
-        for (const unit of caCbstructure.units) {
+        for (const unit of caCbStructure.units) {
             if (unit.kind !== Unit.Kind.Atomic) continue;
 
             l.unit = unit;
@@ -315,7 +320,8 @@ export class MolStarWrapper {
                             const atomName = StructureProperties.atom.label_atom_id(l);
                             
                             if(selParm.residues == 'ALL' || selParm.residues.includes(resName)){
-                                if(selParm.atomNames == 'BOTH' || selParm.atomNames == atomName){
+                                if((selParm.atomNames == 'BOTH' || selParm.atomNames == atomName ) && 
+                                     ['CA', 'CB'].includes(atomName) ){
                                     
                                     //select only one CB when there are multiple
                                     const alt_id = StructureProperties.atom.label_alt_id(l);
@@ -348,10 +354,7 @@ export class MolStarWrapper {
         return atomInfoArray;
     }
 
-    private calculateProtrusion(){
-        const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
-        if (!data) return;
-
+    private calculateProtrusion(data:Structure){
         //select all CA and CB atoms from the protein
         const selectionCaCb = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({            
             'atom-test':    Q.core.logic.and([
@@ -402,40 +405,43 @@ export class MolStarWrapper {
             }            
         })
 
+        const edgePairs: number[][] = getEdges(convexHullFaces.flat()) //! indices in convex hull, not atom indices
+        const edgePairAtomId = edgePairs.map((pair: number[])=> 
+            // map convex hull vertex id to atom id, as string 
+            `${caCbAtomArray[pair[0]].id}-${caCbAtomArray[pair[1]].id}`);
+
+        const hydroCaCbAtomInfoArray = caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName))
+        const coinsertables = this.calculateCoinsertables(edgePairAtomId, hydroCaCbAtomInfoArray, hydroProtrusionCbAtomInfoArray)
+        
         return {
             normalCaCbAtomInfoArray: caCbAtomArray,
-            hydroCaCbAtomInfoArray: caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName)),
+            hydroCaCbAtomInfoArray: hydroCaCbAtomInfoArray,
             protrusionCbAtomInfoArray: protrusionCbAtomInfoArray,
             hydroProtrusionCbAtomInfoArray: hydroProtrusionCbAtomInfoArray,
-            convexHullFaces: convexHullFaces
+            convexHullFaces: convexHullFaces,
+
+            edgePairs: edgePairs,
+            coinsertables: coinsertables
          }
     }
 
    
-
-    private async initProtrusion(){
-        const protrusionData = this.calculateProtrusion()!;
-        const edgePairs: number[][] = getEdges(protrusionData.convexHullFaces.flat()) //! indices in convex hull, not atom indices
-        
-        // calculate co-insertables 
-        const edgePairAtomId = edgePairs.map((pair: number[])=> 
-            // map convex hull vertex id to atom id, as string 
-            `${protrusionData.normalCaCbAtomInfoArray[pair[0]].id}-${protrusionData.normalCaCbAtomInfoArray[pair[1]].id}`);
+    private calculateCoinsertables(edgePairAtomId: string[], hydroCaCbAtomInfoArray: AtomGroupInfo[], hydroProtrusionCbAtomInfoArray:AtomGroupInfo[]){          
         let coinsertables: number[] = []
         let coinsertableLabels: string[] = []
-        for(let i=0; i < protrusionData.hydroProtrusionCbAtomInfoArray.length; i++){
-            const resICb = protrusionData.hydroProtrusionCbAtomInfoArray[i];
-            const resICa = protrusionData.hydroCaCbAtomInfoArray.find( a =>
+        for(let i=0; i < hydroProtrusionCbAtomInfoArray.length; i++){
+            const resICb = hydroProtrusionCbAtomInfoArray[i];
+            const resICa = hydroCaCbAtomInfoArray.find( a =>
                 a.chain == resICb.chain && a.resId == resICb.resId && a.name == 'CA' )!
-            for(let j=i+1; j< protrusionData.hydroProtrusionCbAtomInfoArray.length; j++){
-                const resJCb = protrusionData.hydroProtrusionCbAtomInfoArray[j];  
-                const resJCa = protrusionData.hydroCaCbAtomInfoArray.find( a =>
+            for(let j=i+1; j< hydroProtrusionCbAtomInfoArray.length; j++){
+                const resJCb = hydroProtrusionCbAtomInfoArray[j];  
+                const resJCa = hydroCaCbAtomInfoArray.find( a =>
                     a.chain == resJCb.chain && a.resId == resJCb.resId && a.name == 'CA' )!
                 resPairLoop:
                 for (let atomI of [resICb, resICa]){  // CB is preferred
                     for(let atomJ of [resJCb, resJCa]){
                         if(edgePairAtomId.includes(`${atomI.id}-${atomJ.id}`) || 
-                           edgePairAtomId.includes(`${atomJ.id}-${atomI.id}`)) {
+                            edgePairAtomId.includes(`${atomJ.id}-${atomI.id}`)) {
                             coinsertables.push(...atomI.coordinate, ...atomJ.coordinate);
                             coinsertableLabels.push(atomI.atomLabel, atomJ.atomLabel);
                             break resPairLoop
@@ -445,6 +451,13 @@ export class MolStarWrapper {
             }   
         }
 
+        return {coordinates: coinsertables, labels: coinsertableLabels}
+    }
+
+    private async initOrUpdateProtrusion(data:Structure, init=true){
+
+        const protrusionData = this.calculateProtrusion(data);
+    
         // hydrophobic Ca, Cb: small, orange
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroCaCb, CreateSphere, {
             centers: protrusionData.hydroCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
@@ -470,8 +483,8 @@ export class MolStarWrapper {
             radius:2,
             sphereColor: ColorNames.orange,
             stateLabel: ProtrusionVisualLabel.HydroProtrusion,
-            coinsertables: coinsertables,
-            coinsertableLabel: coinsertableLabels 
+            coinsertables: protrusionData.coinsertables.coordinates,
+            coinsertableLabel: protrusionData.coinsertables.labels 
         }).commit();
 
         // normal vertex Cb: large, gray
@@ -489,24 +502,27 @@ export class MolStarWrapper {
             verticesLabel: protrusionData.normalCaCbAtomInfoArray.map(a=>a.atomLabel),
             indices: protrusionData.convexHullFaces.flat(),
             opacity: 0.7,
-            edgePairs: edgePairs.flat(),
+            edgePairs: protrusionData.edgePairs.flat(),
         }).commit();       
 
-        // hide all the new visualizations at the initial
-        const model = this.plugin.managers.structure.hierarchy.current.structures[0].model!;
-        const reprList = model.genericRepresentations!
-        for(let i=0; i<reprList.length; i++ ){
-            PluginCommands.State.ToggleVisibility(this.plugin, 
-                { state: reprList[i].cell.parent!, ref: reprList[i].cell.transform.ref });
+        // hide all the new visualizations at the initial time
+        if(init){
+            this.protrusionInitFlag = true
+            const model = this.plugin.managers.structure.hierarchy.current.structures[0].model!;
+            const reprList = model.genericRepresentations!
+            for(let i=0; i<reprList.length; i++ ){
+                PluginCommands.State.ToggleVisibility(this.plugin, 
+                    { state: reprList[i].cell.parent!, ref: reprList[i].cell.transform.ref });
+            }
         }
-
-        this.protrusionInitFlag = true
     }
 
 
     async toggleProtrusion(reprRef: string){
         if(!this.protrusionInitFlag){
-            await this.initProtrusion();
+            const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
+            if (!data) return;
+            await this.initOrUpdateProtrusion(data);
         }
         const model = this.plugin.managers.structure.hierarchy.current.structures[0].model;
         if(!model) return 
@@ -531,7 +547,7 @@ export class MolStarWrapper {
         }).commit();   
     }
 
-    async changeOpacity(opacity:number) {
+    async changeOpacity(opacity:number) {        
         const oldParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.ConvexHull).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
             ...oldParams,
@@ -539,7 +555,42 @@ export class MolStarWrapper {
         }).commit();       
     }
     
-   
+    async reCalculate(){
+        const params = StructureComponentManager.getAddParams(this.plugin);
+        const values = ParamDefinition.getDefaultValues(params);
+        values.options.checkExisting = true; 
+        values.selection
+        // console.log(values)
+        // console.log(this.plugin.managers.structure.component.currentStructures)
+        // const str = this.plugin.managers.structure.hierarchy.current.structures;
+        
+        // let component: StateObjectRef | undefined = void 0;
+        // const componentKey = UUID.create22();
+
+        // component = await this.plugin.builders.structure.tryCreateComponentFromSelection(str[0].cell, values.selection, componentKey, {
+        //     // label: params.options.label || (values.selection === StructureSelectionQueries.current ? 'Custom Selection' : ''),
+        //     label: 'Custom Selection',
+        // });
+        // console.log(component)
+        // this.plugin.managers.structure.component.add(values, str);
+
+        const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
+        if (!data) return;
+        this.plugin.runTask(
+            Task.create('Query Component', async taskCtx => {
+                const struSel = await values.selection.getSelection(this.plugin, taskCtx, data)
+                if(!StructureSelection.isEmpty(struSel)) {                          
+                    // const caCbAtomArray = this.selectAtomicElement(StructureSelection.unionStructure(struSel), 
+                    //     {chains: 'ALL', residues: 'ALL' , atomNames: 'BOTH'} )
+                    // console.log('selected: ', caCbAtomArray )                   
+                    this.initOrUpdateProtrusion(StructureSelection.unionStructure(struSel), false)
+                } else{
+                    console.log('empty selection')
+                }
+            })
+        )
+
+    }
 
     private structure(assemblyId: string) {
         const model = this.state.build().to(StateElements.Model);
