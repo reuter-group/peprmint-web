@@ -294,15 +294,16 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     let checkedKeysValue = checkedKeys as { checked: Key[]; halfChecked: Key[]; }
 
     if(checkedKey === '0-0'){
-        
       if(checked){
-          await PluginWrapper.reCalculate();
+          await PluginWrapper.setCustomSelection();
+          if(PluginWrapper.isSelectionEmpty()) message.error("Current selection is empty.")
+          else await PluginWrapper.reCalculate();        
     //     if(!checkedKeysValue.checked.includes('0-0-0')){
     //         await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
     //         checkedKeysValue.checked.push('0-0-0');            
     //     }          
     //     setConvexHullKey(checkedKeysValue.checked)
-     }else{
+     }else{      
         await PluginWrapper.reCalculate(true);
      }
     //     if(checkedKeysValue.checked.includes('0-0-0')){

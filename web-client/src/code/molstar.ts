@@ -80,6 +80,7 @@ export class MolStarWrapper {
    
     private defaultSpec: PluginUISpec; 
     private protrusionInitFlag: boolean; 
+    private customSelection: StructureSelection | undefined;
     plugin: PluginUIContext;
     
     representationStyle: RepresentationStyle = {
@@ -571,7 +572,7 @@ export class MolStarWrapper {
     }
     
 
-     private async updateProtrusionData(data?:Structure){   
+     private async updateProtrusionData(data?:Structure){  
         let protrusionData : ProtrusionData;
         if(!data){
             if(!this.protrusionInitFlag)
@@ -627,36 +628,59 @@ export class MolStarWrapper {
     }
 
 
-    async reCalculate(useDefault=false){
+    isSelectionEmpty(){
+        return this.customSelection == undefined
+    }
+    
+    async setCustomSelection(){
         const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
         if (!data) return;
+        const params = StructureComponentManager.getAddParams(this.plugin);
+        const values = ParamDefinition.getDefaultValues(params);           
+        this.plugin.runTask(
+            Task.create('Query Component', async taskCtx => {
+                const struSel = await values.selection.getSelection(this.plugin, taskCtx, data)                    
+                if(!StructureSelection.isEmpty(struSel)) {   
+                    this.customSelection = struSel
+        } }))
+    }
 
-        if(useDefault){
-            this.updateProtrusionData()
-        }
-        else{
+    async reCalculate(useDefault=false){
+
+        if(useDefault){ // reset to default protrusion 
+            this.updateProtrusionData();
+             // show sequence
+             const str = this.plugin.managers.structure.hierarchy.current.structures;
+             PluginCommands.State.ToggleVisibility(this.plugin, 
+                { state: str[0].model?.cell.parent!, ref: StateElements.Sequence });
+
+            // remove user-selected component 
+            const componentGroups = this.plugin.managers.structure.hierarchy.currentComponentGroups;
+            const customSelection = componentGroups.map(g=>g[0]).filter(g => g.cell.obj!.label == 'Custom Selection')
+            this.plugin.managers.structure.hierarchy.remove(customSelection);
+            this.customSelection = undefined
+        } else{
             const params = StructureComponentManager.getAddParams(this.plugin);
-            const values = ParamDefinition.getDefaultValues(params);           
-            this.plugin.runTask(
-                Task.create('Query Component', async taskCtx => {
-                    const struSel = await values.selection.getSelection(this.plugin, taskCtx, data)
-                    if(!StructureSelection.isEmpty(struSel)) {                                                          
-                        this.updateProtrusionData(StructureSelection.unionStructure(struSel))
+            const values = ParamDefinition.getDefaultValues(params);   
+                  
+            // recalculate protrusion 
+            if(this.customSelection){
+                this.updateProtrusionData(StructureSelection.unionStructure(this.customSelection))
 
-                        // add new component to the state tree
-                        const str = this.plugin.managers.structure.hierarchy.current.structures;
-                        values.options.checkExisting = true; 
-                        values.representation = 'cartoon'                    
-                        this.plugin.managers.structure.component.add(values, str);
+                // add new component to the state tree
+                const str = this.plugin.managers.structure.hierarchy.current.structures;
+                values.options.checkExisting = true; 
+                values.representation =  'cartoon' 
+                // use default label: 'Custom Selection'                                          
+                this.plugin.managers.structure.component.add(values, str);
 
-                        // hide sequence
-                        PluginCommands.State.ToggleVisibility(this.plugin, 
-                            { state: str[0].model?.cell.parent!, ref: StateElements.Sequence });
-                    } else{
-                        console.log('empty selection')
-                    }
-                })
-            );
+                // hide sequence
+                PluginCommands.State.ToggleVisibility(this.plugin, 
+                    { state: str[0].model?.cell.parent!, ref: StateElements.Sequence });
+            
+            } else{
+                console.warn('empty selection')
+            }
         }
     }
 
