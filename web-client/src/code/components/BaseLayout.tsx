@@ -21,6 +21,8 @@ import UibLogo from '../../image/uib-logo.svg';
 function BaseLayout (){
     const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
     const [convexHullKey, setconvexHullKey] = useState<React.Key[]>([]);
+    const [recalculateKey, setRecalculateKey] = useState<React.Key[]>([]);
+
     // TODO: set slider value also controlled
         return (
             <Container fluid className="px-0 py-0">
@@ -45,9 +47,10 @@ function BaseLayout (){
 
                     <Row >
                         <Col className="col-4">
-                            <InputArea setCheckedKeys={setCheckedKeys}  setConvexHullKey={setconvexHullKey}/>   
+                            <InputArea setCheckedKeys={setCheckedKeys} setConvexHullKey={setconvexHullKey} setRecalculateKey={setRecalculateKey}/>   
                             <ControlArea checkedKeys ={checkedKeys} setCheckedKeys={setCheckedKeys} 
-                                         convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey} />                            
+                                         convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey} 
+                                         recalculateKey={recalculateKey} setRecalculateKey={setRecalculateKey} />                            
                         </Col>
                         <Col className="pt-4"> <div id="molstar-div" style={{ height: 650 }} /> </Col>
                     </Row>

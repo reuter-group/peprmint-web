@@ -9,9 +9,11 @@ import { useRef } from "react";
 
 import { ProtrusionVisualRef, validCathId, validPdbID } from '../helpers'
 import { Key } from "antd/lib/table/interface";
+import { IconButton } from "molstar/lib/mol-plugin-ui/controls/common";
+import { SelectionModeSvg } from 'molstar/lib/mol-plugin-ui/controls/icons'
 
 
-function InputArea({setCheckedKeys, setConvexHullKey} : any) {
+function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) {
   const colwidth = 3;
   const [selectedFile, setSelectedFile] = useState<File>();
   //** this React-bootstrap validation does not work well here **//
@@ -41,6 +43,7 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
     setErrorMessage(''); 
     setCheckedKeys([]) // clean all the keys
     setConvexHullKey([])
+    setRecalculateKey([])
 
     if(validPdbID(pdbId) || validCathId(pdbId)){
         PluginWrapper.load({
@@ -103,7 +106,7 @@ function InputArea({setCheckedKeys, setConvexHullKey} : any) {
 
 
 
-function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHullKey }: any) {
+function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHullKey, recalculateKey, setRecalculateKey}: any) {
  
   const treeDataProtrusion = [
     {
@@ -181,7 +184,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       selectable: false,
       // children: [ { 
       //   selectable: false, 
-      //   title: <Space> keep the whole structure </Space> ,
+      //   title: <Space> show the whole structure </Space> ,
       //   key: '0-0-0',
       //   },
       // ],
@@ -269,14 +272,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     }
   };
 
-//   useEffect ( () => {
-//     if(parentRef.current){
-//         let parentWidth = (parentRef.current! as HTMLDivElement).offsetWidth;
-//         setSliderWidth(`${parentWidth/2}px`)
-//         console.log('setSliderWidth', sliderWidth)
-//     }
-// }, [parentRef]);
-
   const onExpandConvexHull = (expandedKeys: React.Key[] , info: any) => {
     if(info.expanded){
       if(parentRef.current){
@@ -286,9 +281,10 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     }
   };
 
+  const emptySelectionErrorMsg = <span>Current selection is <b>empty</b>. <br/>
+          Click the icon <IconButton svg={SelectionModeSvg} onClick={()=>{}}/> on the viewer to start to select.</span>
 
-
-  const onCheckRecalculte = async (checkedKeys:any, info:any) => {
+  const onCheckRecalculate = async (checkedKeys:any, info:any) => {
     const checkedKey = info.node.key;
     const checked = info.checked 
     let checkedKeysValue = checkedKeys as { checked: Key[]; halfChecked: Key[]; }
@@ -296,8 +292,13 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     if(checkedKey === '0-0'){
       if(checked){
           await PluginWrapper.setCustomSelection();
-          if(PluginWrapper.isSelectionEmpty()) message.error("Current selection is empty.")
-          else await PluginWrapper.reCalculate();        
+          if(PluginWrapper.isSelectionEmpty()) {           
+              message.error(emptySelectionErrorMsg, 4)
+              setRecalculateKey([])
+          } else { 
+            await PluginWrapper.reCalculate();  
+            setRecalculateKey(checkedKeysValue.checked)      
+          }
     //     if(!checkedKeysValue.checked.includes('0-0-0')){
     //         await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
     //         checkedKeysValue.checked.push('0-0-0');            
@@ -305,6 +306,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     //     setConvexHullKey(checkedKeysValue.checked)
      }else{      
         await PluginWrapper.reCalculate(true);
+        setRecalculateKey([])
      }
     //     if(checkedKeysValue.checked.includes('0-0-0')){
     //       await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
@@ -351,9 +353,9 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       checkable
       defaultCheckedKeys={[]}
       checkStrictly={true}
-      onCheck={onCheckRecalculte}
+      onCheck={onCheckRecalculate}
       treeData={treeDataRecalculate}
-      // checkedKeys={convexHullKey}      
+      checkedKeys={recalculateKey}      
     />
 
      <Form.Text muted> 
