@@ -1,7 +1,7 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
 import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover } from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { PluginWrapper } from "../main"
 import { Slider, Tree } from "antd";
@@ -75,9 +75,11 @@ function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) 
 
         <Col className="px-0"> 
           <Form.Text muted> 
-              <Popover placement="topLeft" content={(<div>4-character id, data source: <a className="text-primary" href="https://www.ebi.ac.uk/pdbe/">PDBe</a> , e.g. 1rlw</div>)}>
-              PDB ID </Popover> or <Popover placement="topLeft" content={(<div>7-character id, data source: <a className="text-primary" href="https://www.cathdb.info/">CATH</a>, e.g. 2da0A00</div>)}> 
-              CATH ID </Popover>
+              PDB ID <Popover placement="topLeft" content={(<div>4-character id, data source: <a className="text-primary" href="https://www.ebi.ac.uk/pdbe/">PDBe</a> , e.g. 1rlw</div>)}>
+              <QuestionCircleOutlined /> </Popover> <br/>
+              or CATH ID <Popover placement="topLeft" content={(<div>7-character id, data source: <a className="text-primary" href="https://www.cathdb.info/">CATH</a>, e.g. 2da0A00</div>)}> 
+                <QuestionCircleOutlined /> 
+              </Popover>
           </Form.Text> 
         </Col>
       </Form.Group>
@@ -179,7 +181,8 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
 
   const treeDataRecalculate = [
     {
-      title: <div>Re-calculate for <Popover placement="topLeft" content={content}>my current selection </Popover> </div>,
+      title: <div>Re-calculate for my current selection 
+              <Popover placement="topLeft" content={content}> <QuestionCircleOutlined /> </Popover> </div>,
       key: '0-0',
       selectable: false,
       // children: [ { 
