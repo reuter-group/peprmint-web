@@ -177,7 +177,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
           the viewer to enable the <a onClick={e => e.stopPropagation()} className="text-primary"
           href="https://molstar.org/viewer-docs/making-selections/">selection mode</a>,
           then make a selection of your interested elements (residues, chains etc.), 
-          on which the new calculation will be performed.
+          where the new calculation will be performed.
     </div>
   );
 
@@ -186,13 +186,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       title: <div>Use my current selection
               <Popover placement="topLeft" content={selectionPopoverContent}> <QuestionCircleOutlined /> </Popover> </div>,
       key: '0-0',
-      selectable: false,
-      // children: [ { 
-      //   selectable: false, 
-      //   title: <Space> show the whole structure </Space> ,
-      //   key: '0-0-0',
-      //   },
-      // ],
+      selectable: false,    
     },
   ]
 
@@ -305,24 +299,10 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
             await PluginWrapper.reCalculate(); //  
             setRecalculateKey(checkedKeysValue.checked)      
           }
-    //     if(!checkedKeysValue.checked.includes('0-0-0')){
-    //         await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
-    //         checkedKeysValue.checked.push('0-0-0');            
-    //     }          
-    //     setConvexHullKey(checkedKeysValue.checked)
      }else{      
         await PluginWrapper.reCalculate(true);
         setRecalculateKey([])
-     }
-    //     if(checkedKeysValue.checked.includes('0-0-0')){
-    //       await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
-    //     }
-    //     setConvexHullKey(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0') )
-    //  }     
-    // }
-    // else if(checkedKey === '0-0-0'){
-    //     await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
-    //     setConvexHullKey(checkedKeysValue.checked)
+     }   
     }
   };
 

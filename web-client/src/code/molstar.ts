@@ -164,7 +164,8 @@ export class MolStarWrapper {
         await this.updateStyle(this.representationStyle);  // show the model
         // const model = this.getObj<PluginStateObject.Molecule.Model>('model');
         this.loadedParams = { pdbId, format, assemblyId };
-        this.protrusionInitFlag = false;  // reload 
+        this.protrusionInitFlag = false;  // reload
+        this.customSelection = undefined; 
     }
 
     
@@ -184,6 +185,7 @@ export class MolStarWrapper {
 
         // this.loadedParams = { pdbId: file.name, format, assemblyId };
         this.protrusionInitFlag = false;
+        this.customSelection = undefined;
     }
 
     private openFile(b: StateBuilder.To<PSO.Root>, file: File, isBinary: boolean){        

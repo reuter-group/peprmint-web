@@ -64,7 +64,7 @@ function getConvexHullMesh(data: ConvexHullData, props: ConvexHullProps, mesh?: 
         }
     }
     
-    console.log(`in getConvexHullMesh created ${data.indices.length/3} triangles, ${data.edgePairs.length/2} edges`)
+    // console.log(`in getConvexHullMesh created ${data.indices.length/3} triangles, ${data.edgePairs.length/2} edges`)
     return MeshBuilder.getMesh(state);
 }
 

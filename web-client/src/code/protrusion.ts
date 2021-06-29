@@ -55,8 +55,7 @@ function getSphereMesh(data: SphereData, props: SphereProps, mesh?: Mesh) {
             addCylinder(state, a, b, 1, { ...DefaultCylinderProps, radiusTop: 0.2, radiusBottom: 0.2 })
         }
     }
-
-    console.log(`in getSphereMesh created ${data.centers.length/3} spheres`)
+    // console.log(`in getSphereMesh created ${data.centers.length/3} spheres`)
     return MeshBuilder.getMesh(state);
 }
 
