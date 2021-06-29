@@ -172,17 +172,19 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     },
   ]
 
-  const content = (
-    <div> First enable the <a onClick={e => e.stopPropagation()} className="text-primary"
-            href="https://molstar.org/viewer-docs/making-selections/">selection mode</a>,
-          then make a selection 
+  const selectionPopoverContent = (
+    <div style={{ width: 300 }}> Click the icon <IconButton svg={SelectionModeSvg} onClick={()=>{}}/> on
+          the viewer to enable the <a onClick={e => e.stopPropagation()} className="text-primary"
+          href="https://molstar.org/viewer-docs/making-selections/">selection mode</a>,
+          then make a selection of your interested elements (residues, chains etc.), 
+          on which the new calculation will be performed.
     </div>
   );
 
   const treeDataRecalculate = [
     {
-      title: <div>Re-calculate for my current selection 
-              <Popover placement="topLeft" content={content}> <QuestionCircleOutlined /> </Popover> </div>,
+      title: <div>Use my current selection
+              <Popover placement="topLeft" content={selectionPopoverContent}> <QuestionCircleOutlined /> </Popover> </div>,
       key: '0-0',
       selectable: false,
       // children: [ { 
@@ -294,12 +296,13 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
 
     if(checkedKey === '0-0'){
       if(checked){
-          await PluginWrapper.setCustomSelection();
+          await PluginWrapper.setCustomSelection(); // add selected component if any
+
           if(PluginWrapper.isSelectionEmpty()) {           
               message.error(emptySelectionErrorMsg, 4)
               setRecalculateKey([])
           } else { 
-            await PluginWrapper.reCalculate();  
+            await PluginWrapper.reCalculate(); //  
             setRecalculateKey(checkedKeysValue.checked)      
           }
     //     if(!checkedKeysValue.checked.includes('0-0-0')){

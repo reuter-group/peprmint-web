@@ -572,58 +572,54 @@ export class MolStarWrapper {
     }
     
 
-     private async updateProtrusionData(data?:Structure){  
-        let protrusionData : ProtrusionData;
-        if(!data){
-            if(!this.protrusionInitFlag)
-                await this.initProtrusion()
-            protrusionData = this.defaultProtrusionData!
-        }else{ 
-            protrusionData =  this.calculateProtrusion(data);
-        }
+    private async updateProtrusionData(data?:Structure){  
+        if(!this.protrusionInitFlag)
+            await this.initProtrusion()
+        
+        const newProtrusionData = data? this.calculateProtrusion(data): this.defaultProtrusionData! ;
 
         // hydrophobic Ca, Cb
         const oldHydroCaCbParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.HydroCaCb).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroCaCb, CreateSphere, {
             ...oldHydroCaCbParams,
-            centers: protrusionData.hydroCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
-            centersLabel: protrusionData.hydroCaCbAtomInfoArray.map(a => a.atomLabel),
+            centers: newProtrusionData.hydroCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: newProtrusionData.hydroCaCbAtomInfoArray.map(a => a.atomLabel),
         }).commit();
 
         // normal Ca Cb
         const oldNormalCaCbParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.NormalCaCb).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalCaCb, CreateSphere, {
             ...oldNormalCaCbParams,            
-            centers:  protrusionData.normalCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
-            centersLabel: protrusionData.normalCaCbAtomInfoArray.map(a => a.atomLabel),           
+            centers:  newProtrusionData.normalCaCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: newProtrusionData.normalCaCbAtomInfoArray.map(a => a.atomLabel),           
         }).commit();
 
         // hydrophobe vertex: large, orange
         const oldHydroProtrusionParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.HydroProtrusion).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.HydroProtrusion, CreateSphere, {
             ...oldHydroProtrusionParams,
-            centers: protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
-            centersLabel: protrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.atomLabel),           
-            coinsertables: protrusionData.coinsertables.coordinates,
-            coinsertableLabel: protrusionData.coinsertables.labels 
+            centers: newProtrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: newProtrusionData.hydroProtrusionCbAtomInfoArray.map(a => a.atomLabel),           
+            coinsertables: newProtrusionData.coinsertables.coordinates,
+            coinsertableLabel: newProtrusionData.coinsertables.labels 
         }).commit();
 
         // normal vertex Cb: large, gray
         const oldNormalProtrusionParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.NormalProtrusion).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalProtrusion, CreateSphere, {
             ...oldNormalProtrusionParams,
-            centers: protrusionData.protrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
-            centersLabel: protrusionData.protrusionCbAtomInfoArray.map(a => a.atomLabel ),            
+            centers: newProtrusionData.protrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
+            centersLabel: newProtrusionData.protrusionCbAtomInfoArray.map(a => a.atomLabel ),            
         }).commit();
 
         // convex hull
         const oldConvexHullParams = this.getObj<PluginStateObject.Shape.Representation3D>(ProtrusionVisualRef.ConvexHull).sourceData as any;
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.ConvexHull, CreateConvexHull, {
             ...oldConvexHullParams,            
-            vertices: protrusionData.normalCaCbAtomInfoArray.map(a=>a.coordinate).flat(),  
-            verticesLabel: protrusionData.normalCaCbAtomInfoArray.map(a=>a.atomLabel),
-            indices: protrusionData.convexHullFaces.flat(),            
-            edgePairs: protrusionData.edgePairs.flat(),
+            vertices: newProtrusionData.normalCaCbAtomInfoArray.map(a=>a.coordinate).flat(),  
+            verticesLabel: newProtrusionData.normalCaCbAtomInfoArray.map(a=>a.atomLabel),
+            indices: newProtrusionData.convexHullFaces.flat(),            
+            edgePairs: newProtrusionData.edgePairs.flat(),
         }).commit();       
     }
 
@@ -646,7 +642,6 @@ export class MolStarWrapper {
     }
 
     async reCalculate(useDefault=false){
-
         if(useDefault){ // reset to default protrusion 
             this.updateProtrusionData();
              // show sequence
