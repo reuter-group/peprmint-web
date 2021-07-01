@@ -1,4 +1,6 @@
-[<img width="661" alt="image" src="https://user-images.githubusercontent.com/5687628/119658928-f8afab00-be2d-11eb-933e-61e8ae20b957.png">](https://reuter-group.github.io/peprmint-web.html)
+
+[<img width="600" alt="image" src="https://user-images.githubusercontent.com/5687628/124143879-c5df7f00-da8b-11eb-9add-2c3f20337dfa.png">](https://reuter-group.github.io/peprmint-web.html)
+
 
 ## Build:
 ```bash
@@ -16,9 +18,15 @@ npx webpack  # development mode, automatically re-compile for new file changes
  - [x] visualize edges for convex hull (and thus co-insertables), related to [#3](/../../issues/3)
  - [x] re-calculate for user selected sequence/chains, related to [#2](/../../issues/2)
  - [x] support download of domains from CATH, [#1](/../../issues/1)
- - [ ] Add a license
-
+ 
 ### V1.2
+- [ ] update logo, name (PePr^2Vis), and page layout
+- [ ] add neighborhood information
+- [ ] add license
+- [ ] migrate website URL (to affiliated institute domain) for formal release
+
+
+### Features TBD
 - [ ] export report/script for external use, e.g. in PyMol
 
 
