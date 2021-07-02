@@ -9,14 +9,21 @@ import Nav from 'react-bootstrap/Nav';
 import Image from 'react-bootstrap/Image';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 import Button from 'react-bootstrap/Button';
+import { Typography } from 'antd';
 
 import { InputArea, ControlArea } from "./PeprmintControl";
 import { References } from './Utils';
 
 import GithubLogo from '../../image/GitHub-64px.png';
-import LogoLarge from '../../image/logo_large.png';
+import PeprmintLogo from '../../image/peprmint_logo.svg';
+
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
+import { Breadcrumb } from "antd";
+import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
+
+
+const { Title } = Typography;
 
 function BaseLayout (){
     const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
@@ -26,23 +33,25 @@ function BaseLayout (){
     // TODO: set slider value also controlled
         return (
             <Container fluid className="px-0 py-0">
-                {/* <Header /> */}
-
+                <Header />
                 <Container >
-                    <Row className="justify-content-md-center mt-5"> 
-                        <Col className="col-7"> <Image src={LogoLarge} fluid/>  </Col>
+                    <Row className="mt-3 mb-4 px-3"> 
+                        <Breadcrumb>
+                            <Breadcrumb.Item href="#"> <span> <HomeOutlined className="align-middle" /> PePrMInt</span> </Breadcrumb.Item>
+                            <Breadcrumb.Item>  <span> <EyeOutlined className="align-middle"/> PePr<sup>2</sup>Vis</span> </Breadcrumb.Item>
+                        </Breadcrumb>
                     </Row>
 
-                    <Row className="justify-content-md-center mb-3"> 
-                        <Col className="col-7"> 
-                            <p className="font-weight-lighter h4"> Web-tool for calculating and visualizing 
-                                <span className="text-primary text-large"> hydrophobic protrusions </span>
-                            </p> 
+                    <Row className="mb-4"> 
+                        <Col className="col-auto"> 
+                            <h3 className=""> PePr<sup>2</sup>Vis: calculate and visualise 
+                                <span className="text-primary"> hydrophobic protrusions </span>
+                            </h3> 
                         </Col>
-                        <Col className="col-1"> 
+                        {/* <Col className="col-1"> 
                             <a href="https://github.com/reuter-group/peprmint-web" 
                                title="Source code repository">
-                            <Image src={GithubLogo} width={30}/> </a> </Col>
+                            <Image src={GithubLogo} width={30}/> </a> </Col> */}
                     </Row>
 
                     <Row >
@@ -65,35 +74,37 @@ function BaseLayout (){
     
 }
 
-// class Header extends Component {
-//     render() {
-//         return (
-//             <Container id="peprmint-header" fluid className="mb-2 mx-0 px-0 ">
-//                 <Navbar className="navbar-expand-md mx-0 pb-1 " bg="primary" variant="dark">
-//                     <Col className="col-1"></Col>
-//                     <Col className="col-2 ml-5 ">
-//                         <Navbar.Brand href="" className="py-0 my-0">
-//                             <p className="fs-1 py-0 my-0"> <img
-//                                 alt=""
-//                                 src={Logo}
-//                                 width="60"
-//                                 height="60"
-//                                 className="d-inline-block align-top"
-//                             />{' '}
-//                        PePrMInt</p>
-//                         </Navbar.Brand>
-//                     </Col>
-//                     {/* <Col className="col-auto">
-//                         <Nav className="mr-auto">
-//                             <Nav.Link href="#home">Home</Nav.Link>
-//                             <Nav.Link href="#about">About</Nav.Link>
-//                         </Nav>
-//                     </Col> */}
-//                 </Navbar>
-//             </Container>
-//         )
-//     }
-// }
+class Header extends Component {
+    render() {
+        return (
+            <Container id="peprmint-header" fluid className="mb-2 mx-0 px-0 ">
+                <Navbar className="navbar-expand-md mx-0 pb-1 border-bottom shadow-sm"                    
+                    // variant="dark"
+                    >
+                    <Col className="col-auto ml-5"> 
+                        <img alt="" src={PeprmintLogo} height="80" />
+                    </Col>
+                    <Col className="col-auto ">
+                        <Navbar.Brand href="" className="py-0 my-0">
+                            <h4 className="font-weight-lighter"> Resources for 
+                                <span className="text-primary font-weight-normal"> Pe</span>ripheral
+                                <span className="text-primary font-weight-normal"> Pr</span>otein-
+                                <span className="text-primary font-weight-normal">M</span>embrane 
+                                <span className="text-primary font-weight-normal"> Int</span>eractions 
+                            </h4>                                                               
+                        </Navbar.Brand>
+                    </Col>
+                    {/* <Col className="col-auto">
+                        <Nav className="mr-auto">
+                            <Nav.Link href="#home">Home</Nav.Link>
+                            <Nav.Link href="#about">About</Nav.Link>
+                        </Nav>
+                    </Col> */}
+                 </Navbar>
+             </Container>
+        )
+    }
+}
 
 
 
