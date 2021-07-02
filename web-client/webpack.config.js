@@ -72,7 +72,7 @@ module.exports = {
     },
 
     plugins: [
-        new HtmlWebPackPlugin({ template: "./src/index.html", filename: "./index.html" }),
+        new HtmlWebPackPlugin({ favicon: './src/image/favicon.svg', template: "./src/index.html", filename: "./index.html" }),
     ],
 
     performance: { hints: false },
