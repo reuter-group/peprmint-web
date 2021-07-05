@@ -15,7 +15,7 @@ import { InputArea, ControlArea } from "./PeprmintControl";
 import { References } from './Utils';
 
 import GithubLogo from '../../image/GitHub-64px.png';
-import PeprmintLogo from '../../image/peprmint_logo.svg';
+import PeprmintSmallLogo from '../../image/peprmint-headerlogo-color1.svg';
 
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
@@ -44,9 +44,7 @@ function BaseLayout (){
 
                     <Row className="mb-4"> 
                         <Col className="col-auto"> 
-                            <h3 className=""> PePr<sup>2</sup>Vis: calculate and visualise 
-                                <span className="text-primary"> hydrophobic protrusions </span>
-                            </h3> 
+                            <h2> PePr<sup>2</sup>Vis: Peripheral Protein Protrusion Visualisation </h2>                           
                         </Col>
                         {/* <Col className="col-1"> 
                             <a href="https://github.com/reuter-group/peprmint-web" 
@@ -74,24 +72,36 @@ function BaseLayout (){
     
 }
 
+const headerTheme1 =   // single mint color style 
+    <h5 className="font-weight-normal"> Resources for 
+        <span className="text-primary font-weight-bold"> Pe</span>ripheral
+        <span className="text-primary font-weight-bold"> Pr</span>otein-
+        <span className="text-primary font-weight-bold">M</span>embrane 
+        <span className="text-primary font-weight-bold"> Int</span>eractions 
+    </h5>     
+    
+
+const headerTheme2 = // multiple colors 
+    <h5 className="font-weight-normal"> Resources for 
+        <span className="font-weight-bold" style={{ color: "#1C75BB" }}> Pe</span>ripheral
+        <span className="text-primary font-weight-bold"> Pr</span>otein-
+        <span className="font-weight-bold" style={{ color:"orange" }}>M</span>embrane 
+        <span className="font-weight-bold" style={{ color:"gray" }}> Int</span>eractions 
+    </h5>     
+    
+    
+
 class Header extends Component {
     render() {
         return (
             <Container id="peprmint-header" fluid className="mb-2 mx-0 px-0 ">
-                <Navbar className="navbar-expand-md mx-0 pb-1 border-bottom shadow-sm"                    
-                    // variant="dark"
-                    >
+                <Navbar className="navbar-expand-md mx-0 pb-1 border-bottom shadow-sm" >
                     <Col className="col-auto ml-5"> 
-                        <img alt="" src={PeprmintLogo} height="80" />
+                        <img alt="" src={PeprmintSmallLogo} height="40" />
                     </Col>
-                    <Col className="col-auto ">
+                    <Col className="col-auto ml-1">
                         <Navbar.Brand href="" className="py-0 my-0">
-                            <h4 className="font-weight-lighter"> Resources for 
-                                <span className="text-primary font-weight-normal"> Pe</span>ripheral
-                                <span className="text-primary font-weight-normal"> Pr</span>otein-
-                                <span className="text-primary font-weight-normal">M</span>embrane 
-                                <span className="text-primary font-weight-normal"> Int</span>eractions 
-                            </h4>                                                               
+                            { headerTheme1 }
                         </Navbar.Brand>
                     </Col>
                     {/* <Col className="col-auto">
@@ -134,16 +144,16 @@ class Footer extends Component {
 
     render() {
         return (
-            <Container className="footer border-top">
+            <Container className="footer border-top bg-light" fluid>
                 <Navbar >
                     <Col className="col-3" >
                         <Nav className="flex-column">
-                            <Nav.Item> PePrMInt-web</Nav.Item>
+                            <Nav.Item> PePrMInt website</Nav.Item>
                             <Nav.Link className="py-0 font-weight-light" href="https://github.com/reuter-group/peprmint-web"> Version 1.1 </Nav.Link> 
                             <Nav.Link className="py-0 font-weight-light" href="http://www.cbu.uib.no/reuter/"> &copy; 2021 Reuter Lab </Nav.Link> 
                         </Nav>
                     </Col>
-                    <Col className="col-4">
+                    <Col className="col-3">
                         <Nav className="flex-column" >
                             <Nav.Item> Contacts </Nav.Item>
                             <Nav.Link className="py-0 font-weight-light" href="mailto:dandan.xue@uib.no" title="Send an email to this contact"> Dandan Xue, engineer  </Nav.Link> 
@@ -153,7 +163,7 @@ class Footer extends Component {
 
                     <Col className="col-3 text-center"> <a href="http://www.cbu.uib.no/">
                         <Image src={CbuLogo} width={110} /> </a> </Col>
-                    <Col className="col-2"> <a href="https://www.uib.no/en"> <Image src={UibLogo} width={80} /> </a> </Col>                    
+                    <Col className="col-3 text-center"> <a href="https://www.uib.no/en"> <Image src={UibLogo} width={80} /> </a> </Col>                    
                 </Navbar>
                 <br />
             </Container>
