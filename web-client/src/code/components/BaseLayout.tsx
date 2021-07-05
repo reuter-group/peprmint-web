@@ -1,6 +1,5 @@
-import React, { Component, useRef, useState } from "react";
+import React, { Component } from "react";
 import * as ReactDOM from "react-dom";
-
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
@@ -9,68 +8,21 @@ import Nav from 'react-bootstrap/Nav';
 import Image from 'react-bootstrap/Image';
 import Jumbotron from 'react-bootstrap/Jumbotron';
 import Button from 'react-bootstrap/Button';
-import { Typography } from 'antd';
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 
-import { InputArea, ControlArea } from "./PeprmintControl";
-import { References } from './Utils';
+import { Breadcrumb, Card, PageHeader, Typography } from "antd";
+import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
 
 import GithubLogo from '../../image/GitHub-64px.png';
 import PeprmintSmallLogo from '../../image/peprmint-headerlogo-color1.svg';
+import PeprmintLogo from '../../image/peprmint_logo.svg';
 
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
-import { Breadcrumb } from "antd";
-import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
+import { Pepr2vis } from "./Pepr2vis";
 
 
 const { Title } = Typography;
-
-function BaseLayout (){
-    const [checkedKeys, setCheckedKeys] = useState<React.Key[]>([]);
-    const [convexHullKey, setconvexHullKey] = useState<React.Key[]>([]);
-    const [recalculateKey, setRecalculateKey] = useState<React.Key[]>([]);
-
-    // TODO: set slider value also controlled
-        return (
-            <Container fluid className="px-0 py-0">
-                <Header />
-                <Container >
-                    <Row className="mt-3 mb-4 px-3"> 
-                        <Breadcrumb>
-                            <Breadcrumb.Item href="#"> <span> <HomeOutlined className="align-middle" /> PePrMInt</span> </Breadcrumb.Item>
-                            <Breadcrumb.Item>  <span> <EyeOutlined className="align-middle"/> PePr<sup>2</sup>Vis</span> </Breadcrumb.Item>
-                        </Breadcrumb>
-                    </Row>
-
-                    <Row className="mb-4"> 
-                        <Col className="col-auto"> 
-                            <h2> PePr<sup>2</sup>Vis: Peripheral Protein Protrusion Visualisation </h2>                           
-                        </Col>
-                        {/* <Col className="col-1"> 
-                            <a href="https://github.com/reuter-group/peprmint-web" 
-                               title="Source code repository">
-                            <Image src={GithubLogo} width={30}/> </a> </Col> */}
-                    </Row>
-
-                    <Row >
-                        <Col className="col-4">
-                            <InputArea setCheckedKeys={setCheckedKeys} setConvexHullKey={setconvexHullKey} setRecalculateKey={setRecalculateKey}/>   
-                            <ControlArea checkedKeys ={checkedKeys} setCheckedKeys={setCheckedKeys} 
-                                         convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey} 
-                                         recalculateKey={recalculateKey} setRecalculateKey={setRecalculateKey} />                            
-                        </Col>
-                        <Col className="pt-4"> <div id="molstar-div" style={{ height: 650 }} /> </Col>
-                    </Row>
-                </Container>
-
-                <References />
-
-                <Footer />
-            </Container>
-
-        );
-    
-}
 
 const headerTheme1 =   // single mint color style 
     <h5 className="font-weight-normal"> Resources for 
@@ -97,7 +49,7 @@ class Header extends Component {
             <Container id="peprmint-header" fluid className="mb-2 mx-0 px-0 ">
                 <Navbar className="navbar-expand-md mx-0 pb-1 border-bottom shadow-sm" >
                     <Col className="col-auto ml-5"> 
-                        <img alt="" src={PeprmintSmallLogo} height="40" />
+                        <Link to="/"><img alt="" src={PeprmintSmallLogo} height="40" /> </Link>
                     </Col>
                     <Col className="col-auto ml-1">
                         <Navbar.Brand href="" className="py-0 my-0">
@@ -115,7 +67,6 @@ class Header extends Component {
         )
     }
 }
-
 
 
 class Descrption extends Component {
@@ -139,6 +90,8 @@ class Descrption extends Component {
         )
     }
 }
+
+
 
 class Footer extends Component {
 
@@ -173,7 +126,52 @@ class Footer extends Component {
     }
 }
 
+
+function Home(){
+    return (
+    <Container>
+        <Row className="justify-content-md-center"> 
+            <Col className="col-5">
+                <Card title="PePr2Vis"  hoverable 
+                cover = {<Link to="/pepr2vis"><img src={PeprmintLogo} width={"300"}/> </Link>}>
+                <p>Card content</p>
+                </Card>
+            </Col>
+            
+            <Col className="col-5">
+                <Card title="PePr2Vis"  hoverable 
+                cover = {<Link to="/pepr2vis"><img src={PeprmintLogo} width={"300"}/> </Link>}>
+                <p>Card content</p>
+                </Card>
+            </Col>
+        </Row>
+    </Container>
+    )
+}
+
+
+
+export default function App(){
+    return (
+        <Router>
+            <Container fluid className="px-0 py-0">
+                <Header /> 
+
+                {/* body */}
+                <Container fluid className="px-0 py-0">                      
+                    <Switch>
+                        <Route exact path="/pepr2vis"> <Pepr2vis /> </Route>                   
+                        <Route exact path="/"> <Home /> </Route>
+                    </Switch>      
+                </Container>
+
+                <Footer />
+            </Container>
+        </Router>
+      );
+}
+
 export function layoutInit(id:string){
-    ReactDOM.render(<BaseLayout />, document.getElementById(id));
+    ReactDOM.render(<App />, document.getElementById(id));
 }
 // # export default BaseLayout;

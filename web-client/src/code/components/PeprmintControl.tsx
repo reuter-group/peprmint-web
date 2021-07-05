@@ -3,7 +3,7 @@ import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-boo
 import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover } from "antd";
 import { QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
-import { PluginWrapper } from "../main"
+import { PluginWrapper } from "./Pepr2vis"
 import { Slider, Tree } from "antd";
 import { useRef } from "react";
 

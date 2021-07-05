@@ -12,12 +12,16 @@ import "../css/main.css";
 
 layoutInit('root');
 
-export const PluginWrapper = new MolStarWrapper();
+// export const PluginWrapper = new MolStarWrapper();
 
-PluginWrapper.init('molstar-div');
+// const molstarId = 'molstar-div';
+// if(document.getElementById(molstarId)){
 
-PluginWrapper.load({
-    pdbId: '1rlw', 
-    // format: 'pdb', 
-    // isBinary: false, 
-});
+//     PluginWrapper.init(molstarId);
+
+//     PluginWrapper.load({
+//         pdbId: '1rlw', 
+//         // format: 'pdb', 
+//         // isBinary: false, 
+//     });
+// }
