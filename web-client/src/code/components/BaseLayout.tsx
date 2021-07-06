@@ -6,12 +6,10 @@ import Col from 'react-bootstrap/Col';
 import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav';
 import Image from 'react-bootstrap/Image';
-import Jumbotron from 'react-bootstrap/Jumbotron';
 import Button from 'react-bootstrap/Button';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 
-import { Breadcrumb, Card, PageHeader, Typography } from "antd";
-import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
+import { Card, Space, Typography } from "antd";
 
 import GithubLogo from '../../image/GitHub-64px.png';
 import PeprmintSmallLogo from '../../image/peprmint-headerlogo-color1.svg';
@@ -20,6 +18,8 @@ import PeprmintLogo from '../../image/peprmint_logo.svg';
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
 import { Pepr2vis } from "./Pepr2vis";
+import { ModuleCard } from "./Utils";
+import { Footer } from "react-bootstrap/lib/Panel";
 
 
 const { Title } = Typography;
@@ -40,7 +40,6 @@ const headerTheme2 = // multiple colors
         <span className="font-weight-bold" style={{ color:"orange" }}>M</span>embrane 
         <span className="font-weight-bold" style={{ color:"gray" }}> Int</span>eractions 
     </h5>     
-    
     
 
 class Header extends Component {
@@ -69,35 +68,11 @@ class Header extends Component {
 }
 
 
-class Descrption extends Component {
-    // get xx() {
-    //     return "xx";
-    // };
-
+class PeprmintFooter extends Component {
     render() {
-        return (
-            <Jumbotron fluid className="pt-3 pb-1 mb-2 bg-light">
-                <Container>
-                    <h4>
-                        Web server for  calculating and visualising 
-                        <a className="text-primary" href="xxx"> hydrophobic protrusions </a>
-                    </h4>
-                    <p className="mt-4">
-                        <Button variant="outline-primary">Learn more</Button>
-                    </p>
-                </Container>
-            </Jumbotron>
-        )
-    }
-}
-
-
-
-class Footer extends Component {
-
-    render() {
-        return (
-            <Container className="footer border-top bg-light" fluid>
+        return (          
+            <Container>    
+                <br/>          
                 <Navbar >
                     <Col className="col-3" >
                         <Nav className="flex-column">
@@ -106,7 +81,7 @@ class Footer extends Component {
                             <Nav.Link className="py-0 font-weight-light" href="http://www.cbu.uib.no/reuter/"> &copy; 2021 Reuter Lab </Nav.Link> 
                         </Nav>
                     </Col>
-                    <Col className="col-3">
+                    <Col className="col-4">
                         <Nav className="flex-column" >
                             <Nav.Item> Contacts </Nav.Item>
                             <Nav.Link className="py-0 font-weight-light" href="mailto:dandan.xue@uib.no" title="Send an email to this contact"> Dandan Xue, engineer  </Nav.Link> 
@@ -114,14 +89,12 @@ class Footer extends Component {
                         </Nav>
                     </Col>
 
-                    <Col className="col-3 text-center"> <a href="http://www.cbu.uib.no/">
+                    <Col className="col-2 text-center"> <a href="http://www.cbu.uib.no/">
                         <Image src={CbuLogo} width={110} /> </a> </Col>
                     <Col className="col-3 text-center"> <a href="https://www.uib.no/en"> <Image src={UibLogo} width={80} /> </a> </Col>                    
                 </Navbar>
                 <br />
-            </Container>
-
-
+            </Container>       
         )
     }
 }
@@ -129,26 +102,18 @@ class Footer extends Component {
 
 function Home(){
     return (
-    <Container>
+    <Container >        
         <Row className="justify-content-md-center"> 
-            <Col className="col-5">
-                <Card title="PePr2Vis"  hoverable 
-                cover = {<Link to="/pepr2vis"><img src={PeprmintLogo} width={"300"}/> </Link>}>
-                <p>Card content</p>
-                </Card>
-            </Col>
+            <ModuleCard title = { <span>PePr<sup>2</sup>Vis</span> }  link={"/pepr2vis"} imgSrc={PeprmintLogo} 
+                cardSubtitle={"Peripheral protein protrusion visualisation"}/>
             
-            <Col className="col-5">
-                <Card title="PePr2Vis"  hoverable 
-                cover = {<Link to="/pepr2vis"><img src={PeprmintLogo} width={"300"}/> </Link>}>
-                <p>Card content</p>
-                </Card>
-            </Col>
+            <ModuleCard title = { <span>PePr<sup>2</sup>Vis</span> }  link={"/pepr2vis"} imgSrc={PeprmintLogo} 
+                cardSubtitle = { "something" }/>                        
         </Row>
+        {/* <Row className="border" style={{ height: 100 }}></Row> */}
     </Container>
     )
 }
-
 
 
 export default function App(){
@@ -157,21 +122,20 @@ export default function App(){
             <Container fluid className="px-0 py-0">
                 <Header /> 
 
-                {/* body */}
+                {/* content */}
                 <Container fluid className="px-0 py-0">                      
                     <Switch>
                         <Route exact path="/pepr2vis"> <Pepr2vis /> </Route>                   
                         <Route exact path="/"> <Home /> </Route>
                     </Switch>      
-                </Container>
-
-                <Footer />
+                </Container>               
             </Container>
         </Router>
       );
 }
 
-export function layoutInit(id:string){
+export function layoutInit(id:string, footerId:string){
     ReactDOM.render(<App />, document.getElementById(id));
+    ReactDOM.render(<PeprmintFooter />, document.getElementById(footerId));
 }
 // # export default BaseLayout;

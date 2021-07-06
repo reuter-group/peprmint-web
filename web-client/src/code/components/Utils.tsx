@@ -1,9 +1,13 @@
 import React, { Component } from "react";
 import Container from 'react-bootstrap/Container';
+import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
+import { Breadcrumb, Card } from "antd";
 
 import { message, Upload, Button as AntdButton } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { UploadFile } from "antd/lib/upload/interface";
+import { Col, Row } from "react-bootstrap";
+import { Link } from "react-router-dom";
 
 
 // class PeprmintUpload extends React.Component {
@@ -59,6 +63,59 @@ import { UploadFile } from "antd/lib/upload/interface";
 //         );
 //     }
 // }
+
+const { Meta } = Card;
+
+export function ModuleCard(props: {title:React.ReactNode, link:string, imgSrc:string, 
+     cardSubtitle?: React.ReactNode, cardContent?:React.ReactNode}){
+
+    const cover = <img className="mx-4 my-4" src={props.imgSrc} width="60%" ></img> 
+                
+    return (
+        <Col className="col-5 my-3"> 
+            <Link to={props.link}> 
+                <Card hoverable cover = {cover} > 
+                <Meta title={props.title} description={props.cardSubtitle} />
+                {props.cardContent} 
+                </Card>
+            </Link>
+        </Col>
+    )
+}
+
+export const enum PageHeaders {
+    Home, Pepr2vis,
+}
+
+export function PageHeader( props: {headerList: PageHeaders[], title:React.ReactNode, subtitle:React.ReactNode} ){
+    if(props.headerList.length == 0) return (<></>)
+
+    const homeHeader = props.headerList[0] == PageHeaders.Home 
+        ? <Breadcrumb.Item> <span> <Link className="text-primary" to="/">
+            <HomeOutlined className="align-middle" /> PePrMInt </Link></span> 
+          </Breadcrumb.Item>
+        : <></>;
+
+    const pepr2visHeader = <Breadcrumb.Item> <span> <EyeOutlined className="align-middle"/> PePr<sup>2</sup>Vis</span> </Breadcrumb.Item>;
+
+    const childHeader = props.headerList.length > 1 && props.headerList[1] == PageHeaders.Pepr2vis
+        ? pepr2visHeader 
+        : <> </> ;
+
+    return(<>
+        <Row className="mt-3 mb-4 px-3"> 
+            <Breadcrumb>
+                { homeHeader }
+                { childHeader }
+            </Breadcrumb>
+        </Row>
+
+        <Row className="mb-4 px-3"> 
+            <h2> {props.title} <span className="text-muted font-weight-light"> {props.subtitle} </span> </h2>
+        </Row> 
+        </>
+    )
+}
 
 
 

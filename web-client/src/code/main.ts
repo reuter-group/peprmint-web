@@ -10,7 +10,7 @@ import "../css/peprmint-theme.scss"
 import "../css/main.css";
 
 
-layoutInit('root');
+layoutInit('root', 'footer');
 
 // export const PluginWrapper = new MolStarWrapper();
 
