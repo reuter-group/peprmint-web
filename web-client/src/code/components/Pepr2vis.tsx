@@ -1,5 +1,3 @@
-import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
-import { Breadcrumb } from "antd";
 import React, { useEffect, useState } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
@@ -53,9 +51,3 @@ export function Pepr2vis (){
         </Container>
     );   
 }
-
- {/* <Col className="col-1"> 
-                    <a href="https://github.com/reuter-group/peprmint-web" 
-                        title="Source code repository">
-                    <Image src={GithubLogo} width={30}/> </a> </Col> */}
-

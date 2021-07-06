@@ -10,7 +10,6 @@ import Button from 'react-bootstrap/Button';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
 import { Card, Space, Typography } from "antd";
 
-import GithubLogo from '../../image/GitHub-64px.png';
 import PeprmintSmallLogo from '../../image/peprmint-headerlogo-color1.svg';
 
 import CbuLogo from '../../image/cbu-logo.svg';
@@ -21,14 +20,16 @@ import { Home } from "./Home";
 
 const { Title } = Typography;
 
-const headerTheme1 =   // single mint color style 
+export function HeaderTheme1() {   // single mint color style 
+    return(
     <h5 className="font-weight-normal"> Resources for 
         <span className="text-primary font-weight-bold"> Pe</span>ripheral
         <span className="text-primary font-weight-bold"> Pr</span>otein-
         <span className="text-primary font-weight-bold">M</span>embrane 
         <span className="text-primary font-weight-bold"> Int</span>eractions 
-    </h5>     
-    
+    </h5>  
+    )   
+}
 
 const headerTheme2 = // multiple colors 
     <h5 className="font-weight-normal"> Resources for 
@@ -49,7 +50,7 @@ class Header extends Component {
                     </Col>
                     <Col className="col-auto ml-1">
                         <Navbar.Brand href="" className="py-0 my-0">
-                            { headerTheme1 }
+                            <HeaderTheme1 />
                         </Navbar.Brand>
                     </Col>
                     {/* <Col className="col-auto">
@@ -101,15 +102,10 @@ export default function App(){
     return (
         <Router>
             <Container fluid className="px-0 py-0">
-                <Header /> 
-
-                {/* content */}
-                <Container fluid className="px-0 py-0">                      
-                    <Switch>
-                        <Route exact path="/pepr2vis"> <Pepr2vis /> </Route>                   
-                        <Route exact path="/"> <Home /> </Route>
-                    </Switch>      
-                </Container>               
+                <Switch>
+                    <Route exact path="/pepr2vis">  <Header />  <Pepr2vis /> </Route>                   
+                    <Route exact path="/"> <Home /> </Route>
+                </Switch>      
             </Container>
         </Router>
       );
