@@ -69,12 +69,12 @@ const { Meta } = Card;
 export function ModuleCard(props: {title:React.ReactNode, link:string, imgSrc:string, 
      cardSubtitle?: React.ReactNode, cardContent?:React.ReactNode}){
 
-    const cover = <img className="mx-4 my-4" src={props.imgSrc} width="60%" ></img> 
+    const cover = <span className="border-bottom"> <img className="mx-3 my-3" src={props.imgSrc} width="90%" height="270"></img> </span>;
                 
     return (
         <Col className="col-5 my-3"> 
             <Link to={props.link}> 
-                <Card hoverable cover = {cover} > 
+                <Card hoverable cover = {cover} className="shadow" > 
                 <Meta title={props.title} description={props.cardSubtitle} />
                 {props.cardContent} 
                 </Card>

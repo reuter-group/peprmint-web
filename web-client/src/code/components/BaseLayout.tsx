@@ -8,18 +8,15 @@ import Nav from 'react-bootstrap/Nav';
 import Image from 'react-bootstrap/Image';
 import Button from 'react-bootstrap/Button';
 import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom"
-
 import { Card, Space, Typography } from "antd";
 
 import GithubLogo from '../../image/GitHub-64px.png';
 import PeprmintSmallLogo from '../../image/peprmint-headerlogo-color1.svg';
-import PeprmintLogo from '../../image/peprmint_logo.svg';
 
 import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
 import { Pepr2vis } from "./Pepr2vis";
-import { ModuleCard } from "./Utils";
-import { Footer } from "react-bootstrap/lib/Panel";
+import { Home } from "./Home";
 
 
 const { Title } = Typography;
@@ -97,22 +94,6 @@ class PeprmintFooter extends Component {
             </Container>       
         )
     }
-}
-
-
-function Home(){
-    return (
-    <Container >        
-        <Row className="justify-content-md-center"> 
-            <ModuleCard title = { <span>PePr<sup>2</sup>Vis</span> }  link={"/pepr2vis"} imgSrc={PeprmintLogo} 
-                cardSubtitle={"Peripheral protein protrusion visualisation"}/>
-            
-            <ModuleCard title = { <span>PePr<sup>2</sup>Vis</span> }  link={"/pepr2vis"} imgSrc={PeprmintLogo} 
-                cardSubtitle = { "something" }/>                        
-        </Row>
-        {/* <Row className="border" style={{ height: 100 }}></Row> */}
-    </Container>
-    )
 }
 
 

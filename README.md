@@ -20,7 +20,7 @@ npx webpack  # development mode, automatically re-compile for new file changes
  - [x] support download of domains from CATH, [#1](/../../issues/1)
  
 ### V1.2
-- [ ] update logo, name (PePr^2Vis), and page layout
+- [x] update logo, name (PePr^2Vis), and page layout
 - [ ] add neighborhood information
 - [ ] add license
 - [ ] migrate website URL (to affiliated institute domain) for formal release
