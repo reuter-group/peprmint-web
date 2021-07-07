@@ -34,7 +34,7 @@ class Descrption extends Component {
 
                 <Row className="justify-content-md-center mb-3"> 
                     <Space size="large"> 
-                        <Button variant="outline-primary">Learn more</Button>
+                        <Button className="text-white">Learn more</Button>
                         <span> 
                             <a href="https://github.com/reuter-group/peprmint-web" 
                                 title="Source code repository">

@@ -3,6 +3,13 @@ const path = require('path');
 
 module.exports = {
     entry: "./src/code/main.ts",
+    output: {
+        filename: 'main.js',
+        path: path.resolve(__dirname, 'dist'),
+        clean: true,
+        publicPath: '/peprmint',
+      },
+
     mode: "development",
     resolve: {
         modules: [
@@ -66,7 +73,7 @@ module.exports = {
                 use: {
                     loader: 'file-loader',
                     options: {
-                        name: './image/[name]_[hash:7].[ext]',
+                        name: '/image/[name]_[hash:7].[ext]',
                     }
                 }
             }
@@ -77,6 +84,7 @@ module.exports = {
 
     plugins: [
         new HtmlWebPackPlugin({ favicon: './src/image/favicon.svg', template: "./src/index.html", filename: "./index.html" }),
+        new HtmlWebPackPlugin({ template: "./src/index.html", filename: "./pepr2vis/index.html" }),
     ],
 
     performance: { hints: false },

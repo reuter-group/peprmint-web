@@ -15,7 +15,7 @@ export function Pepr2vis (){
     const [recalculateKey, setRecalculateKey] = useState<React.Key[]>([]);
 
     useEffect ( () => {
-        console.log('running useEffect ')
+        // console.log('running useEffect ')
         PluginWrapper = new MolStarWrapper();
         PluginWrapper.init(molstarId);
         PluginWrapper.load({
