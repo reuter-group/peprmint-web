@@ -4,7 +4,6 @@ import { Mesh } from "molstar/lib/mol-geo/geometry/mesh/mesh";
 import { MeshBuilder } from "molstar/lib/mol-geo/geometry/mesh/mesh-builder";
 import { Vec3 } from "molstar/lib/mol-math/linear-algebra";
 import { Shape } from "molstar/lib/mol-model/shape";
-import { spheres } from "molstar/lib/mol-model/structure/query/queries/internal";
 import { PluginStateObject } from "molstar/lib/mol-plugin-state/objects";
 import { PluginContext } from "molstar/lib/mol-plugin/context";
 import { Representation, RepresentationContext, RepresentationParamsGetter } from "molstar/lib/mol-repr/representation";
