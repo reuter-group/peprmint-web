@@ -100,7 +100,7 @@ class PeprmintFooter extends Component {
 
 export default function App(){
     return (
-        <Router basename="/peprmint">
+        <Router>
             <Container fluid className="px-0 py-0">
                 <Switch>
                     <Route exact path="/pepr2vis">  <Header />  <Pepr2vis /> </Route>                   

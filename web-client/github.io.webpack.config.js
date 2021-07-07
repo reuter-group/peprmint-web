@@ -1,3 +1,5 @@
+/** This config is only for building and deploying the pages on GitHub.io **/
+
 const HtmlWebPackPlugin = require("html-webpack-plugin");
 const path = require('path');
 
@@ -7,10 +9,10 @@ module.exports = {
         filename: 'main.js',
         path: path.resolve(__dirname, 'dist'),
         clean: true,
-        // publicPath: '/peprmint',
+        publicPath: '/peprmint',
       },
 
-    mode: "development",
+    mode: "production",
     resolve: {
         modules: [
             path.join(__dirname, 'node_modules')
@@ -73,7 +75,7 @@ module.exports = {
                 use: {
                     loader: 'file-loader',
                     options: {
-                        name: 'image/[name]_[hash:7].[ext]',
+                        name: '/image/[name]_[hash:7].[ext]',
                     }
                 }
             }
