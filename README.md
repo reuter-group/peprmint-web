@@ -6,7 +6,11 @@
 ```bash
 cd web-client/ 
 npm install  # only needed for the first time
-npx webpack  # development mode, automatically re-compile for new file changes
+
+## local usage: 
+npx webpack serve  # development mode, automatically re-compile for new file changes
+# then page should be available at 
+## http://localhost:8080
 ```
 
 ## Development plan:

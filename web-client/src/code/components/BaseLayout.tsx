@@ -75,7 +75,7 @@ class PeprmintFooter extends Component {
                     <Col className="col-3" >
                         <Nav className="flex-column">
                             <Nav.Item> PePrMInt website</Nav.Item>
-                            <Nav.Link className="py-0 font-weight-light" href="https://github.com/reuter-group/peprmint-web"> Version 1.1 </Nav.Link> 
+                            <Nav.Link className="py-0 font-weight-light" href="https://github.com/reuter-group/peprmint-web"> Version 1.1.1 </Nav.Link> 
                             <Nav.Link className="py-0 font-weight-light" href="http://www.cbu.uib.no/reuter/"> &copy; 2021 Reuter Lab </Nav.Link> 
                         </Nav>
                     </Col>
@@ -115,4 +115,3 @@ export function layoutInit(id:string, footerId:string){
     ReactDOM.render(<App />, document.getElementById(id));
     ReactDOM.render(<PeprmintFooter />, document.getElementById(footerId));
 }
-// # export default BaseLayout;
