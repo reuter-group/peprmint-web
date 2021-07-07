@@ -1,5 +1,5 @@
 
-[<img width="600" alt="image" src="https://user-images.githubusercontent.com/5687628/124143879-c5df7f00-da8b-11eb-9add-2c3f20337dfa.png">](https://reuter-group.github.io/peprmint-web.html)
+[<img width="600" alt="image" src="https://user-images.githubusercontent.com/5687628/124143879-c5df7f00-da8b-11eb-9add-2c3f20337dfa.png">](https://reuter-group.github.io/peprmint)
 
 
 ## Build:
