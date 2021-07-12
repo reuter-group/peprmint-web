@@ -6,7 +6,7 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import { ModuleCard } from "./Utils";
 import PeprmintLogo from '../../image/peprmint_logo.svg';
-import Pepr2visPic from '../../image/Convexhull_membrane.png';
+import Pepr2visPic from '../../image/convull_membrane_1-1.png';
 import { Button, Jumbotron } from "react-bootstrap";
 import { Space } from "antd";
 import GithubLogo from '../../image/GitHub-64px.png';

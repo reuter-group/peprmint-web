@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import Container from 'react-bootstrap/Container';
 import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
-import { Breadcrumb, Card } from "antd";
+import { Breadcrumb, Card, Image } from "antd";
 
 import { message, Upload, Button as AntdButton } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
@@ -69,7 +69,7 @@ const { Meta } = Card;
 export function ModuleCard(props: {title:React.ReactNode, link:string, imgSrc:string, 
      cardSubtitle?: React.ReactNode, cardContent?:React.ReactNode}){
 
-    const cover = <span className="border-bottom"> <img className="mx-3 my-3" src={props.imgSrc} width="90%" height="270"></img> </span>;
+    const cover = <span className="border-bottom border-primary"> <Image src={props.imgSrc} className="my-3" preview={false}/> </span>;
                 
     return (
         <Col className="col-5 my-3"> 
