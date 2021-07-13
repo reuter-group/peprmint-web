@@ -13,6 +13,7 @@ html{
 
 body{
    margin-bottom: 180px;
+   position: static !important;  /* for fixing footer display issue when molstar is expended */
    /* height: 100%; */
    /* //    min-height: 75rem; */
    /* padding-top: 90px; for fixing the top  */

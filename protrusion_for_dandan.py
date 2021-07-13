@@ -165,7 +165,9 @@ def calc_protrusions_on_group(
 ppdb = PandasPdb().read_pdb('test_data/pdb1rlw.ent')
 ppdbdf = ppdb.df['ATOM']
 output = calc_protrusions_on_group(ppdbdf)
-print(output.head())
+
+# check all protrusion residues
+print(output.query("protrusion == 1").head(100).to_csv('pdb1rlw.head100.csv'))
 
 # protrusions = output.query("protrusion == 1")
 # print(list(protrusions["atom_number"])) 
