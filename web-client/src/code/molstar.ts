@@ -408,15 +408,21 @@ export class MolStarWrapper {
        
         vertexIndices.forEach(i => {
             if(cbIndices.includes(caCbAtomArray[i].id)){ // find a Cb vertex
-                let neiborCount = 0;
+                let neighborCount = 0;
+                let neighborLabels = new Set<string>();
                 for(let j=0; j< caCbAtomArray.length; j++){
-                    if(i != j && pointDistance(caCbAtomArray[i].coordinate, caCbAtomArray[j].coordinate) < DISTANCE_CUTOFF )
-                        neiborCount += 1;
+                    if(i != j && pointDistance(caCbAtomArray[i].coordinate, caCbAtomArray[j].coordinate) < DISTANCE_CUTOFF ){
+                        neighborCount += 1;
+                        neighborLabels.add(caCbAtomArray[j].atomLabel.split('|')[4] );
+                    }
                 }
-                if(neiborCount < LOW_DENSITY_THRESHOLD){  
-                    protrusionCbAtomInfoArray.push(caCbAtomArray[i])                                     
-                    if(hydroCbIndices.includes(caCbAtomArray[i].id)){ // hydrophobic protusion
-                        hydroProtrusionCbAtomInfoArray.push(caCbAtomArray[i])
+                if(neighborCount < LOW_DENSITY_THRESHOLD){  
+                    const copyAtom = caCbAtomArray[i];
+                    copyAtom.atomLabel += `<br/> Neighbor residues (${neighborLabels.size}): ` + 
+                        Array.from(neighborLabels.values()).join();
+                    protrusionCbAtomInfoArray.push(copyAtom);
+                    if(hydroCbIndices.includes(copyAtom.id)){ // hydrophobic protusion
+                        hydroProtrusionCbAtomInfoArray.push(copyAtom)
                     }
                 }
             }            
@@ -429,7 +435,7 @@ export class MolStarWrapper {
 
         const hydroCaCbAtomInfoArray = caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName))
         const coinsertables = this.calculateCoinsertables(edgePairAtomId, hydroCaCbAtomInfoArray, hydroProtrusionCbAtomInfoArray)
-        
+
         return {
             normalCaCbAtomInfoArray: caCbAtomArray,
             hydroCaCbAtomInfoArray: hydroCaCbAtomInfoArray,
@@ -438,7 +444,7 @@ export class MolStarWrapper {
             convexHullFaces: convexHullFaces,
 
             edgePairs: edgePairs,
-            coinsertables: coinsertables
+            coinsertables: coinsertables,
          }
     }
 
