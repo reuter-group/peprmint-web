@@ -418,7 +418,7 @@ export class MolStarWrapper {
                 }
                 if(neighborCount < LOW_DENSITY_THRESHOLD){  
                     const copyAtom = caCbAtomArray[i];
-                    copyAtom.atomLabel += `<br/> Neighbor residues (${neighborLabels.size}): ` + 
+                    copyAtom.atomLabel += `<br/> Neighbour residues (${neighborLabels.size}): ` + 
                         Array.from(neighborLabels.values()).join();
                     protrusionCbAtomInfoArray.push(copyAtom);
                     if(hydroCbIndices.includes(copyAtom.id)){ // hydrophobic protusion

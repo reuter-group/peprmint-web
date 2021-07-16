@@ -71,7 +71,7 @@ function getSphereShape(ctx: RuntimeContext, data: SphereData, props: SphereProp
             }
         } else {
             const lableOffset = groupId - data.centers.length/3 
-            return `CO-INSERTABLE <br/> 
+            return `CO-INSERTABLE PAIR <br/> 
                 Vertex: ${data.coinsertableLabel[lableOffset]} <br/>
                 Vertex: ${data.coinsertableLabel[lableOffset+1]}`
         }

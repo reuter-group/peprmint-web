@@ -1,7 +1,7 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
-import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover } from "antd";
-import { QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
+import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover, Modal } from "antd";
+import { FileTextOutlined, QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
 import { useState } from "react";
 import { PluginWrapper } from "./Pepr2vis"
 import { Slider, Tree } from "antd";
@@ -123,7 +123,12 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
             title: <span> co-insertable pairs  </span>,
             key: '0-0-0-0',
             selectable: false,
-        }]
+            },  { 
+            title: <span> neighbour residues </span>,
+            key: '0-0-0-1',
+            selectable: false,
+          }
+        ]
       }, 
       { 
         title: <span> all <span style={{ color: 'gray' }}> C-α, C-β </span> atoms </span>,
@@ -135,6 +140,14 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
         key: '0-0-2',
         selectable: false,
       },
+      { 
+        classNames: "ml-0 pl-0",
+        title: <ShowNeighborInfo/>,
+        key: '0-0-3',
+        icon: <FileTextOutlined className="align-middle"/>,
+        checkable:false,
+        selectable:false,
+      }
      ],
     },
   ]
@@ -189,7 +202,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       selectable: false,    
     },
   ]
-
 
   const onCheckPortrusion = async (checkedKeys:any, info:any) => {
     const checkedKey = info.node.key
@@ -280,6 +292,13 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     }
   };
 
+//  e:{selected: bool, selectedNodes, node, event}
+  function onSelectNeighbourInfo(selectedKeys: React.Key[], e:any){
+      console.log(selectedKeys, e)
+  }
+  
+
+
   const emptySelectionErrorMsg = <span>Current selection is <b>empty</b>. <br/>
           Click the icon <IconButton svg={SelectionModeSvg} onClick={()=>{}}/> on the viewer to start to select.</span>
 
@@ -312,12 +331,15 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     
     <Tree
       className="bg-light"
+      treeData={treeDataProtrusion}
+      showIcon
       checkable
+      onCheck = {onCheckPortrusion}
+      checkedKeys={checkedKeys}
       defaultCheckedKeys={[]}
       checkStrictly={true}
-      onCheck = {onCheckPortrusion}
-      treeData={treeDataProtrusion}
-      checkedKeys={checkedKeys}
+      // selectable
+      onSelect = {onSelectNeighbourInfo}
     />
 
     <Tree 
@@ -353,5 +375,32 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
   )
 }
 
+
+function ShowNeighborInfo(){
+  const [visible, setVisible] = useState(false);
+  
+  const showModal = () => { setVisible(true) };
+
+  const onDownload = () => {
+    console.log('downloading...')
+  }
+
+  return (
+    <>
+      <a onClick={showModal}>neighbour residue information </a>
+      <Modal
+          visible={visible}
+          title="Title"
+          // onOk={this.handleOk}
+          onCancel={() => { setVisible(false) } }
+          footer={[          
+            <Button key="download" type="primary"  onClick={onDownload}>
+              Download (.csv)
+            </Button>,
+          ]}
+      >  <p>Some contents...</p>      
+      </Modal>
+    </>)
+}
 
 export { InputArea, ControlArea }
