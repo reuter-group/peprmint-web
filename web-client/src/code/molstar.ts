@@ -396,13 +396,14 @@ export class MolStarWrapper {
 
         // identify (hydrophobic) protrusions
         const vertexIndices = new Set<number>(convexHullFaces.flat());
+        const sortedVertexIndices = Array.from(vertexIndices).sort((a, b) => a - b);
         console.log(`convex hull info: faces ${convexHullFaces.length}, vertices ${vertexIndices.size}`);
 
         const protrusionCbAtomInfoArray: AtomGroupInfo[] = [];
         const hydroProtrusionCbAtomInfoArray: AtomGroupInfo[] = [];
         const protrusionNeighborAtomInfoArray: AtomGroupInfo[][] = [];
        
-        vertexIndices.forEach(i => {
+        for(let i of sortedVertexIndices){
             if(caCbAtomArray[i].name == 'CB'){ // find a Cb vertex
                 let neighborCount = 0;  // count for CA or CB atom
                 let neighborResidueMap = new Map<string, AtomGroupInfo>(); 
@@ -422,7 +423,7 @@ export class MolStarWrapper {
                     }
                 }
             }            
-        })
+        }
 
         const edgePairs: number[][] = getEdges(convexHullFaces.flat()) //! indices in convex hull, not atom indices
         const edgePairAtomId = edgePairs.map((pair: number[])=> 

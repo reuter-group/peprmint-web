@@ -132,7 +132,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
             key: '0-0-0-0',
             selectable: false,
             },  { 
-            title: <span> neighbour residues </span>,
+            title: <span>select neighbour residues</span>,
             key: '0-0-0-1',
             selectable: false,
           }
@@ -302,12 +302,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     }
   };
 
-//  e:{selected: bool, selectedNodes, node, event}
-  function onSelectNeighbourInfo(selectedKeys: React.Key[], e:any){
-      console.log(selectedKeys, e)
-  }
-  
-
 
   const emptySelectionErrorMsg = <span>Current selection is <b>empty</b>. <br/>
           Click the icon <IconButton svg={SelectionModeSvg} onClick={()=>{}}/> on the viewer to start to select.</span>
@@ -348,8 +342,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       checkedKeys={checkedKeys}
       defaultCheckedKeys={[]}
       checkStrictly={true}
-      // selectable
-      onSelect = {onSelectNeighbourInfo}
     />
 
     <Tree 
@@ -399,7 +391,7 @@ function ShowNeighborInfo(){
 
   return (
     <>
-      <a onClick={showModal}>neighbour residue summary </a>
+      <a onClick={showModal}> neighbour residue details</a>
       <Modal
           visible={visible}
           title="Protrusion's neighbouring residues"

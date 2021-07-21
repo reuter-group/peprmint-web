@@ -63,7 +63,7 @@ function getSphereShape(ctx: RuntimeContext, data: SphereData, props: SphereProp
     const getLabel = (groupId:number) =>  { 
         if(groupId < data.centers.length/3){
             if(data.stateLabel == ProtrusionVisualLabel.NormalProtrusion){
-                return `PROTRUSION <br/> ${data.centersLabel[groupId]}`
+                return `PROTRUSION ${groupId+1} <br/> ${data.centersLabel[groupId]}`
             }else if (data.stateLabel == ProtrusionVisualLabel.HydroProtrusion){
                 return `HYDROPHOBIC PROTRUSION <br/> ${data.centersLabel[groupId]}`
             } else {
