@@ -19,7 +19,6 @@ import { ParamDefinition, ParamDefinition as PD } from 'molstar/lib/mol-util/par
 import { DefaultPluginUISpec, PluginUISpec } from "molstar/lib/mol-plugin-ui/spec";
 import { PluginUIContext } from "molstar/lib/mol-plugin-ui/context";
 import { ResidueSet } from 'molstar/lib/mol-model/structure/model/properties/utils/residue-set';
-import { Location } from "molstar/lib/mol-model/structure/structure/element/location";
 import { StructureQueryHelper } from "molstar/lib/mol-plugin-state/helpers/structure-query";
 import { ElementIndex, Structure, StructureElement, StructureProperties, Unit } from "molstar/lib/mol-model/structure";
 import { StateTransformParameters } from "molstar/lib/mol-plugin-ui/state/common";
@@ -33,8 +32,6 @@ import { CreateConvexHull } from "./convexhull";
 import { PluginSpec } from "molstar/lib/mol-plugin/spec";
 import { StructureComponentManager } from "molstar/lib/mol-plugin-state/manager/structure/component";
 import { Task } from "molstar/lib/mol-task";
-import { EmptyLoci } from "molstar/lib/mol-model/loci";
-import { Loci } from "molstar/lib/mol-model/structure/structure/element/loci";
 import { NeighborTableDataSource } from "./components/PeprmintControl";
 
 export const LOW_DENSITY_THRESHOLD = 22;
@@ -388,12 +385,9 @@ export class MolStarWrapper {
                             ]),                                      
             }), data);        
         
-        // const loci = StructureSelection.toLociWithSourceUnits(selectionCaCb);
-
         // convert the selected atoms into an AtomInfo array
         const caCbAtomArray = this.selectAtomicElement(StructureSelection.unionStructure(selectionCaCb), 
             {chains: 'ALL', residues: 'ALL', atomNames: 'BOTH'} )        
-        // console.log(`selected ${caCbAtomArray.length} Ca Cb atoms`);
         
         // calculate convex hull
         console.time('calculating convex hull');
@@ -546,22 +540,26 @@ export class MolStarWrapper {
         this.defaultProtrusionData = protrusionData
     }
 
-    selectHydroProtrusionNeighbors(isSelected = true){
-        if(!this.defaultProtrusionData) 
-            return ; // TODO use current selection
+
+    selectHydroProtrusionNeighbors(isChecked:boolean){
+        if(!this.protrusionInitFlag) return;
+
+        const protrusionData = this.customSelection
+            ? this.calculateProtrusion(StructureSelection.unionStructure(this.customSelection))
+            : this.defaultProtrusionData!;
         
         // merge all the neighbors of hydrophobic protrusions into one list
         const hydroProtrusionNeighbors = new Map<string, Set<number>>() ;  // <chain, [resId,...]>
-        for (let i=0; i< this.defaultProtrusionData.protrusionCbAtomInfoArray.length; i++){
-            const protrusion = this.defaultProtrusionData.protrusionCbAtomInfoArray[i];
+        for (let i=0; i< protrusionData.protrusionCbAtomInfoArray.length; i++){
+            const protrusion = protrusionData.protrusionCbAtomInfoArray[i];
             if(HYDROPHOBICS.includes(protrusion.resName)){
-                const neighbors = this.defaultProtrusionData.protrusionNeighborAtomInfoArray[i];
+                const neighbors = protrusionData.protrusionNeighborAtomInfoArray[i];
                 for (let neighbor of neighbors){
                     let chainResidueSet = hydroProtrusionNeighbors.get(neighbor.chain);
                     if(chainResidueSet){
-                        chainResidueSet.add(neighbor.resId) // use label_seq_id
+                        chainResidueSet.add(neighbor.resAuthId) // use auth_seq_id
                     }else {
-                        chainResidueSet = new Set([neighbor.resId])
+                        chainResidueSet = new Set([neighbor.resAuthId])
                     }
                     hydroProtrusionNeighbors.set(neighbor.chain, chainResidueSet)
                 }
@@ -573,15 +571,17 @@ export class MolStarWrapper {
         if (!data) return;
 
         let locis: StructureElement.Loci[] = [];
-        for(const chain in hydroProtrusionNeighbors.keys()){
-            const residueIds = Array.from(hydroProtrusionNeighbors.get(chain)!)
+        for(let chain of Array.from(hydroProtrusionNeighbors.keys())){
+            const residueIds = Array.from(hydroProtrusionNeighbors.get(chain)!);
+            console.log(residueIds);
             const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({           
-                'residue-test': Q.core.set.has([ Q.set(...residueIds), Q.ammp('label_seq_id')]),
+                'residue-test': Q.core.set.has([ Q.set(...residueIds), Q.ammp('auth_seq_id')]),
                 'chain-test': Q.core.rel.eq([chain, Q.ammp('label_asym_id')])
             }), data);
             locis.push(StructureSelection.toLociWithSourceUnits(selection));
         }
-        
+
+        // union the locis of each chain
         let loci = locis[0]; 
         if(locis.length > 1){
             let i = 1;
@@ -590,20 +590,23 @@ export class MolStarWrapper {
                 i++;
             }
         }
-
-        isSelected?        
+        isChecked?        
          this.plugin.managers.interactivity.lociSelects.select({ loci })
         :this.plugin.managers.interactivity.lociSelects.deselect({ loci });
     }
 
+
     getNeighborList(){
-        if(!this.defaultProtrusionData) 
-        return []; // TODO use current selection
+        if(!this.protrusionInitFlag) return [];
+
+        const protrusionData = this.customSelection
+            ? this.calculateProtrusion(StructureSelection.unionStructure(this.customSelection))
+            : this.defaultProtrusionData!;
         
         let neighborDataSource: NeighborTableDataSource[] = [];
-        for(let i=0;i< this.defaultProtrusionData.protrusionNeighborAtomInfoArray.length;i++){
-            const protrusion = this.defaultProtrusionData.protrusionCbAtomInfoArray[i];
-            const neighborArray = this.defaultProtrusionData.protrusionNeighborAtomInfoArray[i];
+        for(let i=0;i< protrusionData.protrusionNeighborAtomInfoArray.length;i++){
+            const protrusion = protrusionData.protrusionCbAtomInfoArray[i];
+            const neighborArray = protrusionData.protrusionNeighborAtomInfoArray[i];
             const neighborStr = neighborArray.map(a => `${a.chain}|${a.resName} ${a.resId}`).join(',')
             const neighborData = {
                 key: i,  // unique
@@ -615,9 +618,9 @@ export class MolStarWrapper {
             }
             neighborDataSource.push(neighborData);
         }
-
         return neighborDataSource;
     }
+
 
     async toggleProtrusion(reprRef: string){
         if(!this.protrusionInitFlag){           
