@@ -1,17 +1,25 @@
 import  React from "react";
 import { Alert, Button, Col, Container, Form, InputGroup, Row, } from "react-bootstrap";
-import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover, Modal } from "antd";
+import { Upload, Button as AntdButton, message, Form as AntdForm, Space, Divider, TreeProps, Typography, Popover, Modal, Table } from "antd";
 import { FileTextOutlined, QuestionCircleOutlined, UploadOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { PluginWrapper } from "./Pepr2vis"
 import { Slider, Tree } from "antd";
-import { useRef } from "react";
 
 import { ProtrusionVisualRef, validCathId, validPdbID } from '../helpers'
 import { Key } from "antd/lib/table/interface";
 import { IconButton } from "molstar/lib/mol-plugin-ui/controls/common";
 import { SelectionModeSvg } from 'molstar/lib/mol-plugin-ui/controls/icons'
+import { HYDROPHOBICS } from "../molstar";
 
+export type NeighborTableDataSource = {
+      key: number,  // unique
+      protrusionId: number,
+      chain: string,
+      resName: string,        
+      resAuthId: number,
+      neighbours: string,
+}
 
 function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) {
   const colwidth = 3;
@@ -233,7 +241,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
     }else if(checkedKey === '0-0-0'){
         await PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion)
         if(checked){
-            if(!checkedKeysValue.checked.includes('0-0-0-0')){
+            if(!checkedKeysValue.checked.includes('0-0-0-0')){  // co-insertables
                 await PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
                 checkedKeysValue.checked.push('0-0-0-0');            
             }          
@@ -251,6 +259,8 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
           PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroCaCb)
         } else if(checkedKey === '0-0-0-0'){
           PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+        } else if(checkedKey === '0-0-0-1') {  // highlight neighbors by selecting
+          PluginWrapper.selectHydroProtrusionNeighbors(checked);
         }
         setCheckedKeys(checkedKeysValue.checked)
     }
@@ -385,12 +395,15 @@ function ShowNeighborInfo(){
     console.log('downloading...')
   }
 
+  const neighborDataSource = PluginWrapper.getNeighborList();
+
   return (
     <>
-      <a onClick={showModal}>neighbour residue information </a>
+      <a onClick={showModal}>neighbour residue summary </a>
       <Modal
           visible={visible}
-          title="Title"
+          title="Protrusion's neighbouring residues"
+          width={1000}
           // onOk={this.handleOk}
           onCancel={() => { setVisible(false) } }
           footer={[          
@@ -398,9 +411,48 @@ function ShowNeighborInfo(){
               Download (.csv)
             </Button>,
           ]}
-      >  <p>Some contents...</p>      
+      >  
+      <div>
+       <NeighborInfoTable neighborDataSource ={ neighborDataSource } />
+      </div>
       </Modal>
     </>)
+}
+
+
+function NeighborInfoTable({ neighborDataSource } : any){
+    const columns = [
+      {
+        title: 'Protrusion id',
+        dataIndex: 'protrusionId', 
+      }, {
+        title: 'Chain',
+        dataIndex: 'chain',
+      }, {
+        title: 'Residue name',
+        dataIndex: 'resName',
+        render: (res : string) => HYDROPHOBICS.includes(res.toUpperCase())
+                  ? <span style={{ color: 'orange' }}><b>{res}</b></span> 
+                  : <b> {res} </b> ,   
+        filters: [{
+            text: 'hydrophobic residues',
+            value: 'notUsed',
+          },     
+        ],
+        onFilter: (_:any, record:any) => HYDROPHOBICS.includes(record.resName),
+      }, {
+        title: 'Residue auth id',
+        dataIndex: 'resAuthId',
+        // defaultSortOrder: 'descend',  // not work
+        sorter: (a:any, b:any) => a.resAuthId - b.resAuthId,
+      }, {
+        title: 'Neighbouring residues',
+        dataIndex: 'neighbours',
+        width: 600,
+      },
+    ];
+    
+    return <Table dataSource={neighborDataSource} columns={columns} size='small' />
 }
 
 export { InputArea, ControlArea }
