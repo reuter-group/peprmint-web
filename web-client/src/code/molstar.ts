@@ -33,10 +33,8 @@ import { CreateSphere } from "./protrusion";
 import { CreateConvexHull } from "./convexhull";
 import { PluginSpec } from "molstar/lib/mol-plugin/spec";
 import { StructureComponentManager } from "molstar/lib/mol-plugin-state/manager/structure/component";
-import { StructureSelectionQueries, StructureSelectionQuery } from "molstar/lib/mol-plugin-state/helpers/structure-selection-query";
-import { UUID } from "molstar/lib/mol-util";
+import { StructureSelectionCategory, StructureSelectionQueries, StructureSelectionQuery } from "molstar/lib/mol-plugin-state/helpers/structure-selection-query";
 import { Task } from "molstar/lib/mol-task";
-import { FALSE } from "node-sass";
 
 export const LOW_DENSITY_THRESHOLD = 22;
 export const DISTANCE_CUTOFF = 10;  // 1 nm
@@ -53,7 +51,7 @@ type CaCbSelectionParam = {
     atomNames: 'CA' | 'CB' | 'BOTH'; 
 }
 
-type AtomGroupInfo = {   
+export type AtomGroupInfo = {   
     id: number,
     name: string,
     resName: string,
@@ -61,13 +59,30 @@ type AtomGroupInfo = {
     chain: string,
     coordinate: number[],
     atomLabel: string,
+    resAuthId: number,
 }
+
+type ProtrusionNeighborsInfo = {
+    protrusionId: number,
+    chain: string,
+    resName: string,
+    resLabelId: number,
+    resAuthId: number,
+    neighbors: {
+        chain: string,
+        resName: string,
+        resLabelId: number,
+        resAuthId: number,
+    }[],
+}
+
 
 type ProtrusionData = {
     normalCaCbAtomInfoArray: AtomGroupInfo[],
     hydroCaCbAtomInfoArray: AtomGroupInfo[],
     protrusionCbAtomInfoArray: AtomGroupInfo[],
     hydroProtrusionCbAtomInfoArray: AtomGroupInfo[],
+    protrusionNeighborAtomInfoArray: AtomGroupInfo[][], 
     convexHullFaces: number[][],
     edgePairs: number[][],
     coinsertables: {
@@ -92,6 +107,7 @@ export class MolStarWrapper {
     
     private loadedParams: LoadParams = { pdbId: '', format: 'pdb', isBinary: false, assemblyId: '' };
     private defaultProtrusionData: ProtrusionData | undefined;
+    // private protrusionNeighbors: [] | undefined;
 
     constructor(){    
         const defaultSpec = DefaultPluginUISpec();
@@ -335,6 +351,7 @@ export class MolStarWrapper {
                             l.element = elements[j];
                             const resName = StructureProperties.atom.label_comp_id(l);
                             const atomName = StructureProperties.atom.label_atom_id(l);
+                            const resAuthId = StructureProperties.residue.auth_seq_id(l);
                             
                             if(selParm.residues == 'ALL' || selParm.residues.includes(resName)){
                                 if((selParm.atomNames == 'BOTH' || selParm.atomNames == atomName ) && 
@@ -352,6 +369,8 @@ export class MolStarWrapper {
                                         l.unit.conformation.coordinates.z[i]
                                     ];
 
+                                    const atomLabel = elementLabel(l, { granularity: 'element' });
+
                                     atomInfoArray.push({
                                         id: i,
                                         name: atomName,
@@ -359,6 +378,7 @@ export class MolStarWrapper {
                                         resId: resId,
                                         chain: chainName,
                                         coordinate: coordinate,
+                                        resAuthId: resAuthId,
                                         atomLabel: elementLabel(l, { granularity: 'element' })
                                     });
                                 }                                                                               
@@ -382,7 +402,7 @@ export class MolStarWrapper {
                                 ])
                             ]),                                      
             }), data);        
-
+        
         // const loci = StructureSelection.toLociWithSourceUnits(selectionCaCb);
 
         // convert the selected atoms into an AtomInfo array
@@ -400,29 +420,36 @@ export class MolStarWrapper {
         const vertexIndices = new Set<number>(convexHullFaces.flat());
         console.log(`convex hull info: faces ${convexHullFaces.length}, vertices ${vertexIndices.size}`);
        
-        const cbIndices =  caCbAtomArray.filter(a => a.name == 'CB').map(a => a.id)
-        const hydroCbIndices = caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName) && a.name == 'CB').map(a => a.id)
+        // const cbIndices =  caCbAtomArray.filter(a => a.name == 'CB').map(a => a.id)
+        // const hydroCbIndices = caCbAtomArray.filter(a => HYDROPHOBICS.includes(a.resName) && a.name == 'CB').map(a => a.id)
 
         const protrusionCbAtomInfoArray: AtomGroupInfo[] = [];
         const hydroProtrusionCbAtomInfoArray: AtomGroupInfo[] = [];
+        const protrusionNeighborAtomInfoArray: AtomGroupInfo[][] = [];
        
         vertexIndices.forEach(i => {
-            if(cbIndices.includes(caCbAtomArray[i].id)){ // find a Cb vertex
-                let neighborCount = 0;
-                let neighborLabels = new Set<string>();
+            if(caCbAtomArray[i].name == 'CB'){ // find a Cb vertex
+                let neighborCount = 0;  // count for CA or CB atom
+                let neighborResidueMap = new Map<string, AtomGroupInfo>(); 
                 for(let j=0; j< caCbAtomArray.length; j++){
                     if(i != j && pointDistance(caCbAtomArray[i].coordinate, caCbAtomArray[j].coordinate) < DISTANCE_CUTOFF ){
-                        neighborCount += 1;
-                        neighborLabels.add(caCbAtomArray[j].atomLabel.split('|')[4] );
+                        neighborCount += 1;  // NOTE: this will include protrusion's own CA                        
+                        // neighborLabels.add(caCbAtomArray[j].atomLabel.split('|')[4] ); //
+                        if(`${caCbAtomArray[i].chain}|${caCbAtomArray[i].resId}` != `${caCbAtomArray[j].chain}|${caCbAtomArray[j].resId}`){
+                            neighborResidueMap.set(`${caCbAtomArray[j].chain}|${caCbAtomArray[j].resId}`, caCbAtomArray[j]);
+                        }
                     }
                 }
                 if(neighborCount < LOW_DENSITY_THRESHOLD){  
-                    const copyAtom = caCbAtomArray[i];
-                    copyAtom.atomLabel += `<br/> Neighbour residues (${neighborLabels.size}): ` + 
-                        Array.from(neighborLabels.values()).join();
-                    protrusionCbAtomInfoArray.push(copyAtom);
-                    if(hydroCbIndices.includes(copyAtom.id)){ // hydrophobic protusion
-                        hydroProtrusionCbAtomInfoArray.push(copyAtom)
+                    // const copyAtom = caCbAtomArray[i];
+                    // copyAtom.atomLabel += `<br/> Neighbour residues (${neighborLabels.size}): ` + 
+                    //     Array.from(neighborLabels.values()).join();
+                    // protrusionCbAtomInfoArray.push(copyAtom);
+                    protrusionCbAtomInfoArray.push(caCbAtomArray[i]);
+                    protrusionNeighborAtomInfoArray.push( Array.from(neighborResidueMap.values()) )                    
+                    // console.log(`protrusion ${caCbAtomArray[i].resId} has neighbors ${ Array.from(neighborResidueMap.values()).map(v=>v.resId) }` )                    
+                    if(HYDROPHOBICS.includes(caCbAtomArray[i].resName)){ // hydrophobic protusion
+                        hydroProtrusionCbAtomInfoArray.push(caCbAtomArray[i])
                     }
                 }
             }            
@@ -442,6 +469,7 @@ export class MolStarWrapper {
             protrusionCbAtomInfoArray: protrusionCbAtomInfoArray,
             hydroProtrusionCbAtomInfoArray: hydroProtrusionCbAtomInfoArray,
             convexHullFaces: convexHullFaces,
+            protrusionNeighborAtomInfoArray: protrusionNeighborAtomInfoArray,
 
             edgePairs: edgePairs,
             coinsertables: coinsertables,
@@ -543,6 +571,75 @@ export class MolStarWrapper {
         this.defaultProtrusionData = protrusionData
     }
 
+    // convertProtrusionNeighbors(): ProtrusionNeighborsInfo[] {
+    //     if(!this.defaultProtrusionData) 
+    //         return []; // TODO use current selection
+
+    //     const protrusionNeighborArray = this.defaultProtrusionData.protrusionNeighborAtomInfoArray ;
+    //     let protrusionNeighbors : ProtrusionNeighborsInfo[] = [];
+    //     for(let i=0; i < protrusionNeighborArray.length; i++){
+    //         for(let j=0; j< protrusionNeighborArray[i].length; j++){
+    //             const protrusionNeighbor:ProtrusionNeighborsInfo = {
+    //                 protrusionId: i,
+    //                 chain: protrusionNeighborArray[i].chain  ,
+    //                 resName: protrusionNeighborArray[i].resName,
+    //                 resLabelId: protrusionNeighborArray[i].resId,
+    //                 resAuthId : protrusionNeighborArray[i].resId, //!!
+    //                 neighbors: [], //!!
+    //             };
+    //             protrusionNeighbors.push(protrusionNeighbor);
+    //         }
+    //     }
+
+    //     return protrusionNeighbors
+    // }
+
+    selectHydroProtrusionNeighbors(isSelected = true){
+        if(!this.defaultProtrusionData) 
+            return ; // TODO use current selection
+        
+        // merge all the neighbors of hydrophobic protrusions into one list
+        const hydroProtrusionNeighbors = new Map<string, Set<number>>() ;  // <chain, [resId,...]>
+        for (let i=0; i< this.defaultProtrusionData.protrusionCbAtomInfoArray.length; i++){
+            const protrusion = this.defaultProtrusionData.protrusionCbAtomInfoArray[i];
+            if(HYDROPHOBICS.includes(protrusion.resName)){
+                const neighbors = this.defaultProtrusionData.protrusionNeighborAtomInfoArray[i];
+                console.log('protrusion', protrusion.resId)
+                console.log(neighbors.map(v => v.resId))
+                for (let neighbor of neighbors){
+                    let chainResidueSet = hydroProtrusionNeighbors.get(neighbor.chain);
+                    if(chainResidueSet){
+                        chainResidueSet.add(neighbor.resId) // use label_seq_id
+                    }else {
+                        chainResidueSet = new Set([neighbor.resId])
+                    }
+                    hydroProtrusionNeighbors.set(neighbor.chain, chainResidueSet)
+                }
+            }
+        }
+
+        // console.log('all neighbor residues:', Array.from(hydroProtrusionNeighbors.get('A')!))
+        const data = this.plugin.managers.structure.hierarchy.current.structures[0]?.cell.obj?.data;
+        if (!data) return;
+        const testNeighbors = Array.from( hydroProtrusionNeighbors.get('A')!) ;  // test chain A
+
+        const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({           
+            'residue-test': Q.core.set.has([ Q.set(...testNeighbors), Q.ammp('label_seq_id')]),
+            'chain-test': Q.core.rel.eq(['A', Q.ammp('label_asym_id')])
+        }), data);
+        const loci = StructureSelection.toLociWithSourceUnits(selection);
+            
+        isSelected?        
+         this.plugin.managers.interactivity.lociSelects.select({ loci })
+        :this.plugin.managers.interactivity.lociSelects.deselect({ loci });
+
+
+    }
+
+    getNeighborList(){
+
+        return [] as AtomGroupInfo[][];
+    }
 
     async toggleProtrusion(reprRef: string){
         if(!this.protrusionInitFlag){           

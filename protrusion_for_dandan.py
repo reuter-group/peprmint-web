@@ -91,9 +91,10 @@ def calc_protrusions_on_group(
                     # HERE WE WILL SEARCH FOR CLOSE RESIDUE, TO MAKE STAT ON THEM
                     neighbours = []
                     for neighbor in close:  # TODO OPTIMIZE
-                        if not neighbor == i:  # ignore current atom
+                        if not neighbor == i:  # ignore current atom  ## NOTE: but not CA from the same residue (?)
                             neighborID = resnumber[neighbor]
                             if neighborID not in neighbours:
+                                ### NOTE: so this `neighbours` will include the protrusion residue itself 
                                 neighbours.append(resnumber[neighbor])  # add the resname in the list
 
                     neighboursIDAsString = ';'.join(list(map(str, neighbours)))
