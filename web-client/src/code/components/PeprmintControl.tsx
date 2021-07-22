@@ -18,7 +18,7 @@ export type NeighborTableDataSource = {
       chain: string,
       resName: string,        
       resAuthId: number,
-      neighbours: string,
+      neighbours: string[],
 }
 
 function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) {
@@ -441,6 +441,26 @@ function NeighborInfoTable({ neighborDataSource } : any){
         title: 'Neighbouring residues',
         dataIndex: 'neighbours',
         width: 600,
+        render:(resList:string[]) => {
+          let chainSet = new Set<string>();
+          for(let res of resList){
+              const chain = res.split('|')[0];
+              chainSet.add(chain);
+          }
+          let chainList = Array.from(chainSet.values());
+          let newResList = [];
+          for(let i=0; i< chainList.length; i++){
+              const chain = chainList[i];
+              const oneChain = resList.filter(res => res.split('|')[0] == chain).map((res,i) => {
+                    let resName = res.split('|')[1];
+                    return HYDROPHOBICS.includes(resName.slice(0,3))
+                    ? <span key={i} style={{ color: 'orange' }}> {resName}</span>
+                    : <span key={i}> {resName}</span>
+                  });
+              newResList.push(<span key={i}><b>Chain { chain }: </b> {oneChain} <br/></span>);
+          }
+          return <> {newResList} </>
+        },
       },
     ];
     

@@ -608,14 +608,14 @@ export class MolStarWrapper {
         for(let i=0;i< protrusionData.protrusionNeighborAtomInfoArray.length;i++){
             const protrusion = protrusionData.protrusionCbAtomInfoArray[i];
             const neighborArray = protrusionData.protrusionNeighborAtomInfoArray[i];
-            const neighborStr = neighborArray.map(a => `${a.chain}|${a.resName} ${a.resId}`).join(',')
+            const neighborStrs = neighborArray.map(a => `${a.chain}|${a.resName}-${a.resAuthId}`);
             const neighborData = {
                 key: i,  // unique
                 protrusionId: i+1,
                 chain: protrusion.chain,
                 resName: protrusion.resName ,        
                 resAuthId: protrusion.resAuthId,
-                neighbours: neighborStr,
+                neighbours: neighborStrs,
             }
             neighborDataSource.push(neighborData);
         }
