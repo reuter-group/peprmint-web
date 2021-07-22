@@ -124,7 +124,7 @@ class References extends Component {
         return (
             <Container className="my-3 p-3 bg-light">
                 <h5> References: </h5>
-                <ul>
+                <ol>
                     <ReferenceItem authors={"Fuglebakk E, Reuter N (2018) "}
                         title="A model for hydrophobic protrusions on peripheral membrane proteins."
                         url="https://doi.org/10.1371/journal.pcbi.1006325"
@@ -137,7 +137,7 @@ class References extends Component {
                         url="https://doi.org/10.1093/nar/gkab314"
                         journal= "Nucleic Acids Research, 2021"
                     /> 
-                </ul>
+                </ol>
             </Container>
         )
     }

@@ -84,9 +84,9 @@ function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) 
         <Col className="px-0"> 
           <Form.Text muted> 
               PDB ID <Popover placement="topLeft" content={(<div>4-character id, data source: <a className="text-primary" href="https://www.ebi.ac.uk/pdbe/">PDBe</a> , e.g. 1rlw</div>)}>
-              <QuestionCircleOutlined /> </Popover> <br/>
+              <QuestionCircleOutlined className="align-middle"/> </Popover> <br/>
               or CATH ID <Popover placement="topLeft" content={(<div>7-character id, data source: <a className="text-primary" href="https://www.cathdb.info/">CATH</a>, e.g. 2da0A00</div>)}> 
-                <QuestionCircleOutlined /> 
+                <QuestionCircleOutlined className="align-middle"/> 
               </Popover>
           </Form.Text> 
         </Col>
@@ -117,22 +117,51 @@ function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) 
 
 
 function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHullKey, recalculateKey, setRecalculateKey}: any) {
- 
+  
+  const protrusionPopoverContent = (
+    <div style={{ width: 300 }}> 
+      <b>Protrusions</b> are defined as vertex residues (of the structure's convex hull) with low local protein density.      
+      <br/><span className="text-muted">NOTE: the <b>C-β atom</b> of the residue is used as the representative in the visualisation. </span>
+      <br/>Read more: <b>Ref. 1</b>
+    </div>
+  );
+  
+  const hydroProtrusionPopoverContent = (
+    <div style={{ width: 300 }}> 
+      Protrusions with a <b>hydrophobic</b> residue, which includes <b>{HYDROPHOBICS.join(', ')}</b>
+      <br/>Read more: <b>Ref. 1</b>
+    </div>
+  );
+  
+  const coinsterablePopoverContent = (
+    <div style={{ width: 300 }}> 
+      Two hydrophobic protrusions connected by an edge of the convex hull
+      <br/>Read more: <b>Ref. 1</b>
+    </div>
+  );
+
+  const neighborPopoverContent = (
+    <div style={{ width: 300 }}> 
+      Residues within a distance of 10Å to the hydrophobic protrusions     
+    </div>
+  );
+
+
   const treeDataProtrusion = [
     {
-      title: 'Show protrusions',
+      title: <div> Show protrusions <Popover placement="topLeft" content={protrusionPopoverContent}> <QuestionCircleOutlined className="align-middle"/> </Popover> </div>,
       key: '0-0',
       selectable: false,
       children: [{         
-        title: <span> <span style={{ color: 'orange' }}> hydrophobic </span> protrusions </span>,
+        title: <span> <span style={{ color: 'orange' }}> hydrophobic </span> protrusions <Popover placement="topLeft" content={hydroProtrusionPopoverContent}> <QuestionCircleOutlined className="align-middle"/> </Popover></span>,
         key: '0-0-0',
         selectable: false,
         children: [{
-            title: <span> co-insertable pairs  </span>,
+            title: <span> co-insertable pairs <Popover placement="topLeft" content={coinsterablePopoverContent}> <QuestionCircleOutlined className="align-middle"/> </Popover>  </span>,
             key: '0-0-0-0',
             selectable: false,
             },  { 
-            title: <span>select neighbour residues</span>,
+            title: <span>select neighbour residues <Popover placement="topLeft" content={neighborPopoverContent}> <QuestionCircleOutlined className="align-middle"/> </Popover></span>,
             key: '0-0-0-1',
             selectable: false,
           }
@@ -167,9 +196,18 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       PluginWrapper.changeOpacity(value/100)
   }
 
+
+  const convexHullPopoverContent = (
+    <div style={{ width: 300 }}> 
+      Convex hull of the <b>C-α, C-β atoms</b> of the protein
+      <br/>Read more: <b>Ref. 1</b>
+    </div>
+  );
+
+
   const treeDataConvexHull = [
     {
-      title: 'Show convex hull',
+      title: <span>Show convex hull <Popover placement="topLeft" content={convexHullPopoverContent}> <QuestionCircleOutlined className="align-middle"/> </Popover> </span>,
       key: '0-0',
       selectable: false,
       children: [ { 
@@ -408,18 +446,18 @@ function ShowNeighborInfo(){
       <a onClick={showModal}> neighbour residue details</a>
       <Modal
           visible={visible}
-          title="Protrusion's neighbouring residues"
+          title="Protrusion's neighbour residues"
           width={1000}
           // onOk={this.handleOk}
           onCancel={() => { setVisible(false) } }
-          footer={[          
+          footer={[ 
             <Button key="download" type="primary"  onClick={onDownload}>
               Download (.csv)
             </Button>,
           ]}
       >  
       <div>
-       <NeighborInfoTable neighborDataSource ={ neighborDataSource } />
+       <NeighborInfoTable neighborDataSource ={ neighborDataSource } />       
       </div>
       </Modal>
     </>)
@@ -455,7 +493,7 @@ function NeighborInfoTable({ neighborDataSource } : any){
         // defaultSortOrder: 'descend',  // not work
         sorter: (a:any, b:any) => a.resAuthId - b.resAuthId,
       }, {
-        title: 'Neighbouring residues',
+        title: 'Neighbour residues',
         dataIndex: 'neighbours',
         width: 600,
         render:(neighborStr:string) => {
