@@ -186,6 +186,7 @@ export class MolStarWrapper {
         this.customSelection = undefined;
     }
 
+
     private openFile(b: StateBuilder.To<PSO.Root>, file: File, isBinary: boolean){        
         return b.apply(StateTransforms.Data.ReadFile , { file: Asset.File(file) , isBinary });
     }
@@ -209,7 +210,10 @@ export class MolStarWrapper {
     private applyState(tree: StateBuilder) {
         return PluginCommands.State.Update(this.plugin, { state: this.plugin.state.data, tree });
     }
-
+    
+    getProtrusionInitFlag(){
+        return this.protrusionInitFlag;
+    }
 
     get state() {
         return this.plugin.state.data;
@@ -574,7 +578,6 @@ export class MolStarWrapper {
         let locis: StructureElement.Loci[] = [];
         for(let chain of Array.from(hydroProtrusionNeighbors.keys())){
             const residueIds = Array.from(hydroProtrusionNeighbors.get(chain)!);
-            console.log(residueIds);
             const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({           
                 'residue-test': Q.core.set.has([ Q.set(...residueIds), Q.ammp('auth_seq_id')]),
                 'chain-test': Q.core.rel.eq([chain, Q.ammp('label_asym_id')])

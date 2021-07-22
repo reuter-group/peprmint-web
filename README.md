@@ -25,7 +25,7 @@ npx webpack serve  # development mode, automatically re-compile for new file cha
  
 ### V1.2
 - [x] update logo, name (PePr^2Vis), and page layout
-- [ ] add neighborhood information
+- [x] add neighborhood information
 - [ ] add license
 - [ ] migrate website URL (to affiliated institute domain) for formal release
 

@@ -145,7 +145,7 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
       Residues within a distance of 10Å to the hydrophobic protrusions     
     </div>
   );
-
+  
 
   const treeDataProtrusion = [
     {
@@ -195,7 +195,6 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
   const onChangeOpacity = (value:number) => {
       PluginWrapper.changeOpacity(value/100)
   }
-
 
   const convexHullPopoverContent = (
     <div style={{ width: 300 }}> 
@@ -295,10 +294,16 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
           PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalCaCb)
         }else if(checkedKey === '0-0-2'){
           PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroCaCb)
+
         } else if(checkedKey === '0-0-0-0'){
-          PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+            if(checked && !PluginWrapper.getProtrusionInitFlag()){   
+              // stop checking if not initialized yet
+              checkedKeysValue.checked = checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0-0');
+            }
+            else PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);
+
         } else if(checkedKey === '0-0-0-1') {  // highlight neighbors by selecting
-          PluginWrapper.selectHydroProtrusionNeighbors(checked);
+            PluginWrapper.selectHydroProtrusionNeighbors(checked);
         }
         setCheckedKeys(checkedKeysValue.checked)
     }
@@ -326,8 +331,14 @@ function ControlArea({ checkedKeys, setCheckedKeys, convexHullKey, setConvexHull
      }     
     }
     else if(checkedKey === '0-0-0'){
-        await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
-        setConvexHullKey(checkedKeysValue.checked)
+        if(checked && !PluginWrapper.getProtrusionInitFlag()){     
+           // stop checking if not initialized yet       
+            setCheckedKeys(checkedKeysValue.checked.filter( (key:React.Key) => key != '0-0-0') )
+        }
+        else{ 
+          await PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);
+          setConvexHullKey(checkedKeysValue.checked)
+        }
     }
   };
 
