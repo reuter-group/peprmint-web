@@ -5,6 +5,7 @@ import { FileTextOutlined, QuestionCircleOutlined, UploadOutlined } from "@ant-d
 import { useState, useRef } from "react";
 import { PluginWrapper } from "./Pepr2vis"
 import { Slider, Tree } from "antd";
+import { ExportToCsv } from 'export-to-csv';
 
 import { ProtrusionVisualRef, validCathId, validPdbID } from '../helpers'
 import { Key } from "antd/lib/table/interface";
@@ -13,12 +14,11 @@ import { SelectionModeSvg } from 'molstar/lib/mol-plugin-ui/controls/icons'
 import { HYDROPHOBICS } from "../molstar";
 
 export type NeighborTableDataSource = {
-      key: number,  // unique
       protrusionId: number,
       chain: string,
       resName: string,        
       resAuthId: number,
-      neighbours: string[],
+      neighbours: string,
 }
 
 function InputArea({setCheckedKeys, setConvexHullKey, setRecalculateKey} : any) {
@@ -383,11 +383,25 @@ function ShowNeighborInfo(){
   
   const showModal = () => { setVisible(true) };
 
-  const onDownload = () => {
-    console.log('downloading...')
-  }
-
   const neighborDataSource = PluginWrapper.getNeighborList();
+
+  const onDownload = () => {
+    const options = { 
+      filename: 'ProtrusionNeighbors_PePr2Vis',
+      fieldSeparator: ',',
+      quoteStrings: '"',
+      decimalSeparator: '.',
+      showLabels: true, 
+      showTitle: false,
+      useTextFile: false,
+      useBom: true,
+      useKeysAsHeaders: true,
+      // headers: ['Column 1', 'Column 2', etc...] <-- Won't work with useKeysAsHeaders present!
+    };
+    
+    const csvExporter = new ExportToCsv(options);
+    csvExporter.generateCsv(neighborDataSource);
+  }
 
   return (
     <>
@@ -413,6 +427,9 @@ function ShowNeighborInfo(){
 
 
 function NeighborInfoTable({ neighborDataSource } : any){
+    const dataWithKey = neighborDataSource.map((d:NeighborTableDataSource,i:number) => {
+       return {...d, key:i }})
+
     const columns = [
       {
         title: 'Protrusion id',
@@ -441,7 +458,8 @@ function NeighborInfoTable({ neighborDataSource } : any){
         title: 'Neighbouring residues',
         dataIndex: 'neighbours',
         width: 600,
-        render:(resList:string[]) => {
+        render:(neighborStr:string) => {
+          let resList = neighborStr.split(' ');
           let chainSet = new Set<string>();
           for(let res of resList){
               const chain = res.split('|')[0];
@@ -464,7 +482,7 @@ function NeighborInfoTable({ neighborDataSource } : any){
       },
     ];
     
-    return <Table dataSource={neighborDataSource} columns={columns} size='small' />
+    return <Table dataSource={dataWithKey} columns={columns} size='small' />
 }
 
 export { InputArea, ControlArea }

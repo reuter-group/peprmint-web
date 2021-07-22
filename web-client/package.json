@@ -43,6 +43,7 @@
     "@popperjs/core": "^2.8.6",
     "antd": "^4.13.1",
     "bootstrap": "^4.6.0",
+    "export-to-csv": "^0.2.1",
     "molstar": "^2.0.6",
     "quickhull3d": "^2.0.4",
     "react": "^17.0.1",
