@@ -42,3 +42,4 @@ $ conda env create -f peprmint-web_conda_env.txt  # on Mac
 ```
 
 - the nice PePrMInt logo is credited to: [Emmanuel Moutoussamy](https://www.uib.no/en/persons/Emmanuel.Edouard.Moutoussamy)
+
