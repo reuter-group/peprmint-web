@@ -82,6 +82,7 @@ class PeprmintFooter extends Component {
                     <Col className="col-4">
                         <Nav className="flex-column" >
                             <Nav.Item> Contacts </Nav.Item>
+                            <Nav.Link className="py-0 font-weight-light" href="mailto:Thibault.Tubiana@uib.no" title="Send an email to this contact"> Thibault Tubiana, researcher </Nav.Link>
                             <Nav.Link className="py-0 font-weight-light" href="mailto:dandan.xue@uib.no" title="Send an email to this contact"> Dandan Xue, engineer  </Nav.Link> 
                             <Nav.Link className="py-0 font-weight-light" href="mailto:Nathalie.Reuter@uib.no" title="Send an email to this contact">Nathalie Reuter, Prof./Group leader  </Nav.Link> 
                         </Nav>
