@@ -26,4 +26,4 @@ jobs:
       run: |
         cd web-client/
         npm install
-        npx webpack
+        npx webpack --no-watch
