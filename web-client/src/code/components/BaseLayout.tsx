@@ -16,6 +16,7 @@ import CbuLogo from '../../image/cbu-logo.svg';
 import UibLogo from '../../image/uib-logo.svg';
 import { Pepr2vis } from "./Pepr2vis";
 import { Home } from "./Home";
+import { Pepr2ds } from "./Pepr2ds";
 
 
 const { Title } = Typography;
@@ -104,7 +105,8 @@ export default function App(){
         <Router>
             <Container fluid className="px-0 py-0">
                 <Switch>
-                    <Route exact path="/pepr2vis">  <Header />  <Pepr2vis /> </Route>                   
+                    <Route exact path="/pepr2vis">  <Header />  <Pepr2vis /> </Route> 
+                    <Route exact path="/pepr2ds">  <Header />  <Pepr2ds /> </Route>                  
                     <Route exact path="/"> <Home /> </Route>
                 </Switch>      
             </Container>

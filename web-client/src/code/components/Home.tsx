@@ -55,8 +55,8 @@ export function Home(){
             <ModuleCard title = { <span className="text-primary h5">PePr<sup>2</sup>Vis</span> }  link={"/pepr2vis"} imgSrc={Pepr2visPic} 
                 cardSubtitle= { <span className="text-secondary"> Peripheral protein protrusion visualisation </span> } />
             
-            <ModuleCard title = { <span className="text-primary h5">PePr<sup>2</sup>DB</span>}  link={"/"} imgSrc={ComingSoon} 
-                cardSubtitle = { <span className="text-secondary"> Peripheral protein protrusion database </span>}/>                        
+            <ModuleCard title = { <span className="text-primary h5">PePr<sup>2</sup>DS</span>}  link={"/pepr2ds"} imgSrc={ComingSoon} 
+                cardSubtitle = { <span className="text-secondary"> Peripheral protein protrusion dataset </span>}/>                        
         </Row>
     </Container>
     )

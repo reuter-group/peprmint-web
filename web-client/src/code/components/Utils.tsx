@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import Container from 'react-bootstrap/Container';
-import { EyeOutlined, HomeOutlined } from "@ant-design/icons";
+import { EyeOutlined, FileSearchOutlined, HomeOutlined } from "@ant-design/icons";
 import { Breadcrumb, Card, Image } from "antd";
 
 import { message, Upload, Button as AntdButton } from 'antd';
@@ -84,7 +84,7 @@ export function ModuleCard(props: {title:React.ReactNode, link:string, imgSrc:st
 }
 
 export const enum PageHeaders {
-    Home, Pepr2vis,
+    Home, Pepr2vis, Pepr2ds
 }
 
 export function PageHeader( props: {headerList: PageHeaders[], title:React.ReactNode, subtitle:React.ReactNode} ){
@@ -97,9 +97,10 @@ export function PageHeader( props: {headerList: PageHeaders[], title:React.React
         : <></>;
 
     const pepr2visHeader = <Breadcrumb.Item> <span> <EyeOutlined className="align-middle"/> PePr<sup>2</sup>Vis</span> </Breadcrumb.Item>;
+    const pepr2dsHeader = <Breadcrumb.Item> <span> <FileSearchOutlined className="align-middle"/> PePr<sup>2</sup>DS</span> </Breadcrumb.Item>;
 
-    const childHeader = props.headerList.length > 1 && props.headerList[1] == PageHeaders.Pepr2vis
-        ? pepr2visHeader 
+    const childHeader = props.headerList.length > 1 
+        ? props.headerList[1] == PageHeaders.Pepr2vis ? pepr2visHeader : pepr2dsHeader
         : <> </> ;
 
     return(<>
