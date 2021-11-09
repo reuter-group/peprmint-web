@@ -2,119 +2,8 @@ import { Select, Statistic, Table } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
-import { MolStarWrapper } from "../molstar";
-import { ControlArea, InputArea } from "./PeprmintControl";
-import { References, PageHeader, PageHeaders } from "./Utils";
-import { VariableSizeGrid as Grid } from 'react-window';
-import ResizeObserver from 'rc-resize-observer';
-import classNames from 'classnames';
+import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 
-function VirtualTable(props: Parameters<typeof Table>[0]) {
-    const { columns, scroll } = props;
-    const [tableWidth, setTableWidth] = useState(0);
-  
-    const widthColumnCount = columns!.filter(({ width }) => !width).length;
-    const mergedColumns = columns!.map(column => {
-      if (column.width) {
-        return column;
-      }
-  
-      return {
-        ...column,
-        width: Math.floor(tableWidth / widthColumnCount),
-      };
-    });
-  
-    const gridRef = useRef<any>();
-    const [connectObject] = useState<any>(() => {
-      const obj = {};
-      Object.defineProperty(obj, 'scrollLeft', {
-        get: () => null,
-        set: (scrollLeft: number) => {
-          if (gridRef.current) {
-            gridRef.current.scrollTo({ scrollLeft });
-          }
-        },
-      });
-  
-      return obj;
-    });
-  
-    const resetVirtualGrid = () => {
-      gridRef.current.resetAfterIndices({
-        columnIndex: 0,
-        shouldForceUpdate: true,
-      });
-    };
-  
-    useEffect(() => resetVirtualGrid, [tableWidth]);
-  
-    const renderVirtualList = (rawData: readonly object[], { scrollbarSize, ref, onScroll }: any) => {
-      ref.current = connectObject;
-      const totalHeight = rawData.length * 54;
-  
-      return (
-        <Grid
-          ref={gridRef}
-          className="virtual-grid"
-          columnCount={mergedColumns.length}
-          columnWidth={(index: number) => {
-            const { width } = mergedColumns[index];
-            return totalHeight > scroll!.y! && index === mergedColumns.length - 1
-              ? (width as number) - scrollbarSize - 1
-              : (width as number);
-          }}
-          height={scroll!.y as number}
-          rowCount={rawData.length}
-          rowHeight={() => 54}
-          width={tableWidth}
-          onScroll={({ scrollLeft }: { scrollLeft: number }) => {
-            onScroll({ scrollLeft });
-          }}
-        >
-          {({
-            columnIndex,
-            rowIndex,
-            style,
-          }: {
-            columnIndex: number;
-            rowIndex: number;
-            style: React.CSSProperties;
-          }) => (
-            <div
-              className={classNames('virtual-table-cell', {
-                'virtual-table-cell-last': columnIndex === mergedColumns.length - 1,
-              })}
-              style={style}
-            >
-              {(rawData[rowIndex] as any)[(mergedColumns as any)[columnIndex].dataIndex]}
-            </div>
-          )}
-        </Grid>
-      );
-    };
-  
-    return (
-      <ResizeObserver
-        onResize={({ width }) => {
-          setTableWidth(width);
-        }}
-      >
-        <Table
-          {...props}
-          className="virtual-table"
-          columns={mergedColumns}
-          pagination={false}
-          components={{
-            body: renderVirtualList,
-          }}
-        />
-      </ResizeObserver>
-    );
-  }
-  
-
-{/* <VirtualTable columns={columns} dataSource={data} scroll={{ y: 300, x: '100vw' }} />, */}
 
 export function Pepr2ds() {
     const title = <span> PePr<sup>2</sup>DS </span>;
@@ -201,7 +90,14 @@ export function Pepr2ds() {
     // ];
     // Usage
   const columns = [
-    { title: 'A', dataIndex: 'key', width: 150 },
+    { title: 'A', dataIndex: 'key', width: 150,
+      filters: [{
+            text: '% 10000 == 0',
+            value: 'notUsed',
+        },     
+        ],
+    onFilter: (_:any, record:any) => record.key % 10000 == 0, 
+    },
     {
         title: 'B',
         dataIndex: 'key',
@@ -253,7 +149,7 @@ export function Pepr2ds() {
             <Row className="my-4">
                 <Col>
                     {/* <Table dataSource={data} columns={columns} /> */}
-                    <VirtualTable columns={columns} dataSource={data} scroll={{ y: 300, x: '100vw' }} />
+                    <VirtualTable columns={columns} dataSource={data} scroll={{ y: 400, x: '100vw' }} />
                 </Col>
             </Row>
 
