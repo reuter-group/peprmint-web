@@ -76,7 +76,17 @@ module.exports = {
                         name: 'image/[name]_[hash:7].[ext]',
                     }
                 }
-            }
+            }, {
+                test: /.*\.(txt|csv)$/i,
+                use: {
+                        loader: 'file-loader',
+                        options: {
+                            name: "asset/[name].[ext]",
+                            emitFile: true,
+                        },
+                    },
+                
+            }   
 
         ]
 
@@ -88,7 +98,7 @@ module.exports = {
     ],
 
     performance: { hints: false },
-    watch: true,
+    // watch: true,
     devtool: "source-map"
 
 };

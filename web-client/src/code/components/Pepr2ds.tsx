@@ -3,117 +3,79 @@ import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
+import Papa from "papaparse";
 
+import csvPath from '../../data/CB.csv';  // set and use this to pack CSV file (?)
+const CSVFILE = 'asset/CB.csv';
 
 export function Pepr2ds() {
+    
     const title = <span> PePr<sup>2</sup>DS </span>;
 
-    // const dataSource = [
-    //     {
-    //         key: '1',
-    //         name: 'PH',
-    //         cathid: '2m14A00',
-    //         pdbid: '2M14',
-    //         uni1: 'P32776',
-    //         uni2: 'TFB1_YEAST',
-    //         atomnum: 262,
-    //     },
-    //     {
-    //         key: '2',
-    //         name: 'PH',
-    //         cathid: '4dx8D00',
-    //         pdbid: '4DX8',
-    //         uni1: 'O14713',
-    //         uni2: 'ITBP1_HUMAN',
-    //         atomnum: 2345,
-    //     },
-    //     {
-    //         key: '3',
-    //         name: 'PH',
-    //         cathid: '4dx8D00',
-    //         pdbid: '4DX8',
-    //         uni1: 'O14713',
-    //         uni2: 'ITBP1_HUMAN',
-    //         atomnum: 2345,
-    //     },
-    //     {
-    //         key: '4',
-    //         name: 'PH',
-    //         cathid: '4dx8D00',
-    //         pdbid: '4DX8',
-    //         uni1: 'O14713',
-    //         uni2: 'ITBP1_HUMAN',
-    //         atomnum: 2345,
-    //     },
-    //     {
-    //         key: '5',
-    //         name: 'PH',
-    //         cathid: '4dx8D00',
-    //         pdbid: '4DX8',
-    //         uni1: 'O14713',
-    //         uni2: 'ITBP1_HUMAN',
-    //         atomnum: 2345,
-    //     },
-    // ];
+    const [tableData, setTableData] = useState<any[]>([])
+    const [tableLength, setTableLength] = useState(0);
 
-    // const columns = [
-    //     {
-    //         title: 'Domain',
-    //         dataIndex: 'name',
-    //         key: 'name',
-    //     },
-    //     {
-    //         title: 'Cath ID',
-    //         dataIndex: 'cathid',
-    //         key: 'cathid',
-    //     },
-    //     {
-    //         title: 'PDB ID',
-    //         dataIndex: 'pdbid',
-    //         key: 'pdbid',
-    //     },
-    //     {
-    //         title: 'Uniprot_acc',
-    //         dataIndex: 'uni1',
-    //         key: 'uni1',
-    //     },
-    //     {
-    //         title: 'Uniprot_id',
-    //         dataIndex: 'uni2',
-    //         key: 'uni2',
-    //     },
-    //     {
-    //         title: 'Atom number',
-    //         dataIndex: 'atomnum',
-    //         key: 'atomnum',
-    //     },
-    // ];
-    // Usage
-  const columns = [
-    { title: 'A', dataIndex: 'key', width: 150,
-      filters: [{
-            text: '% 10000 == 0',
-            value: 'notUsed',
-        },     
-        ],
-    onFilter: (_:any, record:any) => record.key % 10000 == 0, 
-    },
-    {
-        title: 'B',
-        dataIndex: 'key',
-        width: 150,
-        // defaultSortOrder: 'descend',
-        sorter: (a:any, b:any) => a.key - b.key,
-      },
+    useEffect(() => {                    
+        const loadData =  async() => {
+            console.log(`loading ${csvPath}`);
+            const csvData = await fetch(CSVFILE).then(res => res.text() );
+            const table = Papa.parse(csvData, { header: true});
+            console.log(`loaded ${table.data.length} rows `);
 
-    { title: 'C', dataIndex: 'key' },
-    { title: 'D', dataIndex: 'key' },
-    { title: 'E', dataIndex: 'key', width: 200 },
-    { title: 'F', dataIndex: 'key', width: 100 },
-  ];
+            const shortTableData =  table.data.map((data:any, i) => { return {
+                rowId: i,
+                domain: data.domain ,
+                cathpdb: data.cathpdb,
+                pdb: data.pdb,
+                uniprot_acc: data.uniprot_acc,
+                uniprot_id: data.uniprot_id,
+                atom_number: data.atom_number,
+            }}); 
+          
+            setTableData(shortTableData);
+            setTableLength(shortTableData.length);
+        } ;           
+        
+        loadData();
+
+    }, []);   
   
-  const data = Array.from({ length: 100000 }, (_, key) => ({ key }));
 
+    const columns = [
+        { title: '#', dataIndex: 'rowId', key: 'rowId' },
+        { title: 'Domain', dataIndex: 'domain', key: 'name'},
+        { title: 'Cath ID', dataIndex: 'cathpdb', key: 'cathpdb'},        
+        { title: 'PDB ID', dataIndex: 'pdb', key: 'pdb'},
+        { title: 'Uniprot_acc', dataIndex: 'uniprot_acc', key: 'uni1'},
+        { title: 'Uniprot ID', dataIndex: 'uniprot_id', key: 'uni2'},
+        { title: 'Atom number', dataIndex: 'atom_number', key: 'an', 
+            sorter: (a:any, b:any) => a.atom_number - b.atom_number,
+        },             
+    ];
+    // Usage
+//   const columns = [
+//     { title: 'A', dataIndex: 'key', width: 150,
+//       filters: [{
+//             text: '% 10000 == 0',
+//             value: 'notUsed',
+//         },     
+//         ],
+//     onFilter: (_:any, record:any) => record.key % 10000 == 0, 
+//     },
+//     {
+//         title: 'B',
+//         dataIndex: 'key',
+//         width: 150,
+//         // defaultSortOrder: 'descend',
+//         sorter: (a:any, b:any) => a.key - b.key,
+//       },
+
+//     { title: 'C', dataIndex: 'key' },
+//     { title: 'D', dataIndex: 'key' },
+//     { title: 'E', dataIndex: 'key', width: 200 },
+//     { title: 'F', dataIndex: 'key', width: 100 },
+//   ];
+  
     const { Option } = Select;
 
     return (
@@ -145,11 +107,11 @@ export function Pepr2ds() {
                     </Select>
                 </Col>               
             </Row>
-
+            
+            
             <Row className="my-4">
                 <Col>
-                    {/* <Table dataSource={data} columns={columns} /> */}
-                    <VirtualTable columns={columns} dataSource={data} scroll={{ y: 400, x: '100vw' }} />
+                    <VirtualTable title={() => `${tableLength} Rows`} columns={columns} dataSource={tableData} scroll={{ y: 400, x: '100vw' }} />
                 </Col>
             </Row>
 
