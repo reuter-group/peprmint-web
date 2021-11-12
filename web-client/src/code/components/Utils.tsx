@@ -71,7 +71,8 @@ const { Meta } = Card;
 export function ModuleCard(props: {title:React.ReactNode, link:string, imgSrc:string, 
      cardSubtitle?: React.ReactNode, cardContent?:React.ReactNode}){
 
-    const cover = <span className="border-bottom border-primary"> <Image src={props.imgSrc} className="my-3" preview={false}/> </span>;
+    const cover = <span className="border-bottom border-primary"> 
+      <Image src={props.imgSrc} preview={false}/> </span>;
                 
     return (
         <Col className="col-5 my-3"> 
