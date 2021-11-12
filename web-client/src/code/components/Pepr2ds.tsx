@@ -7,8 +7,8 @@ import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 import Papa from "papaparse";
 
 // CSV data file
-// import csvPath from '../../data/CB.csv';  // set and use this to pack CSV file (?)
-import csvPath from '../../data/4ekuA03.csv';
+// import csvPath from '../../datasets/CB.csv';  // set and use this to pack CSV file (?)
+import csvPath from '../../datasets/4ekuA03.csv';
 
 // const CSVFILE = 'asset/CB.csv';
 const CSVFILE = 'asset/4ekuA03.csv'
