@@ -64,7 +64,11 @@ export function Pepr2ds() {
             onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
 
         },
-        { title: 'Cath ID', dataIndex: 'cathpdb', width: 80, },     
+        { title: 'Cath ID', dataIndex: 'cathpdb', width: 80, render: (cathId:any) => 
+            // <Link to={ {pathname: "/pepr2vis/"+cathId, } }  > {cathId} </Link>
+            <Link to= {"/pepr2vis/" + cathId }> {cathId} </Link>
+
+        },     
         {
             title: 'Atom number', dataIndex: 'atom_number', width: 75,
             sorter: (a: any, b: any) => a.atom_number - b.atom_number,

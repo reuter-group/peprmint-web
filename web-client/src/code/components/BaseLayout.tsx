@@ -105,7 +105,8 @@ export default function App(){
         <Router>
             <Container fluid className="px-0 py-0">
                 <Switch>
-                    <Route exact path="/pepr2vis">  <Header />  <Pepr2vis /> </Route> 
+                    <Route path="/pepr2vis/:pdbid"> <Header />  <Pepr2vis/> </Route> 
+                    <Route exact path="/pepr2vis"> <Header />  <Pepr2vis/> </Route> 
                     <Route exact path="/pepr2ds">  <Header />  <Pepr2ds /> </Route>                  
                     <Route exact path="/"> <Home /> </Route>
                 </Switch>      
