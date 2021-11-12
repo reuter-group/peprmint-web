@@ -28,9 +28,15 @@ npx webpack serve  # development mode, automatically re-compile for new file cha
 ### V1.2
 - [x] update logo, name (PePr^2Vis), and page layout
 - [x] add neighborhood information
-- [ ] add license
-- [ ] migrate website URL (to affiliated institute domain) for formal release
 
+### V1.3
+- [ ] add PePr^2DS beta version
+
+### V1.4
+- [ ] more features(TBD)/optmization for PePr^2DS 
+- [ ] add more documentation/information
+- [ ] choose a license
+- [ ] migrate website URL (to affiliated institute domain) 
 
 ### Features TBD
 - [ ] export report/script for external use, e.g. in PyMol
