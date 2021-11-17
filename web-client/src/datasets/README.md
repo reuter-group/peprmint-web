@@ -12,6 +12,8 @@
 | `pdb`  | `pdb`  | PDB ID  | 4 characters | N | -  |
 | `uniprot_acc` | `uacc` | Uniprot Accession number | ? | N | ? |
 | `uniprot_id` | `uid` | Uniprot ID | ? | N | ? |
+| `atom_number` | `anu` | atom number | integers | Y | |
+| `atom_name` | `ana` | atom name | string: CA/CB | Y | |
 | `residue_name` | `rna` | residue name | 3 characters, uppercase | Y | - |
 | `IBS` | `ibs` | binding sites? | ? | N | ? |
 | `chain_id` | `chain` | chain name | one character | ? | ? |
@@ -23,7 +25,6 @@
 | `data_type`| `dt` | source database | fixed strings: cathpdb/alphafold (?) | Y | | 
 |`Experimental Method` | `em` | experiment method for obtaining the structure? | strings | ? | |
 | `resolution` | `rsl` | strcuture resolution | float numbers? | ? | |
-| `RSA_total_freesasa_tien` |  |  |  ? | ? | |
 | `convhull_vertex` | `cv` | convex hull flag  | bool: `True/False` | Y | |
 | `protrusion` | `pro` | protrusion flag | bool: `True/False` | Y | |
 | `is_hydrophobic_protrusion` | `hypro` | hydrophobic protrusion flag | bool: `True/False` | Y | |
@@ -38,6 +39,7 @@
 | `uniref50` | `u50` | Representative uniprot_acc for cluster with 50% of idendity |  string | N | |
 | `uniref90` | `u90` | Representative uniprot_acc for cluster with 90% of idendity |  string | N | |
 | `uniref100` | `u100` | Representative uniprot_acc for cluster with 100% of idendity |  string | N | |
+| `residue_index` | `rin` | residue  index | number | Y | may be different from `residue_number` |   
 | `origin` | `origin` | ? |  ? | ? | |
 | `location` | `loc` | Location of the protein in the cell |  ? | ? | |
 | `taxon` | `taxon` | ? |  ? | ? | |
