@@ -1,49 +1,47 @@
-#### Dataset Nots:
+### Dataset Notes:
 1. This folder contains the raw dataset for serving the website **PePr2DS**
-- `[PePr2DS.csv](https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv)`: the complete dataset 
+- `PePr2DS.csv`([source data](https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv)): the complete dataset 
 - `4ekuA03.csv` and `CB.csv`: smaller ones for development test purpose
 
-2. The meaning of each dataset column and their re-names in the code (for performance concern) is as follows:
+2. Information for each dataset column:
 
-| Column | Rename | Meaning | Data type | Other info. |
-|--------|--------|---------|-----------|-------------|
-| `domain` | `dm` | domain name | fixed strings |  -  |
-| `cathpdb` | `cath` | CATH ID | 7 characters  | -  |
-| `pdb`  | `pdb`  | PDB ID  | 4 characters | -  |
-
+| Column | Shorter name* | Meaning | Data type | Required** | Additional info. |
+|--------|--------|---------|-----------|-------------|--------|
+| `domain` | `dm` | domain name | fixed strings | Y | -  |
+| `cathpdb` | `cath` | CATH ID | 7 characters  | N | -  |
+| `pdb`  | `pdb`  | PDB ID  | 4 characters | N | -  |
+| `uniprot_acc` | `uacc` | Uniprot Accession number | ? | N | ? |
+| `uniprot_id` | `uid` | Uniprot ID | ? | N | ? |
+| `residue_name` | `rna` | residue name | 3 characters, uppercase | Y | - |
+| `IBS` | `ibs` | binding sites? | ? | N | ? |
+| `chain_id` | `chain` | chain name | one character | ? | ? |
+| `residue_number` | `rnu` | residue id/number | integers | Y | |
+| `b_factor` | `bf` |  Bfactor of each atom | ? | N | |
+| `sec_struc`| `ss` | secondary structure | one character: H/B/E/G/I/T/S/- (?) | Y | |
+| `sec_struc_full`| `ssf` | ? | ? | ?| ? |
+|`prot_block`| `pb` | ? | ? | ?| ? |
+| `data_type`| `dt` | source database | fixed strings: cathpdb/alphafold (?) | Y | | 
+|`Experimental Method` | `em` | experiment method for obtaining the structure? | strings | ? | |
+| `resolution` | `rsl` | strcuture resolution | float numbers? | ? | |
+| `RSA_total_freesasa_tien` |  |  |  ? | ? | |
+| `convhull_vertex` | `cv` | convex hull flag  | bool: `True/False` | Y | |
+| `protrusion` | `pro` | protrusion flag | bool: `True/False` | Y | |
+| `is_hydrophobic_protrusion` | `hypro` | hydrophobic protrusion flag | bool: `True/False` | Y | |
+| `is_co_insertable` | `coin` | co-insertable flag | bool: `True/False` | Y | |
+|`neighboursList` | `nbl` | neighbour residue number list | string of numbers | N | |
+| `density` | `den` | protein density | integer | N | |
+| `exposition` | `expo` | exposition flag?  |  ? | ? | |
+| `S35` | `s35` | Cath Cluster number at 35% of idendity  |  numbers | N | |
+| `S60` | `s60` | Cath Cluster number at 60% of idendity  |  numbers | N | |
+| `S95` | `s95` | Cath Cluster number at 95% of idendity  |  numbers | N | |
+| `S100` | `s100` | Cath Cluster number at 100% of idendity  |  numbers | N | |
+| `uniref50` | `u50` | Representative uniprot_acc for cluster with 50% of idendity |  string | N | |
+| `uniref90` | `u90` | Representative uniprot_acc for cluster with 90% of idendity |  string | N | |
+| `uniref100` | `u100` | Representative uniprot_acc for cluster with 100% of idendity |  string | N | |
+| `origin` | `origin` | ? |  ? | ? | |
+| `location` | `loc` | Location of the protein in the cell |  ? | ? | |
+| `taxon` | `taxon` | ? |  ? | ? | |
 ```
-1. `domain` -> `dm`: domain name
-2. `cathpdb` -> `cath`: cath ID, 7 characters
-3. `pdb`: pdb ID, 4 characters
-4. `uniprot_acc` -> `uacc`: 
-5. `uniprot_id` -> `uid`:
-6. `residue_name` -> `rname`: residue name, 3 characters 
-7. `IBS` -> `ibs`:
-8. `chain_id` -> `chain`: chain ID, one character(?)
-9. `residue_number` -> `rnum`: residue number 
-10. `b_factor` -> `bf`: b-factor 
-11. `sec_struc` -> `ss`: secondary structure, one character
-12. `sec_struc_full` -> `ssf`: ?
-13. `prot_block` -> `prot`: ?
-14. `data_type`
-Experimental Method
-resolution
-RSA_total_freesasa_tien
-convhull_vertex
-protrusion
-is_hydrophobic_protrusion
-is_co_insertable,
-neighboursList
-density
-exposition
-S35
-S60
-S95
-S100
-uniref50
-uniref90
-uniref100
-origin
-location
-taxon
+* Shorter name: used in the website front-end source code for better readability/less memeory; all in lowercase
+** Required: whether this value must be present 
 ```
