@@ -1,6 +1,7 @@
 ### Dataset Notes:
 1. This folder contains the raw dataset for serving the website **PePr2DS**
 - `PePr2DS.csv`([source data](https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv)): the complete dataset 
+    - `dataset_<domain>.csv`: generated from the complete dataset by running `dataset_preprocess.sh`
 - `4ekuA03.csv` and `CB.csv`: smaller ones for development test purpose
 
 2. Information for each dataset column:
