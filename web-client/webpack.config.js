@@ -77,11 +77,11 @@ module.exports = {
                     }
                 }
             }, {
-                test: /.*\.(txt|csv)$/i,
+                test: /.*\.csv$/i,
                 use: {
                         loader: 'file-loader',
                         options: {
-                            name: "asset/[name].[ext]",
+                            name: "datasets/[name].[ext]",
                             emitFile: true,
                         },
                     },

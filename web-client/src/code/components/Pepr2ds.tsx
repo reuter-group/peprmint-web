@@ -6,18 +6,34 @@ import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 import Papa from "papaparse";
 
-// CSV data file
-// import csvPath from '../../datasets/CB.csv';  // set and use this to pack CSV file (?)
-import csvPath from '../../datasets/domain_PH.csv';
-
-// const CSVFILE = 'asset/CB.csv';
-const CSVFILE = (domain:string) => `asset/domain_${domain}.csv`;
-
 // configurable options
 export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'ENTH', 'PH', 'PLA', 'PLD', 'PX', 'START'];
 export const DATA_SOURCES = ['CATH', 'AlphaFold'];
+const defaultDomain = DOMAINS[1] ; // C1
 
-const defaultDomain = DOMAINS[5] ; // PH 
+// import all csv files under datasets/
+function importAllDatasets(r: __WebpackModuleApi.RequireContext) {
+    let datasets: any = {};
+    r.keys().map((fileName: string) => { datasets[fileName] = r(fileName).default; });
+    return datasets;
+}
+
+const DATASET_IMPORTS = importAllDatasets(require.context('../../datasets/', true, /\.csv$/));
+const csvUrl = (domain:string) => DATASET_IMPORTS[`./domain_${domain.toUpperCase()}.csv`];
+
+const datasetTable = new Set<string>();
+
+const loadCsvTable = async (domain:string) => {
+    const csvData = await fetch(csvUrl(domain)).then(res => res.text());
+    const table = Papa.parse(csvData, { header: true });
+
+    datasetTable.add(domain)
+    console.log(`loaded ${table.data.length} rows, datasetTable: `, datasetTable); 
+
+    return table.data.map((data: any, i) => {
+        return { ...data, key: `${domain}-${i}` }
+    });
+} 
 
 
 export function Pepr2ds() {
@@ -25,28 +41,18 @@ export function Pepr2ds() {
     const title = <span> PePr<sup>2</sup>DS </span>;
 
     const [tableData, setTableData] = useState<any[]>([])
-    const [tableLength, setTableLength] = useState(0);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const updateTableData = async (domains:string[]) => {        
+        setLoading(true);   
+        const newData = await loadCsvTable(domains[domains.length-1]);
+        setTableData([...tableData, ...newData]);
+        setLoading(false);
+    };
+ 
 
-        const loadData = async () => {
-            console.log(`loading ${csvPath}`);
-            const csvData = await fetch(CSVFILE(defaultDomain)).then(res => res.text());
-            const table = Papa.parse(csvData, { header: true });
-            console.log(`loaded ${table.data.length} rows `);
-
-            const rawTableData = table.data.map((data: any, i) => {
-                return { ...data, key: i + 1 }
-            });
-
-            setTableData(rawTableData);
-            setTableLength(rawTableData.length);
-            setLoading(false);
-        };
-
-        loadData();
-
+    useEffect(() => {         
+        updateTableData([defaultDomain]); // load default dataset       
     }, []);
 
 
@@ -131,13 +137,18 @@ export function Pepr2ds() {
     const dataSourceOptions = DATA_SOURCES.map(ds =>
         <Option value={ds.toLowerCase()} key={ds.toLowerCase()}> {ds} </Option>)
 
-    const changeTable = () => {
-        console.log('change table...')
-        setTableLength(tableData.length);
-    }
+    // const changeTable = (p:any) => {
+    //     console.log('change table...', p)
+    //     // setTableLength(tableData.length);
+    // }
 
-    const loadDomainDataset = (domains:string[]) => {
+    function changeTable(pagination: any, filters: any, sorter: any, extra: any) {
+        console.log('change table...', pagination, filters, sorter, extra);
+      }
+
+    const changeDomainSelections = (domains:string[]) => {
         console.log(`selected ${domains}`);
+        updateTableData(domains.map(d => d.toUpperCase()))
     }
 
     return (
@@ -159,7 +170,7 @@ export function Pepr2ds() {
                         mode="multiple"
                         allowClear
                         placeholder="Select domains"
-                        onChange={loadDomainDataset}
+                        onChange={changeDomainSelections}
                         style={{ width: 450 }}>
                         {domainSelectOptions}
                     </Select>
@@ -177,7 +188,7 @@ export function Pepr2ds() {
                 <Col>
                     <Table bordered
                         loading={loading}
-                        title={() => `Loaded ${tableLength} rows`}
+                        title={() => `Loaded ${tableData.length} rows`}
                         columns={columns}
                         dataSource={tableData}
                         onChange={changeTable}
