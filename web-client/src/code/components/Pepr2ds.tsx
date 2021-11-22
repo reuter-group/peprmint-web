@@ -7,7 +7,7 @@ import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 import Papa from "papaparse";
 
 // configurable options
-export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'ENTH', 'PH', 'PLA', 'PLD', 'PX', 'START'];
+export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'PH', 'PLA', 'PLD', 'PX', 'START'];
 export const DATA_SOURCES = ['CATH', 'AlphaFold'];
 const defaultDomain = DOMAINS[1] ; // C1
 
@@ -21,20 +21,17 @@ function importAllDatasets(r: __WebpackModuleApi.RequireContext) {
 const DATASET_IMPORTS = importAllDatasets(require.context('../../datasets/', true, /\.csv$/));
 const csvUrl = (domain:string) => DATASET_IMPORTS[`./domain_${domain.toUpperCase()}.csv`];
 
-const datasetTable = new Set<string>();
 
 const loadCsvTable = async (domain:string) => {
     const csvData = await fetch(csvUrl(domain)).then(res => res.text());
-    const table = Papa.parse(csvData, { header: true });
-
-    datasetTable.add(domain)
-    console.log(`loaded ${table.data.length} rows, datasetTable: `, datasetTable); 
-
+    const table = Papa.parse(csvData, { header: true, skipEmptyLines: true});
+    console.log(`loaded ${table.data.length} row data`); 
     return table.data.map((data: any, i) => {
         return { ...data, key: `${domain}-${i}` }
     });
 } 
 
+let selectedDomains = new Set<string>();
 
 export function Pepr2ds() {
 
@@ -43,16 +40,23 @@ export function Pepr2ds() {
     const [tableData, setTableData] = useState<any[]>([])
     const [loading, setLoading] = useState(true);
 
-    const updateTableData = async (domains:string[]) => {        
+    const addDomainTableData = async (domain:string) => {        
         setLoading(true);   
-        const newData = await loadCsvTable(domains[domains.length-1]);
+        selectedDomains.add(domain);
+        const newData = await loadCsvTable(domain);
         setTableData([...tableData, ...newData]);
         setLoading(false);
     };
- 
+    
+    const deleteDomainTableData = (domain:string) => {
+        console.log('deleting..',domain, tableData.filter(d => d.dm != domain ).length)
+        if(selectedDomains.has(domain)) selectedDomains.delete(domain);
+        setTableData(tableData.filter(d => d.dm != domain ));
+    }
 
     useEffect(() => {         
-        updateTableData([defaultDomain]); // load default dataset       
+        addDomainTableData(defaultDomain); // load default dataset     
+        console.log(selectedDomains)  
     }, []);
 
 
@@ -132,7 +136,7 @@ export function Pepr2ds() {
     const { Option } = Select;
 
     const domainSelectOptions = DOMAINS.map(domain =>
-        <Option value={domain.toLowerCase()} key={domain.toLowerCase()}> {domain} </Option>)
+        <Option value={domain} key={domain}> {domain} </Option>)
 
     const dataSourceOptions = DATA_SOURCES.map(ds =>
         <Option value={ds.toLowerCase()} key={ds.toLowerCase()}> {ds} </Option>)
@@ -147,8 +151,17 @@ export function Pepr2ds() {
       }
 
     const changeDomainSelections = (domains:string[]) => {
-        console.log(`selected ${domains}`);
-        updateTableData(domains.map(d => d.toUpperCase()))
+        console.log(`selected ${domains}`, selectedDomains);
+
+        if(domains.length >= selectedDomains.size) {
+            console.log('adding...', domains.filter(d => !selectedDomains.has(d)))
+            domains.filter(d => !selectedDomains.has(d)).map(addDomainTableData) 
+        }else{
+            selectedDomains.forEach(d => {
+                if(!domains.includes(d)) deleteDomainTableData(d);
+            })
+        } 
+       
     }
 
     return (
