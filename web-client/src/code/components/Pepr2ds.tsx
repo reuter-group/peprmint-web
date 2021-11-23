@@ -1,7 +1,7 @@
-import { Select, Spin, Statistic, Table } from "antd";
+import { Select, Statistic, Table } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row } from "react-bootstrap";
-import { CheckCircleTwoTone } from "@ant-design/icons";
+import { CheckCircleTwoTone, DownloadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 import Papa from "papaparse";
@@ -71,12 +71,13 @@ export function Pepr2ds() {
         // { title: '#', dataIndex: 'key', width: 70, },
         {
             title: 'Domain', dataIndex: 'dm', width: 80,
+            sorter: (a: any, b: any) => DOMAINS.indexOf(a.dm) - DOMAINS.indexOf(b.dm),
+            // sortDirections: ['descend'],
             // filters: DOMAINS.map(domain => { return { text: domain, value: domain.toLowerCase() } }),
             // onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
 
         },
         { title: 'Cath ID', dataIndex: 'cath', width: 80, render: (cathId:any) => 
-            // <Link to={ {pathname: "/pepr2vis/"+cathId, } }  > {cathId} </Link>
             <Link to= {"/pepr2vis/" + cathId }> {cathId} </Link>
 
         },     
@@ -170,10 +171,13 @@ export function Pepr2ds() {
                 title={title}
                 subtitle={"Peripheral Protein Protrusion DataSet"}
             />
-            <Row>
-                <Col md={2} className="bg-light mx-2 py-2" > <Statistic title="Protein structures" value={6084} /> </Col>
-                <Col md={2} className="bg-light mx-2 py-2" > <Statistic title="Protein domains" value={10} /> </Col>
-                <Col md={2} className="bg-light mx-2 py-2" > <Statistic title="Download dataset" value={"156 MB"} /> </Col>
+            <Row className="mb-5">
+                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={6084} /> </Col>
+                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={DOMAINS.length} /> </Col>
+                <Col md={2} className="bg-light mx-4 py-2 border" > 
+                    <Statistic title="Whole dataset" value="156 MB" /> 
+                        <small><a className="text-muted" href="https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv">
+                        <DownloadOutlined /> download</a> </small></Col>
             </Row>
 
             <Row className="my-4">
@@ -201,14 +205,14 @@ export function Pepr2ds() {
                 <Col>
                     <Table bordered
                         loading={loading}
-                        title={() => `Loaded ${tableData.length} rows`}
+                        title={() => <span>Loaded <b>{tableData.length} </b> rows</span>}
                         columns={columns}
                         dataSource={tableData}
                         onChange={changeTable}
                         scroll={{ y: 600, x: '100vw' }}
                         size="small"
                         pagination={{ pageSize: 100 }}
-                        footer={() => <span> <b>V</b>: convex hull vertex; <b>V</b>: protrusion; <b>H</b>: hydrophobic protrusion; <b>C</b>: co-insertable H<br/> 
+                        footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion; <b>C</b>: co-insertable H<br/> 
                                         <b>SS</b>: secondary structure </span> }
                     />
                 </Col>
