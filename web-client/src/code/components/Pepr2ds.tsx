@@ -75,7 +75,6 @@ export function Pepr2ds() {
             // sortDirections: ['descend'],
             // filters: DOMAINS.map(domain => { return { text: domain, value: domain.toLowerCase() } }),
             // onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
-
         },
         { title: 'Cath ID', dataIndex: 'cath', width: 80, render: (cathId:any) => 
             <Link to= {"/pepr2vis/" + cathId }> {cathId} </Link>
@@ -83,7 +82,7 @@ export function Pepr2ds() {
         },     
         {
             title: 'Atom number', dataIndex: 'anu', width: 75,
-            sorter: (a: any, b: any) => a.atom_number - b.atom_number,
+            sorter: (a: any, b: any) => a.anu - b.anu,
         },
         { title: 'Chain', dataIndex: 'chain', width: 60, },
         {
@@ -96,7 +95,7 @@ export function Pepr2ds() {
         // { title: 'Atom name', dataIndex: 'atom_name', width:}, 
         {
             title: 'IBS', dataIndex: 'ibs', width: 60, render: trueFalseRender, filters: trueFalseFilter,
-            onFilter: (value: any, record: any) => record.IBS && record.IBS.toLowerCase().includes(value)
+            onFilter: (value: any, record: any) => record.ibs && record.ibs.toLowerCase().includes(value)
         },
 
         {
@@ -104,22 +103,22 @@ export function Pepr2ds() {
             children: [
                 {
                     title: 'V', dataIndex: 'cv', width: 40, render: trueFalseRender, filters: trueFalseFilter,
-                    onFilter: (value: any, record: any) => record.convhull_vertex && record.convhull_vertex.toLowerCase().includes(value)
+                    onFilter: (value: any, record: any) => record.cv && record.cv.toLowerCase().includes(value)
                 },
 
                 {
                     title: 'P', dataIndex: 'pro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
-                    onFilter: (value: any, record: any) => record.protrusion && record.protrusion.toLowerCase().includes(value)
+                    onFilter: (value: any, record: any) => record.pro && record.pro.toLowerCase().includes(value)
                 },
 
                 {
                     title: 'H', dataIndex: 'hypro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
-                    onFilter: (value: any, record: any) => record.is_hydrophobic_protrusion && record.is_hydrophobic_protrusion.toLowerCase().includes(value)
+                    onFilter: (value: any, record: any) => record.hypro && record.hypro.toLowerCase().includes(value)
                 },
 
                 {
                     title: 'C', dataIndex: 'coin', width: 40, render: trueFalseRender, filters: trueFalseFilter,
-                    onFilter: (value: any, record: any) => record.is_hydrophobic_protrusion && record.is_co_insertable.toLowerCase().includes(value)
+                    onFilter: (value: any, record: any) => record.coin && record.coin.toLowerCase().includes(value)
                 },
                 {
                     title: 'neighboursID', dataIndex: 'nbl', width: 120
@@ -165,6 +164,18 @@ export function Pepr2ds() {
        
     }
 
+ 
+    const tableTitle = () => { 
+        let domainLengthRender = [];
+        for (let d of DOMAINS) { 
+            const domainLength = tableData.filter(r=>r.dm == d).length;
+            if(domainLength >0 ) domainLengthRender.push(
+                <span key={d} className="text-muted"> <b>{d} </b> {domainLength}; </span>)  
+        }     
+        const prefix = domainLengthRender.length > 0 ? <span>, including </span> : <> </>
+        return <span>Loaded <b>{tableData.length} </b> rows {prefix} {domainLengthRender}</span>
+    } 
+                    
     return (
         <Container>
             <PageHeader headerList={[PageHeaders.Home, PageHeaders.Pepr2ds]}
@@ -205,7 +216,7 @@ export function Pepr2ds() {
                 <Col>
                     <Table bordered
                         loading={loading}
-                        title={() => <span>Loaded <b>{tableData.length} </b> rows</span>}
+                        title={tableTitle}
                         columns={columns}
                         dataSource={tableData}
                         onChange={changeTable}
