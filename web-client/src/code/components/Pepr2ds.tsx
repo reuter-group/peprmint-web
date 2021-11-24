@@ -5,11 +5,13 @@ import { CheckCircleTwoTone, DownloadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 import Papa from "papaparse";
+import { validCathId, validPdbID } from "../helpers";
 
 // configurable options
 export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'PH', 'PLA', 'PLD', 'PX', 'START'];
 export const DATA_SOURCES = ['CATH', 'AlphaFold'];
 const defaultDomain = DOMAINS[1] ; // C1
+export const RESIDUES = ['ALA','ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']; 
 
 // import all csv files under datasets/
 function importAllDatasets(r: __WebpackModuleApi.RequireContext) {
@@ -70,31 +72,35 @@ export function Pepr2ds() {
         // NOTE: dataIndex must be the same as the headers in CSV table
         // { title: '#', dataIndex: 'key', width: 70, },
         {
-            title: 'Domain', dataIndex: 'dm', width: 80,
+            title: 'Domain', dataIndex: 'dm', width: 70,
             sorter: (a: any, b: any) => DOMAINS.indexOf(a.dm) - DOMAINS.indexOf(b.dm),
             // sortDirections: ['descend'],
             // filters: DOMAINS.map(domain => { return { text: domain, value: domain.toLowerCase() } }),
             // onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
         },
-        { title: 'Cath ID', dataIndex: 'cath', width: 80, render: (cathId:any) => 
-            <Link to= {"/pepr2vis/" + cathId }> {cathId} </Link>
-
+        { title: 'PDB ID', dataIndex: 'pdb', width: 60, render: (pdbid:any) => 
+            validPdbID(pdbid)? <Link to= {"/pepr2vis/" + pdbid }> {pdbid} </Link> : <>{pdbid}</> },
+        { title: 'Cath ID', dataIndex: 'cath', width: 70, render: (cathId:any) => 
+            validCathId(cathId)?<Link to= {"/pepr2vis/" + cathId }> {cathId} </Link> : <>{cathId}</>
         },     
         {
             title: 'Atom number', dataIndex: 'anu', width: 75,
             sorter: (a: any, b: any) => a.anu - b.anu,
         },
-        { title: 'Chain', dataIndex: 'chain', width: 60, },
+        { title: 'Chain', dataIndex: 'chain', width: 50, },
         {
             title: 'Residue',
             children: [
-                { title: <span className="font-weight-light"> name </span>, dataIndex: 'rna', width: 60, key: 'resname' },
+                { title: <span className="font-weight-light"> name </span>, dataIndex: 'rna', width: 60, key: 'resname',
+                    filters: RESIDUES.map(r => { return { text: r, value: r} }),
+                    onFilter: (value: any, record: any) => record.rna.includes(value) 
+                },
                 { title: <span className="font-weight-light"> id </span>, dataIndex: 'rnu', width: 60, key: 'resnum' },
             ]
         },
         // { title: 'Atom name', dataIndex: 'atom_name', width:}, 
         {
-            title: 'IBS', dataIndex: 'ibs', width: 60, render: trueFalseRender, filters: trueFalseFilter,
+            title: 'IBS', dataIndex: 'ibs', width: 50, render: trueFalseRender, filters: trueFalseFilter,
             onFilter: (value: any, record: any) => record.ibs && record.ibs.toLowerCase().includes(value)
         },
 
@@ -125,10 +131,13 @@ export function Pepr2ds() {
                 }
             ]
         },
-        { title: 'SS*', dataIndex: 'ss', width: 60, },
-        { title: 'PDB ID', dataIndex: 'pdb', width: 60, },
-        { title: 'Uniprot_acc', dataIndex: 'uacc', width: 100 },
-        { title: 'Uniprot ID', dataIndex: 'uid', width: 110, },
+        { title: 'SS*', dataIndex: 'ss', width: 45, 
+            filters: ['H', 'E', 'C'].map(ss => { return { text: ss, value: ss } }),
+            onFilter: (value: any, record: any) => record.ss.includes(value)
+        },        
+        { title: 'Uniprot_acc', dataIndex: 'uacc', width: 100, render: (uacc:any) => 
+            uacc? <a href= {"https://www.uniprot.org/uniprot/" + uacc }> {uacc} </a> : <>{uacc}</>  },
+        // { title: 'Uniprot ID', dataIndex: 'uid', width: 110, },
         { title: 'Experimental Method', dataIndex: 'em', width: 110}
     ];
 

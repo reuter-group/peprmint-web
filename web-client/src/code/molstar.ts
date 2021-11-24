@@ -38,9 +38,9 @@ export const LOW_DENSITY_THRESHOLD = 22;
 export const DISTANCE_CUTOFF = 10;  // 1 nm
 export const HYDROPHOBICS = ['LEU', 'ILE', 'PHE', 'TYR', 'TRP', 'CYS', 'MET'];
 
-const URL_BCIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId + '.bcif'
+const URL_BCIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId.toLowerCase() + '.bcif'
 // const URL_CIF = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/' + pdbId + '.cif'
-const URL_PDB = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb' + pdbId + '.ent'
+const URL_PDB = (pdbId: string) => 'https://www.ebi.ac.uk/pdbe/entry-files/download/pdb' + pdbId.toLowerCase() + '.ent'
 const URL_CATH = (cathId: string) => `https://www.cathdb.info/version/v4_3_0/api/rest/id/${cathId}.pdb`
 
 type CaCbSelectionParam = {
