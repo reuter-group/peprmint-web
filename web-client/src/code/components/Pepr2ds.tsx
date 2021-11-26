@@ -128,11 +128,11 @@ export function Pepr2ds() {
                     title: 'C', dataIndex: 'coin', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.coin && record.coin.toLowerCase().includes(value)
                 },
-                // {
-                //     title: 'E', dataIndex: 'expo', width: 40, 
-                //     render: trueFalseRender, filters: trueFalseFilter,
-                //     onFilter: (value: any, record: any) => record.expo && record.expo.toLowerCase().includes('exposed')
-                // },
+                {
+                    title: 'E', dataIndex: 'expo', width: 40, 
+                    render: trueFalseRender, filters: trueFalseFilter,
+                    onFilter: (value: any, record: any) => record.expo && record.expo.toLowerCase().includes(value)
+                },
                 {
                     title: 'neighboursID', dataIndex: 'nbl', width: 120
                 }
@@ -200,9 +200,8 @@ export function Pepr2ds() {
     }
 
 
-    const changeDataSourceSelections = (dataSource:string) => {
-        console.log(`selected ${dataSource}`);
-        if(dataSource == 'AlphaFold') setTableData(tableData.filter(d => d.dt == 'alfafold' ));  
+    const changeDataSourceSelections = (dataSource:string) => {        
+        if(dataSource == 'AlphaFold') setTableData(tableData.filter(d => d.dt == 'alphafold' ));  
         if(dataSource == 'CATH') setTableData(tableData.filter(d => d.dt == 'cathpdb' ));              
     }
 
@@ -261,6 +260,7 @@ export function Pepr2ds() {
                     Experimental method: &nbsp;
                     <Select defaultValue={ExperimentalMethod[0]} style={{ width: 160 }} 
                         allowClear
+                        // mode="multiple"
                         onChange={changeExperimentalMethodSelections}>
                         {experimentalMethodOptions}                        
                     </Select>
