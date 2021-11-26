@@ -2,7 +2,6 @@
 1. This folder contains the raw dataset for serving the website **PePr2DS**
 - `PePr2DS.csv`([source data](https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv)): the complete dataset 
     - `domain_<domain>.csv`: generated from the complete dataset by running `dataset_preprocess.sh`
-- `4ekuA03.csv` and `CB.csv`: smaller ones for development test purpose
 
 2. Information for each dataset column:
 
@@ -21,8 +20,8 @@
 | `sec_struc`| `ss` | secondary structure | one character: H/E/C | N | secondary structures simplified |
 | `sec_struc_full`| `ssf` | Secondary structure | one character: H/B/E/G/I/T/S/- | N | Secondary structures detailed |
 |`prot_block`| `pb` | Protein Block | One Character | Y | see https://github.com/pierrepo/PBxplore for more info. |
-| `data_type`| `dt` | source database | fixed strings: cathpdb/alphafold | Y | If data are experimentale (cathpdb) or models (alphafold) | 
-|`Experimental Method` | `em` | experiment method for obtaining the structure  | strings | Y | - |
+| `data_type`| `dt` | source database | fixed strings: `cathpdb`/`alphafold` | Y | If data are experimentale (cathpdb) or models (alphafold) | 
+|`Experimental Method` | `em` | experiment method for obtaining the structure  | string: `X-ray diffraction`, `Solution NMR`, `AFmodel`, `unknown` | Y | - |
 | `resolution` | `rsl` | strcuture resolution | float  | N | 999 if the structure is NMR|
 | `convhull_vertex` | `cv` | convex hull flag  | bool: `True/False` | Y | residue part of the Convex Hull|
 | `protrusion` | `pro` | protrusion flag | bool: `True/False` | Y | residue is a protrusion |
