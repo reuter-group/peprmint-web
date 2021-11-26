@@ -9,8 +9,10 @@ import { validCathId, validPdbID } from "../helpers";
 
 // configurable options
 export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'PH', 'PLA', 'PLD', 'PX', 'START'];
-export const DATA_SOURCES = ['CATH', 'AlphaFold'];
 const defaultDomain = DOMAINS[1] ; // C1
+
+export const DATA_SOURCES = ['CATH', 'AlphaFold'];
+export const ExperimentalMethod = ['X-ray diffraction', 'Solution NMR', 'AFmodel', 'unknown']
 export const RESIDUES = ['ALA','ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']; 
 
 // import all csv files under datasets/
@@ -80,7 +82,7 @@ export function Pepr2ds() {
         },
         { title: 'PDB ID', dataIndex: 'pdb', width: 60, render: (pdbid:any) => 
             validPdbID(pdbid)? <Link to= {"/pepr2vis/" + pdbid }> {pdbid} </Link> : <>{pdbid}</> },
-        { title: 'Cath ID', dataIndex: 'cath', width: 70, render: (cathId:any) => 
+        { title: 'CATH ID', dataIndex: 'cath', width: 80, render: (cathId:any) => 
             validCathId(cathId)?<Link to= {"/pepr2vis/" + cathId }> {cathId} </Link> : <>{cathId}</>
         },     
         {
@@ -91,7 +93,7 @@ export function Pepr2ds() {
         {
             title: 'Residue',
             children: [
-                { title: <span className="font-weight-light"> name </span>, dataIndex: 'rna', width: 60, key: 'resname',
+                { title: <span className="font-weight-light"> name </span>, dataIndex: 'rna', width: 70, key: 'resname',
                     filters: RESIDUES.map(r => { return { text: r, value: r} }),
                     onFilter: (value: any, record: any) => record.rna.includes(value) 
                 },
@@ -126,19 +128,40 @@ export function Pepr2ds() {
                     title: 'C', dataIndex: 'coin', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.coin && record.coin.toLowerCase().includes(value)
                 },
+                // {
+                //     title: 'E', dataIndex: 'expo', width: 40, 
+                //     render: trueFalseRender, filters: trueFalseFilter,
+                //     onFilter: (value: any, record: any) => record.expo && record.expo.toLowerCase().includes('exposed')
+                // },
                 {
                     title: 'neighboursID', dataIndex: 'nbl', width: 120
                 }
             ]
         },
-        { title: 'SS*', dataIndex: 'ss', width: 45, 
+        { title: 'SS*', dataIndex: 'ss', width: 55, 
             filters: ['H', 'E', 'C'].map(ss => { return { text: ss, value: ss } }),
             onFilter: (value: any, record: any) => record.ss.includes(value)
         },        
         { title: 'Uniprot_acc', dataIndex: 'uacc', width: 100, render: (uacc:any) => 
             uacc? <a href= {"https://www.uniprot.org/uniprot/" + uacc }> {uacc} </a> : <>{uacc}</>  },
         // { title: 'Uniprot ID', dataIndex: 'uid', width: 110, },
-        { title: 'Experimental Method', dataIndex: 'em', width: 110}
+        // { title: 'Data source', dataIndex: 'dt', width: 110,  
+        //     filters: ['CathPDB', 'AlphaFold'].map(ds => { return { text: ds, value: ds.toLowerCase() } }),
+        //     onFilter: (value: any, record: any) => record.dt.includes(value.toLowerCase())
+        // },
+      
+        { title: 'CATH cluster id', children: [ 
+            { title: <span className="font-weight-light"> S95 </span>,  dataIndex: 's95', width: 60,},
+            { title: <span className="font-weight-light"> S100 </span> , dataIndex: 's100', width: 70,},]
+        },
+
+        { title: 'Uniprot cluster id', children: [ 
+            { title: <span className="font-weight-light"> uref90 </span>, dataIndex: 'u90', width: 80,},
+            { title: <span className="font-weight-light"> uref100 </span>, dataIndex: 'u100', width: 80,}
+         ]
+        },
+
+        // { title: 'Experimental Method', dataIndex: 'em', width: 110},
     ];
 
 
@@ -148,7 +171,10 @@ export function Pepr2ds() {
         <Option value={domain} key={domain}> {domain} </Option>)
 
     const dataSourceOptions = DATA_SOURCES.map(ds =>
-        <Option value={ds.toLowerCase()} key={ds.toLowerCase()}> {ds} </Option>)
+        <Option value={ds} key={ds}> {ds} </Option>)
+
+    const experimentalMethodOptions = ExperimentalMethod.map(em =>
+        <Option value={em} key={em}> {em} </Option>)
 
     // const changeTable = (p:any) => {
     //     console.log('change table...', p)
@@ -173,7 +199,17 @@ export function Pepr2ds() {
        
     }
 
- 
+
+    const changeDataSourceSelections = (dataSource:string) => {
+        console.log(`selected ${dataSource}`);
+        if(dataSource == 'AlphaFold') setTableData(tableData.filter(d => d.dt == 'alfafold' ));  
+        if(dataSource == 'CATH') setTableData(tableData.filter(d => d.dt == 'cathpdb' ));              
+    }
+
+    const changeExperimentalMethodSelections = (em:string) => {       
+        setTableData(tableData.filter(d => d.em == em ));                      
+    }
+
     const tableTitle = () => { 
         let domainLengthRender = [];
         for (let d of DOMAINS) { 
@@ -195,27 +231,38 @@ export function Pepr2ds() {
                 <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={6084} /> </Col>
                 <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={DOMAINS.length} /> </Col>
                 <Col md={2} className="bg-light mx-4 py-2 border" > 
-                    <Statistic title="Whole dataset" value="156 MB" /> 
+                    <Statistic title="Complete dataset" value="156 MB" /> 
                         <small><a className="text-muted" href="https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv">
                         <DownloadOutlined /> download</a> </small></Col>
             </Row>
 
             <Row className="my-4">
-                <Col md={6}>
-                    Domain: &nbsp;
+                <Col md={5}>
+                    Domains: &nbsp;
                     <Select defaultValue={[defaultDomain]} 
                         mode="multiple"
                         allowClear
                         placeholder="Select domains"
                         onChange={changeDomainSelections}
-                        style={{ width: 450 }}>
+                        style={{ width: 350 }}>
                         {domainSelectOptions}
                     </Select>
                 </Col>
                 <Col md={3}>
                     Data source: &nbsp;
-                    <Select defaultValue={DATA_SOURCES[0].toLowerCase()} style={{ width: 90 }} >
+                    <Select defaultValue={DATA_SOURCES[0]} style={{ width: 120 }} 
+                        allowClear
+                        onChange={changeDataSourceSelections}>
                         {dataSourceOptions}
+                        
+                    </Select>
+                </Col> 
+                <Col md={4}>
+                    Experimental method: &nbsp;
+                    <Select defaultValue={ExperimentalMethod[0]} style={{ width: 160 }} 
+                        allowClear
+                        onChange={changeExperimentalMethodSelections}>
+                        {experimentalMethodOptions}                        
                     </Select>
                 </Col>
             </Row>
@@ -232,7 +279,7 @@ export function Pepr2ds() {
                         scroll={{ y: 600, x: '100vw' }}
                         size="small"
                         pagination={{ pageSize: 100 }}
-                        footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion; <b>C</b>: co-insertable H<br/> 
+                        footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion; <b>C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}<br/> 
                                         <b>SS</b>: secondary structure </span> }
                     />
                 </Col>
