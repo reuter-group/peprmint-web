@@ -1,7 +1,7 @@
-import { Select, Statistic, Table } from "antd";
+import { Button, Input, Select, Space, Statistic, Table } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row } from "react-bootstrap";
-import { CheckCircleTwoTone, DownloadOutlined } from "@ant-design/icons";
+import { CheckCircleTwoTone, DownloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, VirtualTable } from "./Utils";
 import Papa from "papaparse";
@@ -43,6 +43,8 @@ export function Pepr2ds() {
 
     const [tableData, setTableData] = useState<any[]>([])
     const [loading, setLoading] = useState(true);
+    const [searchText, setSearchText] = useState('');
+    const [searchedColumn, setSearchedColumn] = useState('');
 
     const addDomainTableData = async (domain:string) => {        
         setLoading(true);   
@@ -70,6 +72,53 @@ export function Pepr2ds() {
 
     const trueFalseFilter = [{ text: 'True', value: 'true' }, { text: 'False', value: 'false' }];
 
+    const getColumnSearchProps = (dataIndex:string, columnTitle:string) => ({        
+        filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }:any) => (
+            <div style={{ padding: 8 }}>
+            <Input              
+                placeholder={`Search ${columnTitle}`}
+                value={selectedKeys[0]}
+                onChange={e => setSelectedKeys(e.target.value ? [e.target.value] : [])}
+                onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                style={{ marginBottom: 8, display: 'block' }}
+            />
+            <Space>
+                <Button
+                type="primary"
+                onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+                icon={<SearchOutlined />}
+                size="small"
+                style={{ width: 90 }}
+                >
+                Search
+                </Button>
+                <Button onClick={() => handleReset(clearFilters)} size="small" style={{ width: 90 }}>
+                Reset
+                </Button>                 
+            </Space>
+            </div>
+        ),
+        
+        filterIcon: (filtered:boolean) => <SearchOutlined style={{ color: filtered ? '#1890ff' : undefined }} />,
+            
+        onFilter: (value:any, record:any) =>
+            record[dataIndex]
+            ? record[dataIndex].toString().toLowerCase().includes(value.toLowerCase())
+            : '',      
+     });
+
+
+    const handleSearch = (selectedKeys:any, confirm:any, dataIndex:any) => {
+        confirm();
+        setSearchText(selectedKeys[0]);
+        setSearchedColumn(dataIndex);
+      };
+    
+    const handleReset = (clearFilters:any) => {
+        clearFilters();
+        setSearchText('');
+      };
+
     const columns = [
         // NOTE: dataIndex must be the same as the headers in CSV table
         // { title: '#', dataIndex: 'key', width: 70, },
@@ -80,16 +129,19 @@ export function Pepr2ds() {
             // filters: DOMAINS.map(domain => { return { text: domain, value: domain.toLowerCase() } }),
             // onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
         },
-        { title: 'PDB ID', dataIndex: 'pdb', width: 60, render: (pdbid:any) => 
-            validPdbID(pdbid)? <Link to= {"/pepr2vis/" + pdbid }> {pdbid} </Link> : <>{pdbid}</> },
+        { title: 'PDB ID', dataIndex: 'pdb', width: 60, 
+            render: (pdbid:any) => validPdbID(pdbid)? <Link to= {"/pepr2vis/" + pdbid }> {pdbid} </Link> : <>{pdbid}</>,
+            ... getColumnSearchProps('pdb', 'PDB ID')
+        },
         { title: 'CATH ID', dataIndex: 'cath', width: 80, render: (cathId:any) => 
-            validCathId(cathId)?<Link to= {"/pepr2vis/" + cathId }> {cathId} </Link> : <>{cathId}</>
+            validCathId(cathId)?<Link to= {"/pepr2vis/" + cathId }> {cathId} </Link> : <>{cathId}</>,
+            ... getColumnSearchProps('cath', 'CATH ID')
         },     
         {
             title: 'Atom number', dataIndex: 'anu', width: 75,
             sorter: (a: any, b: any) => a.anu - b.anu,
         },
-        { title: 'Chain', dataIndex: 'chain', width: 50, },
+        { title: 'Chain', dataIndex: 'chain', width: 70, ... getColumnSearchProps('chain', 'Chain')},
         {
             title: 'Residue',
             children: [
@@ -143,7 +195,7 @@ export function Pepr2ds() {
             onFilter: (value: any, record: any) => record.ss.includes(value)
         },        
         { title: 'Uniprot_acc', dataIndex: 'uacc', width: 100, render: (uacc:any) => 
-            uacc? <a href= {"https://www.uniprot.org/uniprot/" + uacc }> {uacc} </a> : <>{uacc}</>  },
+            uacc? <a href= {"https://www.uniprot.org/uniprot/" + uacc }> {uacc} </a> : <>{uacc}</>},
         // { title: 'Uniprot ID', dataIndex: 'uid', width: 110, },
         // { title: 'Data source', dataIndex: 'dt', width: 110,  
         //     filters: ['CathPDB', 'AlphaFold'].map(ds => { return { text: ds, value: ds.toLowerCase() } }),
