@@ -41,7 +41,7 @@ export function Pepr2ds() {
 
     const title = <span> PePr<sup>2</sup>DS </span>;
 
-    const [tableData, setTableData] = useState<any[]>([])
+    const [tableData, setTableData] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
@@ -222,16 +222,12 @@ export function Pepr2ds() {
     const domainSelectOptions = DOMAINS.map(domain =>
         <Option value={domain} key={domain}> {domain} </Option>)
 
-    const dataSourceOptions = DATA_SOURCES.map(ds =>
-        <Option value={ds} key={ds}> {ds} </Option>)
+    // const dataSourceOptions = DATA_SOURCES.map(ds =>
+    //     <Option value={ds} key={ds}> {ds} </Option>)
 
-    const experimentalMethodOptions = ExperimentalMethod.map(em =>
-        <Option value={em} key={em}> {em} </Option>)
+    // const experimentalMethodOptions = ExperimentalMethod.map(em =>
+    //     <Option value={em} key={em}> {em} </Option>)
 
-    // const changeTable = (p:any) => {
-    //     console.log('change table...', p)
-    //     // setTableLength(tableData.length);
-    // }
 
     function changeTable(pagination: any, filters: any, sorter: any, extra: any) {
         console.log('change table...', pagination, filters, sorter, extra);
@@ -252,25 +248,25 @@ export function Pepr2ds() {
     }
 
 
-    const changeDataSourceSelections = (dataSource:string) => {        
-        if(dataSource == 'AlphaFold') setTableData(tableData.filter(d => d.dt == 'alphafold' ));  
-        if(dataSource == 'CATH') setTableData(tableData.filter(d => d.dt == 'cathpdb' ));              
-    }
+    // const changeDataSourceSelections = (dataSource:string) => {        
+    //     if(dataSource == 'AlphaFold') setTableData(tableData.filter(d => d.dt == 'alphafold' ));  
+    //     if(dataSource == 'CATH') setTableData(tableData.filter(d => d.dt == 'cathpdb' ));              
+    // }
 
-    const changeExperimentalMethodSelections = (em:string) => {       
-        setTableData(tableData.filter(d => d.em == em ));                      
-    }
+    // const changeExperimentalMethodSelections = (em:string) => {       
+    //     setTableData(tableData.filter(d => d.em == em ));                      
+    // }
 
-    const tableTitle = () => { 
-        let domainLengthRender = [];
-        for (let d of DOMAINS) { 
-            const domainLength = tableData.filter(r=>r.dm == d).length;
-            if(domainLength >0 ) domainLengthRender.push(
-                <span key={d} className="text-muted"> <b>{d} </b> {domainLength}; </span>)  
-        }     
-        const prefix = domainLengthRender.length > 0 ? <span>, including </span> : <> </>
-        return <span>Loaded <b>{tableData.length} </b> rows {prefix} {domainLengthRender}</span>
-    } 
+    // const tableTitle = () => { 
+    //     let domainLengthRender = [];
+    //     for (let d of DOMAINS) { 
+    //         const domainLength = tableData.filter(r=>r.dm == d).length;
+    //         if(domainLength >0 ) domainLengthRender.push(
+    //             <span key={d} className="text-muted"> <b>{d} </b> {domainLength}; </span>)  
+    //     }     
+    //     const prefix = domainLengthRender.length > 0 ? <span>, including </span> : <> </>
+    //     return <span>Loaded <b>{tableData.length} </b> rows {prefix} {domainLengthRender}</span>
+    // } 
                     
     return (
         <Container>
@@ -299,7 +295,7 @@ export function Pepr2ds() {
                         {domainSelectOptions}
                     </Select>
                 </Col>
-                <Col md={3}>
+                {/* <Col md={3}>
                     Data source: &nbsp;
                     <Select defaultValue={DATA_SOURCES[0]} style={{ width: 120 }} 
                         allowClear
@@ -307,8 +303,8 @@ export function Pepr2ds() {
                         {dataSourceOptions}
                         
                     </Select>
-                </Col> 
-                <Col md={4}>
+                </Col>  */}
+                {/* <Col md={4}>
                     Experimental method: &nbsp;
                     <Select defaultValue={ExperimentalMethod[0]} style={{ width: 160 }} 
                         allowClear
@@ -316,7 +312,7 @@ export function Pepr2ds() {
                         onChange={changeExperimentalMethodSelections}>
                         {experimentalMethodOptions}                        
                     </Select>
-                </Col>
+                </Col> */}
             </Row>
 
 
@@ -324,13 +320,16 @@ export function Pepr2ds() {
                 <Col>
                     <Table bordered
                         loading={loading}
-                        title={tableTitle}
+                        // title={tableTitle}
                         columns={columns}
                         dataSource={tableData}
                         onChange={changeTable}
                         scroll={{ y: 600, x: '100vw' }}
                         size="small"
-                        pagination={{ pageSize: 100 }}
+                        pagination={{ pageSize: 100, 
+                                      position: ['topLeft'], 
+                                      showTotal: (total)=> <span> Total <b>{total}</b> items, </span>, 
+                                      showQuickJumper: true  }}
                         footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion; <b>C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}<br/> 
                                         <b>SS</b>: secondary structure </span> }
                     />
