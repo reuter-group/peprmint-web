@@ -15,6 +15,7 @@ export const DATA_SOURCES = ['CATH', 'AlphaFold'];
 export const ExperimentalMethod = ['X-ray diffraction', 'Solution NMR', 'AFmodel', 'unknown']
 export const RESIDUES = ['ALA','ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY', 'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER', 'THR', 'TRP', 'TYR', 'VAL']; 
 
+
 // import all csv files under datasets/
 function importAllDatasets(r: __WebpackModuleApi.RequireContext) {
     let datasets: any = {};
@@ -45,7 +46,7 @@ export function Pepr2ds() {
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
-
+    
     const addDomainTableData = async (domain:string) => {        
         setLoading(true);   
         selectedDomains.add(domain);
@@ -119,40 +120,35 @@ export function Pepr2ds() {
         setSearchText('');
       };
 
-    const columns = [
+    const defaultColumns = [
         // NOTE: dataIndex must be the same as the headers in CSV table
         // { title: '#', dataIndex: 'key', width: 70, },
         {
-            title: 'Domain', dataIndex: 'dm', width: 70,
+            title: 'Domain', dataIndex: 'dm', width: 70, 
             sorter: (a: any, b: any) => DOMAINS.indexOf(a.dm) - DOMAINS.indexOf(b.dm),
             // sortDirections: ['descend'],
             // filters: DOMAINS.map(domain => { return { text: domain, value: domain.toLowerCase() } }),
             // onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
         },
-        { title: 'PDB ID', dataIndex: 'pdb', width: 60, 
+        { title: 'PDB ID', dataIndex: 'pdb', width: 55, 
             render: (pdbid:any) => validPdbID(pdbid)? <Link to= {"/pepr2vis/" + pdbid }> {pdbid} </Link> : <>{pdbid}</>,
             ... getColumnSearchProps('pdb', 'PDB ID')
         },
-        { title: 'CATH ID', dataIndex: 'cath', width: 80, render: (cathId:any) => 
+        { title: 'CATH ID', dataIndex: 'cath', width: 65, render: (cathId:any) => 
             validCathId(cathId)?<Link to= {"/pepr2vis/" + cathId }> {cathId} </Link> : <>{cathId}</>,
             ... getColumnSearchProps('cath', 'CATH ID')
-        },     
-        {
-            title: 'Atom number', dataIndex: 'anu', width: 75,
-            sorter: (a: any, b: any) => a.anu - b.anu,
-        },
-        { title: 'Chain', dataIndex: 'chain', width: 70, ... getColumnSearchProps('chain', 'Chain')},
+        },             
+        { title: 'Chain', dataIndex: 'chain', width: 60, ... getColumnSearchProps('chain', 'Chain')},
         {
             title: 'Residue',
             children: [
-                { title: <span className="font-weight-light"> name </span>, dataIndex: 'rna', width: 70, key: 'resname',
+                { title: <small> name </small>, dataIndex: 'rna', width: 65, key: 'resname',
                     filters: RESIDUES.map(r => { return { text: r, value: r} }),
                     onFilter: (value: any, record: any) => record.rna.includes(value) 
                 },
-                { title: <span className="font-weight-light"> id </span>, dataIndex: 'rnu', width: 60, key: 'resnum' },
+                { title: <small> id </small>, dataIndex: 'rnu', width: 45, key: 'resnum' },
             ]
         },
-        // { title: 'Atom name', dataIndex: 'atom_name', width:}, 
         {
             title: 'IBS', dataIndex: 'ibs', width: 50, render: trueFalseRender, filters: trueFalseFilter,
             onFilter: (value: any, record: any) => record.ibs && record.ibs.toLowerCase().includes(value)
@@ -185,36 +181,59 @@ export function Pepr2ds() {
                     render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.expo && record.expo.toLowerCase().includes(value)
                 },
+                { title: 'D', dataIndex: 'den', width: 40, render: (v:string) => v && parseInt(v) > 0? v : <>-</> },
                 {
-                    title: 'neighboursID', dataIndex: 'nbl', width: 120
+                    title: 'neighboursID', dataIndex: 'nbl', width: 120, ellipsis:true,
                 }
             ]
         },
-        { title: 'SS*', dataIndex: 'ss', width: 55, 
+           
+    ];
+
+    const optionalColumns = [
+        { title: 'Atom number', dataIndex: 'anu', width: 75,
+                sorter: (a: any, b: any) => a.anu - b.anu, },                
+        { title: 'Bfactor', dataIndex: 'bf', width: 80},
+
+        { title: 'CATH cluster id', children: [ 
+            { title: <small> S35 </small>,  dataIndex: 's35', width: 40,},
+            { title: <small> S60 </small>,  dataIndex: 's60', width: 40,},
+            { title: <small> S95 </small>,  dataIndex: 's95', width: 60,},
+            { title: <small> S100 </small> , dataIndex: 's100', width: 70,},]
+        },
+
+        { title: 'Data source', dataIndex: 'dt', width: 110,  
+        // filters: ['CathPDB', 'AlphaFold'].map(ds => { return { text: ds, value: ds.toLowerCase() } }),
+        // onFilter: (value: any, record: any) => record.dt.includes(value.toLowerCase())
+        },
+
+        { title: 'Experimental method', dataIndex: 'em', width: 110, ellipsis:true},
+        { title: 'NMR resolution', dataIndex: 'rsl', width: 90},
+
+        { title: 'Secondary structure', dataIndex: 'ss', width: 70, 
             filters: ['H', 'E', 'C'].map(ss => { return { text: ss, value: ss } }),
             onFilter: (value: any, record: any) => record.ss.includes(value)
-        },        
-        { title: 'Uniprot_acc', dataIndex: 'uacc', width: 100, render: (uacc:any) => 
-            uacc? <a href= {"https://www.uniprot.org/uniprot/" + uacc }> {uacc} </a> : <>{uacc}</>},
-        // { title: 'Uniprot ID', dataIndex: 'uid', width: 110, },
-        // { title: 'Data source', dataIndex: 'dt', width: 110,  
-        //     filters: ['CathPDB', 'AlphaFold'].map(ds => { return { text: ds, value: ds.toLowerCase() } }),
-        //     onFilter: (value: any, record: any) => record.dt.includes(value.toLowerCase())
-        // },
-      
-        { title: 'CATH cluster id', children: [ 
-            { title: <span className="font-weight-light"> S95 </span>,  dataIndex: 's95', width: 60,},
-            { title: <span className="font-weight-light"> S100 </span> , dataIndex: 's100', width: 70,},]
-        },
+        },    
 
+        { title: 'Uniprot accession', dataIndex: 'uacc', width: 100, render: (uacc:any) => 
+             uacc? <a href= {"https://www.uniprot.org/uniprot/" + uacc }> {uacc} </a> : <>{uacc}</>},
+        { title: 'Uniprot ID', dataIndex: 'uid', width: 120 },
+        
         { title: 'Uniprot cluster id', children: [ 
-            { title: <span className="font-weight-light"> uref90 </span>, dataIndex: 'u90', width: 80,},
-            { title: <span className="font-weight-light"> uref100 </span>, dataIndex: 'u100', width: 80,}
+            { title: <small> uref50 </small>, dataIndex: 'u50', width: 80,},
+            { title: <small> uref90 </small>, dataIndex: 'u90', width: 80,},
+            { title: <small> uref100 </small>, dataIndex: 'u100', width: 80,}
          ]
         },
-
-        // { title: 'Experimental Method', dataIndex: 'em', width: 110},
+      
+        { title: 'Protein Block', dataIndex:'pb', width:70},
+        { title: 'Origin', dataIndex: 'origin', width: 80},
+        { title: 'Location', dataIndex: 'loc', width: 100, ellipsis:true},
+        { title: 'Taxon', dataIndex: 'taxon', width: 100, ellipsis:true}
     ];
+
+
+    const [columns, setColumns] = useState<any []>(defaultColumns);
 
 
     const { Option } = Select;
@@ -222,13 +241,10 @@ export function Pepr2ds() {
     const domainSelectOptions = DOMAINS.map(domain =>
         <Option value={domain} key={domain}> {domain} </Option>)
 
-    // const dataSourceOptions = DATA_SOURCES.map(ds =>
-    //     <Option value={ds} key={ds}> {ds} </Option>)
+    const optionalColumnSelections = optionalColumns.map((oc, i) =>
+        <Option value={oc.title} key={i}> {oc.title} </Option>)
 
-    // const experimentalMethodOptions = ExperimentalMethod.map(em =>
-    //     <Option value={em} key={em}> {em} </Option>)
-
-
+   
     function changeTable(pagination: any, filters: any, sorter: any, extra: any) {
         console.log('change table...', pagination, filters, sorter, extra);
       }
@@ -248,14 +264,10 @@ export function Pepr2ds() {
     }
 
 
-    // const changeDataSourceSelections = (dataSource:string) => {        
-    //     if(dataSource == 'AlphaFold') setTableData(tableData.filter(d => d.dt == 'alphafold' ));  
-    //     if(dataSource == 'CATH') setTableData(tableData.filter(d => d.dt == 'cathpdb' ));              
-    // }
-
-    // const changeExperimentalMethodSelections = (em:string) => {       
-    //     setTableData(tableData.filter(d => d.em == em ));                      
-    // }
+    const changeColumnSelections = (selectedColumns:string[]) => {        
+        const selectedOptionalColumns = selectedColumns.map((sc:string) => optionalColumns.find(oc => oc.title == sc));
+        setColumns([...defaultColumns, ...selectedOptionalColumns]);
+    }
 
     // const tableTitle = () => { 
     //     let domainLengthRender = [];
@@ -295,46 +307,41 @@ export function Pepr2ds() {
                         {domainSelectOptions}
                     </Select>
                 </Col>
-                {/* <Col md={3}>
-                    Data source: &nbsp;
-                    <Select defaultValue={DATA_SOURCES[0]} style={{ width: 120 }} 
+                <Col md={7}>
+                    Optional columns: &nbsp;
+                    <Select defaultValue={[]} style={{ width: 400 }} 
                         allowClear
-                        onChange={changeDataSourceSelections}>
-                        {dataSourceOptions}
-                        
+                        mode="multiple"
+                        placeholder="Select columns to display"
+                        onChange={changeColumnSelections}>
+                        {optionalColumnSelections}                        
                     </Select>
-                </Col>  */}
-                {/* <Col md={4}>
-                    Experimental method: &nbsp;
-                    <Select defaultValue={ExperimentalMethod[0]} style={{ width: 160 }} 
-                        allowClear
-                        // mode="multiple"
-                        onChange={changeExperimentalMethodSelections}>
-                        {experimentalMethodOptions}                        
-                    </Select>
-                </Col> */}
+                </Col> 
             </Row>
 
 
-            <Row className="my-4">
-                <Col>
+            {/* <Row className="my-4"> */}
+             
                     <Table bordered
+                        tableLayout="fixed"
                         loading={loading}
                         // title={tableTitle}
                         columns={columns}
                         dataSource={tableData}
                         onChange={changeTable}
-                        scroll={{ y: 600, x: '100vw' }}
+                        scroll={{ y: 600 }}
                         size="small"
                         pagination={{ pageSize: 100, 
                                       position: ['topLeft'], 
                                       showTotal: (total)=> <span> Total <b>{total}</b> items, </span>, 
                                       showQuickJumper: true  }}
-                        footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion; <b>C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}<br/> 
-                                        <b>SS</b>: secondary structure </span> }
+                        footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion; 
+                                            <b>C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}
+                                            <b>D</b>: protein density 
+                                      </span> }
                     />
-                </Col>
-            </Row>
+              
+            {/* </Row> */}
 
         </Container>
     )
