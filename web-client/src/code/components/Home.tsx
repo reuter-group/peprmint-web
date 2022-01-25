@@ -12,7 +12,7 @@ import PeprmintLogo from '../../image/peprmint_logo.svg';
 import Pepr2visPic from '../../image/pepr2vis_cover.png';
 import Pepr2dsPic from '../../image/pepr2ds_cover.png';
 
-class Descrption extends Component {
+class Description extends Component {
     render() {
         return (
                 <>
@@ -49,13 +49,13 @@ class Descrption extends Component {
 export function Home(){
     return (
     <Container >  
-        <Descrption />
+        <Description />
         <Row className="justify-content-md-center"> 
             <ModuleCard title = { <span className="text-primary h5">PePr<sup>2</sup>Vis</span> }  link={"/pepr2vis"} imgSrc={Pepr2visPic} 
-                cardSubtitle= { <span className="text-secondary"> Peripheral protein protrusion visualisation </span> } />
+                cardSubtitle= { <span className="text-primary"> Peripheral protein protrusion visualisation </span> } />
             
             <ModuleCard title = { <span className="text-primary h5">PePr<sup>2</sup>DS</span>}  link={"/pepr2ds"} imgSrc={Pepr2dsPic} 
-                cardSubtitle = { <span className="text-secondary"> Peripheral protein protrusion dataset </span>} />                        
+                cardSubtitle = { <span className="text-primary"> Peripheral protein protrusion dataset </span>} />                        
         </Row>
     </Container>
     )

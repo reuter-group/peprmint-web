@@ -77,7 +77,7 @@ class PeprmintFooter extends Component {
                         <Nav className="flex-column">
                             <Nav.Item> PePrMInt website</Nav.Item>
                             <Nav.Link className="py-0 font-weight-light" href="https://github.com/reuter-group/peprmint-web"> Version 1.1.2 </Nav.Link> 
-                            <Nav.Link className="py-0 font-weight-light" href="http://www.cbu.uib.no/reuter/"> &copy; 2021 Reuter Lab </Nav.Link> 
+                            <Nav.Link className="py-0 font-weight-light" href="http://www.cbu.uib.no/reuter/"> &copy; 2021-2022 Reuter Lab </Nav.Link> 
                         </Nav>
                     </Col>
                     <Col className="col-4">
