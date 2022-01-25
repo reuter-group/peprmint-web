@@ -22,24 +22,26 @@ export function Pepr2vis() {
         console.log(`loading ${pdbid || DEFAULT_PDB}`)
 
         PluginWrapper = new MolStarWrapper();
-        PluginWrapper.init(molstarId);
-        PluginWrapper.load({
-            pdbId: pdbid || DEFAULT_PDB,
-            // format: 'pdb', 
-            // isBinary: false, 
-        }).then( () => {
-            if (pdbid) {
-                setCheckedKeys(['0-0', '0-0-0', '0-0-0-0']);
-                setconvexHullKey(['0-0', '0-0-0']);
-                PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalProtrusion).then(()=> {
-                    PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion);
-                    PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull).then(()=> {
-                        PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);    
-                        PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);    
-                    });
-                });               
-            }
+        PluginWrapper.init(molstarId).then(() => {
+            PluginWrapper.load({
+                pdbId: pdbid || DEFAULT_PDB,
+                // format: 'pdb', 
+                // isBinary: false, 
+            }).then( () => {
+                if (pdbid) {
+                    setCheckedKeys(['0-0', '0-0-0', '0-0-0-0']);
+                    setconvexHullKey(['0-0', '0-0-0']);
+                    PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalProtrusion).then(()=> {
+                        PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion);
+                        PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull).then(()=> {
+                            PluginWrapper.togggleEdges(ProtrusionVisualRef.ConvexHull);    
+                            PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);    
+                        });
+                    });               
+                }
+            });
         });
+        
         // return () => {       
         //     console.log('cleaned up');   
         // };

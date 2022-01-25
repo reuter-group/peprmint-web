@@ -46,10 +46,11 @@
   "dependencies": {
     "@ant-design/icons": "^4.7.0",
     "@popperjs/core": "^2.10.2",
+    "@types/recharts": "^1.8.23",
     "antd": "^4.16.13",
     "bootstrap": "^4.6.1",
     "export-to-csv": "^0.2.1",
-    "molstar": "^2.3.5",
+    "molstar": "^3.0.0",
     "papaparse": "^5.3.1",
     "quickhull3d": "^2.0.5",
     "react": "^17.0.2",
@@ -57,8 +58,9 @@
     "react-dom": "^17.0.2",
     "react-router": "^5.2.1",
     "react-router-dom": "^5.3.0",
-    "react-scripts": "^4.0.3",
+    "react-scripts": "^5.0.0",
     "react-window": "^1.8.6",
+    "recharts": "^2.1.8",
     "tslib": "^2.3.1"
   }
 }

@@ -1,4 +1,4 @@
-import { createPlugin } from "molstar/lib/mol-plugin-ui";
+import { createPluginUI } from "molstar/lib/mol-plugin-ui";
 import { AnimateCameraSpin } from 'molstar/lib/mol-plugin-state/animation/built-in/camera-spin';
 import { createStructureRepresentationParams } from 'molstar/lib/mol-plugin-state/helpers/structure-representation-params';
 import { PluginStateObject, PluginStateObject as PSO } from 'molstar/lib/mol-plugin-state/objects';
@@ -133,10 +133,10 @@ export class MolStarWrapper {
     }
 
     // call to bind HTMLElement
-    init(targetId: string, options?: {
+    async init(targetId: string, options?: {
         customColorList?: number[]
     }) {
-        this.plugin = createPlugin(document.getElementById(targetId)!, this.defaultSpec);
+        this.plugin = await createPluginUI(document.getElementById(targetId)!, this.defaultSpec);
 
         // const customColoring = createProteopediaCustomTheme((options && options.customColorList) || []);
         // this.plugin.representation.structure.themes.colorThemeRegistry.add(customColoring);
