@@ -1,15 +1,14 @@
-import { Button, Card, Collapse, Input, Select, Space, Statistic, Table } from "antd";
-import React, { PureComponent, useEffect, useState, useRef } from "react";
-import { Col, Container, Row, Button as BButton } from "react-bootstrap";
+import { Button, Card, Input, Select, Space, Statistic, Table } from "antd";
+import React, { useEffect, useState, useRef } from "react";
+import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
 import { CheckCircleTwoTone, DownloadOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
 // import { presetPalettes } from '@ant-design/colors';
-import { BarChart,Bar, XAxis, YAxis, Tooltip, CartesianGrid,  PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
-const { Panel } = Collapse;
 
 // configurable options
 export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'PH', 'PLA', 'PLD', 'PX', 'START'];
@@ -44,6 +43,7 @@ const loadCsvTable = async (domain: string) => {
 }
 
 let selectedDomains = new Set<string>();
+
 
 export function Pepr2ds() {
 
@@ -323,64 +323,64 @@ export function Pepr2ds() {
                         <DownloadOutlined /> download</a> </small></Col>
             </Row>
 
-            <Row className="my-4">
-                <Col md={5}>
-                    Domains: &nbsp;
-                    <Select defaultValue={[defaultDomain]}
-                        mode="multiple"
-                        allowClear
-                        placeholder="Select domains"
-                        onChange={changeDomainSelections}
-                        style={{ width: 350 }}>
-                        {domainSelectOptions}
-                    </Select>
-                </Col>
-                <Col md={7}>
-                    Optional columns: &nbsp;
-                    <Select defaultValue={[]} style={{ width: 400 }}
-                        allowClear
-                        mode="multiple"
-                        placeholder="Select columns to display"
-                        onChange={changeColumnSelections}>
-                        {optionalColumnSelections}
-                    </Select>
-                </Col>
-            </Row>
+            <Container className="my-5 border border-primary bg-light">
+                <Row className="py-3 pl-4 bg-secondary">
+                    <h4> Dataset </h4>
+                </Row>
+                <Row className="my-4">
+                    <Col md={5}>
+                        Domains: &nbsp;
+                        <Select defaultValue={[defaultDomain]}
+                            mode="multiple"
+                            allowClear
+                            placeholder="Select domains"
+                            onChange={changeDomainSelections}
+                            style={{ width: 350 }}>
+                            {domainSelectOptions}
+                        </Select>
+                    </Col>
+                    <Col md={7}>
+                        Optional columns: &nbsp;
+                        <Select defaultValue={[]} style={{ width: 400 }}
+                            allowClear
+                            mode="multiple"
+                            placeholder="Select columns to display"
+                            onChange={changeColumnSelections}>
+                            {optionalColumnSelections}
+                        </Select>
+                    </Col>
+                </Row>
 
+                <Table bordered
+                    tableLayout="fixed"
+                    loading={loading}
+                    // title={tableTitle}
+                    columns={columns}
+                    dataSource={tableData}
+                    onChange={changeTable}
+                    scroll={{ y: 450 }}
+                    size="small"
+                    pagination={{
+                        pageSize: 20,
+                        position: ['topLeft'],
+                        showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
+                        showQuickJumper: true
+                    }}
+                    footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion;
+                        <b> C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}
+                        <b> D</b>: protein density
+                    </span>}
+                />
 
-            {/* <Row className="my-4"> */}
-
-            <Table bordered
-                tableLayout="fixed"
-                loading={loading}
-                // title={tableTitle}
-                columns={columns}
-                dataSource={tableData}
-                onChange={changeTable}
-                scroll={{ y: 600 }}
-                size="small"
-                pagination={{
-                    pageSize: 50,
-                    position: ['topLeft'],
-                    showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
-                    showQuickJumper: true
-                }}
-                footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion;
-                    <b>C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}
-                    <b>D</b>: protein density
-                </span>}
-            />
-
-            {/* </Row> */}
+            </Container>
 
             <Container className="my-5 border border-primary bg-light">
                 <Row className="py-3 pl-4 bg-secondary">
                     <h4> Dataset Analyses </h4>
                 </Row>
-
                 <Row className="my-4 mx-2">
                     <Col md={6} className="px-2 ">
-                        <Card title="Residue Composition" extra={<BButton onClick={() => calcResComp()} > update </BButton>} bordered={false}>
+                        <Card title={<h5 > Residue Composition </h5>} extra={<BButton onClick={() => calcResComp()} > update </BButton>} bordered={false}>
                             <PieChart width={450} height={400}>
                                 <Pie
                                     dataKey="value"
@@ -403,19 +403,22 @@ export function Pepr2ds() {
 
                     <Col md={6} className="px-2 ">
                         <Card title="Neighborhood Residue Composition" extra={<BButton onClick={() => calcResComp()}> update </BButton>} bordered={false}>
-                          
                             <BarChart width={450} height={400} data={resCompData}>
-                                <XAxis dataKey="name" stroke="#8884d8" />
+                                <XAxis dataKey="name" />
                                 <YAxis />
                                 <Tooltip />
-                                <Bar dataKey="value" fill="#8884d8" barSize={20} />
+                                <Bar dataKey="value" fill="#8884d8" barSize={20} >
+                                    {resCompData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS20[index]} />
+                                    ))}
+                                </Bar>
                             </BarChart>
-                           
+
                         </Card>
                     </Col>
                 </Row>
-
             </Container>
-        </Container>
+                                        
+        </Container >
     )
 }
