@@ -7,8 +7,7 @@ import { References, PageHeader, PageHeaders, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
 // import { presetPalettes } from '@ant-design/colors';
-
-import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart,Bar, XAxis, YAxis, Tooltip, CartesianGrid,  PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 const { Panel } = Collapse;
 
@@ -376,20 +375,20 @@ export function Pepr2ds() {
 
             <Container className="my-5 border border-primary bg-light">
                 <Row className="py-3 pl-4 bg-secondary">
-                    <h4> Dataset Analyses </h4> 
+                    <h4> Dataset Analyses </h4>
                 </Row>
-                
+
                 <Row className="my-4 mx-2">
                     <Col md={6} className="px-2 ">
                         <Card title="Residue Composition" extra={<BButton onClick={() => calcResComp()} > update </BButton>} bordered={false}>
-                            <PieChart width={400} height={400}>
+                            <PieChart width={450} height={400}>
                                 <Pie
                                     dataKey="value"
                                     isAnimationActive={true}
                                     data={resCompData}
                                     cx={200}
                                     cy={200}
-                                    outerRadius={80}
+                                    outerRadius={150}
                                     fill="#8884d8"
                                     label
                                 >
@@ -404,10 +403,17 @@ export function Pepr2ds() {
 
                     <Col md={6} className="px-2 ">
                         <Card title="Neighborhood Residue Composition" extra={<BButton onClick={() => calcResComp()}> update </BButton>} bordered={false}>
-                            Card content
+                          
+                            <BarChart width={450} height={400} data={resCompData}>
+                                <XAxis dataKey="name" stroke="#8884d8" />
+                                <YAxis />
+                                <Tooltip />
+                                <Bar dataKey="value" fill="#8884d8" barSize={20} />
+                            </BarChart>
+                           
                         </Card>
                     </Col>
-                </Row>             
+                </Row>
 
             </Container>
         </Container>
