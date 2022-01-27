@@ -12,6 +12,12 @@ import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 
+
+export const COLORS20 = ['#5B8FF9', '#CDDDFD', '#61DDAA', '#CDF3E4', '#65789B',
+            '#CED4DE', '#F6BD16', '#FCEBB9', '#7262fd', '#D3CEFD', 
+            '#78D3F8', '#D3EEF9', '#9661BC', '#DECFEA', '#F6903D',
+            '#FFE0C7', '#008685', '#BBDEDE', '#F08BB4', '#FFE0ED'];
+
 // class PeprmintUpload extends React.Component {
 //     // fl: UploadFile<any> = {
 //     //     uid: '-1',
