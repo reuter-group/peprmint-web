@@ -1,7 +1,7 @@
-import { Button, Card, Input, Select, Space, Statistic, Table } from "antd";
+import { Button, Card, Input, Radio, Select, Space, Statistic, Table } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
-import { CheckCircleTwoTone, DownloadOutlined, SearchOutlined } from "@ant-design/icons";
+import { CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, COLORS20 } from "./Utils";
 import Papa from "papaparse";
@@ -203,7 +203,7 @@ export function Pepr2ds() {
                 },
                 { title: 'D', dataIndex: 'den', width: 40, render: (v: string) => v && parseInt(v) > 0 ? v : <>-</> },
                 {
-                    title: 'neighboursID', dataIndex: 'nbl', width: 120, ellipsis: true,
+                    title: 'neighbour list', dataIndex: 'nbl', width: 120, ellipsis: true,
                 }
             ]
         },
@@ -211,10 +211,6 @@ export function Pepr2ds() {
     ];
 
     const optionalColumns = [
-        {
-            title: 'Atom number', dataIndex: 'anu', width: 75,
-            sorter: (a: any, b: any) => a.anu - b.anu,
-        },
         { title: 'Bfactor', dataIndex: 'bf', width: 80 },
 
         {
@@ -253,7 +249,7 @@ export function Pepr2ds() {
                 { title: <small> uref100 </small>, dataIndex: 'u100', width: 80, }
             ]
         },
-
+        { title: 'RSA total freesasa tien', dataIndex: 'rsa', width: 80, ellipsis: true,},
         { title: 'Protein Block', dataIndex: 'pb', width: 70 },
         { title: 'Origin', dataIndex: 'origin', width: 80 },
         { title: 'Location', dataIndex: 'loc', width: 100, ellipsis: true },
@@ -367,7 +363,7 @@ export function Pepr2ds() {
                         showQuickJumper: true
                     }}
                     footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion;
-                        <b> C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"}
+                        <b> C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"};
                         <b> D</b>: protein density
                     </span>}
                 />
@@ -380,8 +376,12 @@ export function Pepr2ds() {
                 </Row>
                 <Row className="my-4 mx-2">
                     <Col md={6} className="px-2 ">
-                        <Card title={<h5 > Residue Composition </h5>} extra={<BButton onClick={() => calcResComp()} > update </BButton>} bordered={false}>
-                            <PieChart width={450} height={400}>
+                        <Card title={<h5 > Residue Composition </h5>} 
+                            extra={ <Button size="large" className="btn btn-outline-primary"  icon={ <PieChartOutlined /> } onClick={() => calcResComp()} /> } 
+                            bordered={false}>
+
+                          
+                                <PieChart width={450} height={400}>
                                 <Pie
                                     dataKey="value"
                                     isAnimationActive={true}
@@ -418,7 +418,7 @@ export function Pepr2ds() {
                     </Col>
                 </Row>
             </Container>
-                                        
+
         </Container >
     )
 }

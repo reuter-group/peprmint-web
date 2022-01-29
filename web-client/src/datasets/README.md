@@ -5,41 +5,42 @@
 
 2. Information for each dataset column:
 
-| Column | Shorter name* | Meaning | Data type | Required** | Additional info. |
-|--------|--------|---------|-----------|-------------|--------|
-| `domain` | `dm` | domain name | fixed strings | Y | -  |
-| `cathpdb` | `cath` | CATH ID | 7 characters  | N | -  |
-| `pdb`  | `pdb`  | PDB ID  | 4 characters | N | -  |
-| `uniprot_acc` | `uacc` | Uniprot Accession number | string | N | Uniprot accession number (eg: Q9ULH1) |
-| `uniprot_id` | `uid` | Uniprot ID | String | N | Uniprot ID (eg: ASAP1_HUMAN) |
-| `residue_name` | `rna` | residue name | 3 characters, uppercase | Y | - |
-| `IBS` | `ibs` | binding sites? | Boolean | N | True if residue part of the IBS, False otherwise |
-| `chain_id` | `chain` | chain name | one character | N | PDB Chain ID |
-| `residue_number` | `rnu` | residue id/number | integers | Y |- |
-| `b_factor` | `bf` |  Bfactor of each atom | float | N | - |
-| `sec_struc`| `ss` | secondary structure | one character: H/E/C | N | secondary structures simplified |
-| `sec_struc_full`| `ssf` | Secondary structure | one character: H/B/E/G/I/T/S/- | N | Secondary structures detailed |
-|`prot_block`| `pb` | Protein Block | One Character | Y | see https://github.com/pierrepo/PBxplore for more info. |
-| `data_type`| `dt` | source database | fixed strings: `cathpdb`/`alphafold` | Y | If data are experimentale (cathpdb) or models (alphafold) | 
-|`Experimental Method` | `em` | experiment method for obtaining the structure  | string: `X-ray diffraction`, `Solution NMR`, `AFmodel`, `unknown` | Y | - |
-| `resolution` | `rsl` | strcuture resolution | float  | N | 999 if the structure is NMR|
-| `convhull_vertex` | `cv` | convex hull flag  | bool: `True/False` | Y | residue part of the Convex Hull|
-| `protrusion` | `pro` | protrusion flag | bool: `True/False` | Y | residue is a protrusion |
-| `is_hydrophobic_protrusion` | `hypro` | hydrophobic protrusion flag | bool: `True/False` | Y | residue is a hydrophobic protrusion|
-| `is_co_insertable` | `coin` | co-insertable flag | bool: `True/False` | Y | residue is a co-insertable|
-|`neighboursList` | `nbl` | neighbour residue number list | string  | N | Neighbours list of residue (if residue convexhull)|
-| `density` | `den` | protein density | integer | N | Number of CA/CB in a radius of 1nm |
-| `exposition` | `expo` | exposition flag  |  Boolean | N | if Residue is exposed (RSA >20%) or not (RSA <= 20%)|
-| `S35` | `s35` | Cath Cluster number at 35% of idendity  |  numbers | N | Cath cluster id at 35% of seq id. |
-| `S60` | `s60` | Cath Cluster number at 60% of idendity  |  numbers | N | Cath cluster id at 60% of seq id. |
-| `S95` | `s95` | Cath Cluster number at 95% of idendity  |  numbers | N | Cath cluster id at 95% of seq id. |
-| `S100` | `s100` | Cath Cluster number at 100% of idendity  |  numbers | N | Cath cluster id at 100% of seq id. |
-| `uniref50` | `u50` | Representative uniprot_acc for cluster with 50% of idendity |  string | N | Representative sequence for protein sequence at 50% of seq id. |
-| `uniref90` | `u90` | Representative uniprot_acc for cluster with 90% of idendity |  string | N | Representative sequence for protein sequence at 90% of seq id.  |
-| `uniref100` | `u100` | Representative uniprot_acc for cluster with 100% of idendity |  string | N | Representative sequence for protein sequence at 100% of seq id. |
-| `origin` | `origin` | Specie of origin | string  | N | Origin of the protein (eg, HUMAN, MOUSE...)|
-| `location` | `loc` | Location of the protein in the cell |  string | N |  Localisation of the protein in the cell|
-| `taxon` | `taxon` | Taxon of the protein  |  string | N | Taxon at level 0 and 1 of the protein (eucaryote/procaryote etc..)|
+| Column                      | Shorter name* | Meaning                                                      | Data type                                                         | Required** | Additional info.                                                   |
+| --------------------------- | ------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- | ---------- | ------------------------------------------------------------------ |
+| `domain`                    | `dm`          | domain name                                                  | fixed strings                                                     | Y          | -                                                                  |
+| `cathpdb`                   | `cath`        | CATH ID                                                      | 7 characters                                                      | N          | -                                                                  |
+| `pdb`                       | `pdb`         | PDB ID                                                       | 4 characters                                                      | N          | -                                                                  |
+| `uniprot_acc`               | `uacc`        | Uniprot Accession number                                     | string                                                            | N          | Uniprot accession number (eg: Q9ULH1)                              |
+| `uniprot_id`                | `uid`         | Uniprot ID                                                   | String                                                            | N          | Uniprot ID (eg: ASAP1_HUMAN)                                       |
+| `residue_name`              | `rna`         | residue name                                                 | 3 characters, uppercase                                           | Y          | -                                                                  |
+| `IBS`                       | `ibs`         | binding sites?                                               | Boolean                                                           | N          | True if residue part of the IBS, False otherwise                   |
+| `chain_id`                  | `chain`       | chain name                                                   | one character                                                     | N          | PDB Chain ID                                                       |
+| `residue_number`            | `rnu`         | residue id/number                                            | integers                                                          | Y          | -                                                                  |
+| `b_factor`                  | `bf`          | Bfactor of each atom                                         | float                                                             | N          | -                                                                  |
+| `sec_struc`                 | `ss`          | secondary structure                                          | one character: H/E/C                                              | N          | secondary structures simplified                                    |
+| `sec_struc_full`            | `ssf`         | Secondary structure                                          | one character: H/B/E/G/I/T/S/-                                    | N          | Secondary structures detailed                                      |
+| `prot_block`                | `pb`          | Protein Block                                                | One Character                                                     | Y          | see https://github.com/pierrepo/PBxplore for more info.            |
+| `data_type`                 | `dt`          | source database                                              | fixed strings: `cathpdb`/`alphafold`                              | Y          | If data are experimentale (cathpdb) or models (alphafold)          |
+| `Experimental Method`       | `em`          | experiment method for obtaining the structure                | string: `X-ray diffraction`, `Solution NMR`, `AFmodel`, `unknown` | Y          | -                                                                  |
+| `resolution`                | `rsl`         | strcuture resolution                                         | float                                                             | N          | 999 if the structure is NMR                                        |
+| `RSA_total_freesasa_tien`   | `rsa`         | ?                                                            | ?                                                                 | ?          | ?                                                                  |
+| `convhull_vertex`           | `cv`          | convex hull flag                                             | bool: `True/False`                                                | Y          | residue part of the Convex Hull                                    |
+| `protrusion`                | `pro`         | protrusion flag                                              | bool: `True/False`                                                | Y          | residue is a protrusion                                            |
+| `is_hydrophobic_protrusion` | `hypro`       | hydrophobic protrusion flag                                  | bool: `True/False`                                                | Y          | residue is a hydrophobic protrusion                                |
+| `is_co_insertable`          | `coin`        | co-insertable flag                                           | bool: `True/False`                                                | Y          | residue is a co-insertable                                         |
+| `neighboursList`            | `nbl`         | neighbour residue number list                                | string                                                            | N          | Neighbours list of residue (if residue convexhull)                 |
+| `density`                   | `den`         | protein density                                              | integer                                                           | N          | Number of CA/CB in a radius of 1nm                                 |
+| `exposition`                | `expo`        | exposition flag                                              | Boolean                                                           | N          | if Residue is exposed (RSA >20%) or not (RSA <= 20%)               |
+| `S35`                       | `s35`         | Cath Cluster number at 35% of idendity                       | numbers                                                           | N          | Cath cluster id at 35% of seq id.                                  |
+| `S60`                       | `s60`         | Cath Cluster number at 60% of idendity                       | numbers                                                           | N          | Cath cluster id at 60% of seq id.                                  |
+| `S95`                       | `s95`         | Cath Cluster number at 95% of idendity                       | numbers                                                           | N          | Cath cluster id at 95% of seq id.                                  |
+| `S100`                      | `s100`        | Cath Cluster number at 100% of idendity                      | numbers                                                           | N          | Cath cluster id at 100% of seq id.                                 |
+| `uniref50`                  | `u50`         | Representative uniprot_acc for cluster with 50% of idendity  | string                                                            | N          | Representative sequence for protein sequence at 50% of seq id.     |
+| `uniref90`                  | `u90`         | Representative uniprot_acc for cluster with 90% of idendity  | string                                                            | N          | Representative sequence for protein sequence at 90% of seq id.     |
+| `uniref100`                 | `u100`        | Representative uniprot_acc for cluster with 100% of idendity | string                                                            | N          | Representative sequence for protein sequence at 100% of seq id.    |
+| `origin`                    | `origin`      | Specie of origin                                             | string                                                            | N          | Origin of the protein (eg, HUMAN, MOUSE...)                        |
+| `location`                  | `loc`         | Location of the protein in the cell                          | string                                                            | N          | Localisation of the protein in the cell                            |
+| `taxon`                     | `taxon`       | Taxon of the protein                                         | string                                                            | N          | Taxon at level 0 and 1 of the protein (eucaryote/procaryote etc..) |
 ```
 * Shorter name: used in the website front-end source code for better readability/less memeory; all in lowercase
 ** Required: whether this value must be present 
