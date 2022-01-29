@@ -1,7 +1,7 @@
 import { Button, Card, Input, Radio, Select, Space, Statistic, Table } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
-import { CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, SearchOutlined } from "@ant-design/icons";
+import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, COLORS20 } from "./Utils";
 import Papa from "papaparse";
@@ -44,6 +44,43 @@ const loadCsvTable = async (domain: string) => {
 
 let selectedDomains = new Set<string>();
 
+function Chart(props: {chartData:any, chartType: string}) {
+    const pieChart = (
+        <PieChart width={450} height={400}>
+            <Pie
+                dataKey="value"
+                isAnimationActive={true}
+                data={props.chartData}
+                cx={200}
+                cy={200}
+                outerRadius={150}
+                fill="#8884d8"
+                label
+            >
+                {props.chartData.map((_: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS20[index]} />
+                ))}
+            </Pie>
+            <Tooltip />
+        </PieChart>
+    );
+
+    const barChart = (
+        <BarChart width={450} height={400} data={props.chartData}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="value" fill="#8884d8" barSize={20} >
+                {props.chartData.map((_:any, index:number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS20[index]} />
+                ))}
+            </Bar>
+        </BarChart>
+    );
+    if(props.chartType == 'pie'){ return pieChart}
+    else { return barChart}
+}
+
 
 export function Pepr2ds() {
 
@@ -54,6 +91,7 @@ export function Pepr2ds() {
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
     const [resCompData, setResCompData] = useState<any[]>([]);
+    const [chartType, setChartType] = useState('pie'); 
 
     const addDomainTableData = async (domain: string) => {
         setLoading(true);
@@ -69,21 +107,23 @@ export function Pepr2ds() {
         setTableData(tableData.filter(d => d.dm != domain));
     }
 
-    const calcResComp = () => {
+    const calcResComp = (e:any) => {
         let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
         for (let record of tableData) {
             resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
         }
         setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));
+        setChartType(e.target.value);
     }
 
 
     useEffect(() => {
         addDomainTableData(defaultDomain); // load default dataset     
         console.log(selectedDomains);
-    }, []);
+        console.log('using effect...')
+    });
 
-
+   
     const trueFalseRender = (b: any) => (b && b.toLowerCase() == 'true')
         ? <CheckCircleTwoTone twoToneColor="#52c41a" />
         : <> - </>
@@ -249,7 +289,7 @@ export function Pepr2ds() {
                 { title: <small> uref100 </small>, dataIndex: 'u100', width: 80, }
             ]
         },
-        { title: 'RSA total freesasa tien', dataIndex: 'rsa', width: 80, ellipsis: true,},
+        { title: 'RSA total freesasa tien', dataIndex: 'rsa', width: 80, ellipsis: true, },
         { title: 'Protein Block', dataIndex: 'pb', width: 70 },
         { title: 'Origin', dataIndex: 'origin', width: 80 },
         { title: 'Location', dataIndex: 'loc', width: 100, ellipsis: true },
@@ -376,44 +416,20 @@ export function Pepr2ds() {
                 </Row>
                 <Row className="my-4 mx-2">
                     <Col md={6} className="px-2 ">
-                        <Card title={<h5 > Residue Composition </h5>} 
-                            extra={ <Button size="large" className="btn btn-outline-primary"  icon={ <PieChartOutlined /> } onClick={() => calcResComp()} /> } 
+                        <Card title={<h5 > Residue Composition </h5>}
+                            extra={
+                                <Radio.Group onChange={calcResComp} defaultValue="pie">
+                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                                </Radio.Group>
+                            }
                             bordered={false}>
-
-                          
-                                <PieChart width={450} height={400}>
-                                <Pie
-                                    dataKey="value"
-                                    isAnimationActive={true}
-                                    data={resCompData}
-                                    cx={200}
-                                    cy={200}
-                                    outerRadius={150}
-                                    fill="#8884d8"
-                                    label
-                                >
-                                    {resCompData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS20[index]} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
+                        <Chart chartData={resCompData} chartType={chartType} />
                         </Card>
                     </Col>
 
                     <Col md={6} className="px-2 ">
-                        <Card title="Neighborhood Residue Composition" extra={<BButton onClick={() => calcResComp()}> update </BButton>} bordered={false}>
-                            <BarChart width={450} height={400} data={resCompData}>
-                                <XAxis dataKey="name" />
-                                <YAxis />
-                                <Tooltip />
-                                <Bar dataKey="value" fill="#8884d8" barSize={20} >
-                                    {resCompData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS20[index]} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-
+                        <Card title="Neighborhood Residue Composition" bordered={false}>
                         </Card>
                     </Col>
                 </Row>
