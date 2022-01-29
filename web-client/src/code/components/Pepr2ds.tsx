@@ -44,7 +44,7 @@ const loadCsvTable = async (domain: string) => {
 
 let selectedDomains = new Set<string>();
 
-function Chart(props: {chartData:any, chartType: string}) {
+function Chart(props: { chartData: any, chartType: string }) {
     const pieChart = (
         <PieChart width={450} height={400}>
             <Pie
@@ -71,14 +71,14 @@ function Chart(props: {chartData:any, chartType: string}) {
             <YAxis />
             <Tooltip />
             <Bar dataKey="value" fill="#8884d8" barSize={20} >
-                {props.chartData.map((_:any, index:number) => (
+                {props.chartData.map((_: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS20[index]} />
                 ))}
             </Bar>
         </BarChart>
     );
-    if(props.chartType == 'pie'){ return pieChart}
-    else { return barChart}
+    if (props.chartType == 'pie') { return pieChart }
+    else { return barChart }
 }
 
 
@@ -91,7 +91,9 @@ export function Pepr2ds() {
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
     const [resCompData, setResCompData] = useState<any[]>([]);
-    const [chartType, setChartType] = useState('pie'); 
+    const [neighborResCompData, setNeighborResCompData] = useState<any[]>([]);
+    const [resCompChartType, setResCompChartType] = useState('pie');
+    const [neighborResCompChartType, setNeighborResCompChartType] = useState('pie');
 
     const addDomainTableData = async (domain: string) => {
         setLoading(true);
@@ -114,14 +116,28 @@ export function Pepr2ds() {
     }, []);
 
 
-   useEffect(()=>{
+    useEffect(() => {
         // update ResCompData 
         let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
         for (let record of tableData) {
             resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
         }
-        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));;
-   }, [tableData])
+        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));
+
+        // update neighborResCompData
+        let neighborResComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
+        for (let record of tableData) {
+            if (record.nbl) {
+                const neighbors = record.nbl.split(';');
+                const neighborResNames = neighbors.map((n: string) => n.split('-')[0]);
+                for (let resName of neighborResNames) {                    
+                    neighborResComp.set(resName, (neighborResComp.get(resName) || 0) + 1);
+                }
+            }
+        }
+        setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })));;
+
+    }, [tableData])
 
 
     const trueFalseRender = (b: any) => (b && b.toLowerCase() == 'true')
@@ -243,7 +259,7 @@ export function Pepr2ds() {
                 },
                 { title: 'D', dataIndex: 'den', width: 40, render: (v: string) => v && parseInt(v) > 0 ? v : <>-</> },
                 {
-                    title: 'neighbour list', dataIndex: 'nbl', width: 120, ellipsis: true,
+                    title: 'neighbor residue list', dataIndex: 'nbl', width: 120, ellipsis: true,
                 }
             ]
         },
@@ -333,17 +349,6 @@ export function Pepr2ds() {
         setColumns([...defaultColumns, ...selectedOptionalColumns]);
     }
 
-    // const tableTitle = () => { 
-    //     let domainLengthRender = [];
-    //     for (let d of DOMAINS) { 
-    //         const domainLength = tableData.filter(r=>r.dm == d).length;
-    //         if(domainLength >0 ) domainLengthRender.push(
-    //             <span key={d} className="text-muted"> <b>{d} </b> {domainLength}; </span>)  
-    //     }     
-    //     const prefix = domainLengthRender.length > 0 ? <span>, including </span> : <> </>
-    //     return <span>Loaded <b>{tableData.length} </b> rows {prefix} {domainLengthRender}</span>
-    // }    
-
     return (
         <Container>
             <PageHeader headerList={[PageHeaders.Home, PageHeaders.Pepr2ds]}
@@ -418,18 +423,26 @@ export function Pepr2ds() {
                     <Col md={6} className="px-2 ">
                         <Card title={<h5 > Residue Composition </h5>}
                             extra={
-                                <Radio.Group onChange={e => setChartType(e.target.value)} defaultValue="pie">
+                                <Radio.Group onChange={e => setResCompChartType(e.target.value)} defaultValue="pie">
                                     <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
                                     <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
                                 </Radio.Group>
                             }
                             bordered={false}>
-                        <Chart chartData={resCompData} chartType={chartType} />
+                            <Chart chartData={resCompData} chartType={resCompChartType} />
                         </Card>
                     </Col>
 
                     <Col md={6} className="px-2 ">
-                        <Card title="Neighborhood Residue Composition" bordered={false}>
+                        <Card title={<h5> Neighbor Residue Composition </h5>}
+                            extra={
+                                <Radio.Group onChange={e => setNeighborResCompChartType(e.target.value)} defaultValue="pie">
+                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                                </Radio.Group>
+                            }
+                            bordered={false}>
+                            <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />
                         </Card>
                     </Col>
                 </Row>
