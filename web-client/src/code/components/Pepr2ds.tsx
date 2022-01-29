@@ -1,4 +1,4 @@
-import { Button, Card, Input, Radio, Select, Space, Statistic, Table } from "antd";
+import { Button, Card, Input, Radio, Select, Space, Statistic, Table, Tooltip } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
 import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, SearchOutlined } from "@ant-design/icons";
@@ -7,7 +7,7 @@ import { References, PageHeader, PageHeaders, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
 // import { presetPalettes } from '@ant-design/colors';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 
 // configurable options
@@ -61,7 +61,7 @@ function Chart(props: { chartData: any, chartType: string }) {
                     <Cell key={`cell-${index}`} fill={COLORS20[index]} />
                 ))}
             </Pie>
-            <Tooltip />
+            <RTooltip />
         </PieChart>
     );
 
@@ -69,7 +69,7 @@ function Chart(props: { chartData: any, chartType: string }) {
         <BarChart width={450} height={400} data={props.chartData}>
             <XAxis dataKey="name" />
             <YAxis />
-            <Tooltip />
+            <RTooltip />
             <Bar dataKey="value" fill="#8884d8" barSize={20} >
                 {props.chartData.map((_: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS20[index]} />
@@ -215,51 +215,60 @@ export function Pepr2ds() {
         },
         { title: 'Chain', dataIndex: 'chain', width: 60, ...getColumnSearchProps('chain', 'Chain') },
         {
-            title: 'Residue',
+            title: 'Residue info',
             children: [
                 {
-                    title: <small> name </small>, dataIndex: 'rna', width: 65, key: 'resname',
+                    title: 'name', dataIndex: 'rna', width: 65, key: 'resname',
                     filters: RESIDUES.map(r => { return { text: r, value: r } }),
                     onFilter: (value: any, record: any) => record.rna.includes(value)
                 },
-                { title: <small> id </small>, dataIndex: 'rnu', width: 45, key: 'resnum' },
+                { title: 'id', dataIndex: 'rnu', width: 45, key: 'resnum' },
             ]
         },
         {
-            title: 'IBS', dataIndex: 'ibs', width: 50, render: trueFalseRender, filters: trueFalseFilter,
+            title: <Tooltip title="experimental verified binding sites (?)">IBS</Tooltip>, dataIndex: 'ibs', width: 50, render: trueFalseRender, filters: trueFalseFilter,
             onFilter: (value: any, record: any) => record.ibs && record.ibs.toLowerCase().includes(value)
         },
 
         {
-            title: 'Protrusion information *',
+            title: 'Protrusion info',
             children: [
                 {
-                    title: 'V', dataIndex: 'cv', width: 40, render: trueFalseRender, filters: trueFalseFilter,
+                    title: <Tooltip title={<span>convex hull <b className="text-primary">V</b>ertex</span>}>V</Tooltip>, 
+                    dataIndex: 'cv', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.cv && record.cv.toLowerCase().includes(value)
                 },
 
                 {
-                    title: 'P', dataIndex: 'pro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
+                    title: <Tooltip title={<span><b className="text-primary">P</b>rotrusion</span>}>P</Tooltip>, 
+                    dataIndex: 'pro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.pro && record.pro.toLowerCase().includes(value)
                 },
 
                 {
-                    title: 'H', dataIndex: 'hypro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
+                    title: <Tooltip title={<span><b className="text-primary">H</b>ydrophobic protrusion</span>}>H</Tooltip>, 
+                    dataIndex: 'hypro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.hypro && record.hypro.toLowerCase().includes(value)
                 },
 
                 {
-                    title: 'C', dataIndex: 'coin', width: 40, render: trueFalseRender, filters: trueFalseFilter,
+                    title: <Tooltip title={<span><b className="text-primary">C</b>o-insertable</span>}>C</Tooltip>, 
+                    dataIndex: 'coin', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.coin && record.coin.toLowerCase().includes(value)
                 },
                 {
-                    title: 'E', dataIndex: 'expo', width: 40,
+                    title: <Tooltip title={<span>whether residue is <b className="text-primary">E</b>xposed (RSA &gt; 20%) or not (RSA &lt;= 20%)</span>}>E</Tooltip>, 
+                    dataIndex: 'expo', width: 40,
                     render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.expo && record.expo.toLowerCase().includes(value)
                 },
-                { title: 'D', dataIndex: 'den', width: 40, render: (v: string) => v && parseInt(v) > 0 ? v : <>-</> },
+                { title: <Tooltip title={<span>protein <b className="text-primary">D</b>ensity</span>}>D</Tooltip>, dataIndex: 'den', width: 40, render: (v: string) => v && parseInt(v) > 0 ? v : <>-</> },
                 {
-                    title: 'neighbor residue list', dataIndex: 'nbl', width: 120, ellipsis: true,
+                    title: 'neighbor residue list', dataIndex: 'nbl', width: 120, 
+                    ellipsis: { showTitle: false, },
+                    render: (nbl:string) => ( // customize the tooltip
+                        <Tooltip placement="topLeft" title={nbl.replace(/;/g, ' ')  }> {nbl} </Tooltip>                        
+                    ),
                 }
             ]
         },
@@ -403,14 +412,11 @@ export function Pepr2ds() {
                     size="small"
                     pagination={{
                         pageSize: 20,
-                        position: ['topLeft'],
+                        position: ['topCenter'],
                         showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
                         showQuickJumper: true
                     }}
-                    footer={() => <span> <b>V</b>: convex hull vertex; <b>P</b>: protrusion; <b>H</b>: hydrophobic protrusion;
-                        <b> C</b>: co-insertable H; <b>E</b>: {"if Residue is exposed (RSA > 20%) or not (RSA <= 20%)"};
-                        <b> D</b>: protein density
-                    </span>}
+                    // footer={() => }
                 />
 
             </Container>
@@ -423,7 +429,7 @@ export function Pepr2ds() {
                     <Col md={6} className="px-2 ">
                         <Card title={<h5 > Residue Composition </h5>}
                             extra={
-                                <Radio.Group onChange={e => setResCompChartType(e.target.value)} defaultValue="pie">
+                                <Radio.Group size="small" onChange={e => setResCompChartType(e.target.value)} defaultValue="pie">
                                     <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
                                     <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
                                 </Radio.Group>
@@ -434,9 +440,9 @@ export function Pepr2ds() {
                     </Col>
 
                     <Col md={6} className="px-2 ">
-                        <Card title={<h5> Neighbor Residue Composition </h5>}
+                        <Card title={<h5>Protrusion Neighbor Residue Composition</h5>}
                             extra={
-                                <Radio.Group onChange={e => setNeighborResCompChartType(e.target.value)} defaultValue="pie">
+                                <Radio.Group size="small" onChange={e => setNeighborResCompChartType(e.target.value)} defaultValue="pie">
                                     <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
                                     <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
                                 </Radio.Group>
