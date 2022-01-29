@@ -107,23 +107,23 @@ export function Pepr2ds() {
         setTableData(tableData.filter(d => d.dm != domain));
     }
 
-    const calcResComp = (e:any) => {
-        let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
-        for (let record of tableData) {
-            resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
-        }
-        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));
-        setChartType(e.target.value);
-    }
-
 
     useEffect(() => {
         addDomainTableData(defaultDomain); // load default dataset     
         console.log(selectedDomains);
-        console.log('using effect...')
-    });
+    }, []);
 
-   
+
+   useEffect(()=>{
+        // update ResCompData 
+        let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
+        for (let record of tableData) {
+            resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
+        }
+        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));;
+   }, [tableData])
+
+
     const trueFalseRender = (b: any) => (b && b.toLowerCase() == 'true')
         ? <CheckCircleTwoTone twoToneColor="#52c41a" />
         : <> - </>
@@ -418,7 +418,7 @@ export function Pepr2ds() {
                     <Col md={6} className="px-2 ">
                         <Card title={<h5 > Residue Composition </h5>}
                             extra={
-                                <Radio.Group onChange={calcResComp} defaultValue="pie">
+                                <Radio.Group onChange={e => setChartType(e.target.value)} defaultValue="pie">
                                     <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
                                     <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
                                 </Radio.Group>
