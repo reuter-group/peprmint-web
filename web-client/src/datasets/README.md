@@ -1,6 +1,6 @@
 ### Dataset Notes:
 1. This folder contains the raw dataset for serving the website **PePr2DS**
-- `PePr2DS.csv`([source data](https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv)): the complete dataset 
+- `PePr2DS.csv`([source data](https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv.zip)): the complete dataset 
     - `domain_<domain>.csv`: generated from the complete dataset by running `dataset_preprocess.sh`
 
 2. Information for each dataset column:
@@ -30,7 +30,7 @@
 | `is_co_insertable`          | `coin`        | co-insertable flag                                           | bool: `True/False`                                                | Y          | residue is a co-insertable                                         |
 | `neighboursList`            | `nbl`         | neighbour residue number list                                | string                                                            | N          | Neighbours list of residue (if residue convexhull)                 |
 | `density`                   | `den`         | protein density                                              | integer                                                           | N          | Number of CA/CB in a radius of 1nm                                 |
-| `exposition`                | `expo`        | exposition flag                                              | Boolean                                                           | N          | if Residue is exposed (RSA >20%) or not (RSA <= 20%)               |
+| `exposed`                | `expo`        | exposition flag                                              | Boolean                                                           | N          | if Residue is exposed (RSA >20%) or not (RSA <= 20%)               |
 | `S35`                       | `s35`         | Cath Cluster number at 35% of idendity                       | numbers                                                           | N          | Cath cluster id at 35% of seq id.                                  |
 | `S60`                       | `s60`         | Cath Cluster number at 60% of idendity                       | numbers                                                           | N          | Cath cluster id at 60% of seq id.                                  |
 | `S95`                       | `s95`         | Cath Cluster number at 95% of idendity                       | numbers                                                           | N          | Cath cluster id at 95% of seq id.                                  |
