@@ -40,6 +40,30 @@ const loadCsvTable = async (domain: string) => {
     });
 }
 
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({
+    cx,
+    cy,
+    midAngle,
+    innerRadius,
+    outerRadius,
+    percent,
+    fill,
+    value,
+    name
+  }: any) => {
+      console.log(cx, cy, midAngle, innerRadius, percent, value, name);
+    const radius = innerRadius + (outerRadius - innerRadius)*1.2;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    return (
+      <text x={x} y={y} fill={fill}
+        textAnchor={x > cx ? "start" : "end"}       
+      >  
+        {`${name}: ${(percent * 100).toFixed(1)}%`}
+      </text>
+    );
+  };
 
 function Chart(props: { chartData: Array<{name:string, value:number}>, chartType: string }) {
     const pieChart = (
@@ -48,11 +72,11 @@ function Chart(props: { chartData: Array<{name:string, value:number}>, chartType
                 dataKey="value"
                 isAnimationActive={true}
                 data={props.chartData}
-                cx={200}
+                cx={220}
                 cy={200}
-                outerRadius={150}
+                outerRadius={120}
                 fill="#8884d8"
-                label
+                label={renderCustomizedLabel}
             >
                 {props.chartData.map((data, index: number) => (
                     <Cell key={`cell-${index}`} fill={ RES_COLORS.get(data.name ) } />
@@ -154,7 +178,7 @@ export function Pepr2ds() {
         for (let record of currentTableData) {
             resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
         }
-        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));
+        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })).filter((e:any) => e.value!=0) );
 
         // update neighborResCompData
         let neighborResComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
@@ -167,7 +191,7 @@ export function Pepr2ds() {
                 }
             }
         }
-        setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })));;
+        setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })).filter((e:any) => e.value!=0) );
 
     }, [currentTableData])
 
@@ -471,7 +495,7 @@ export function Pepr2ds() {
                             }
                             bordered={false}>
                             <Chart chartData={resCompData} chartType={resCompChartType} />
-                            <>Total: { resCompData.reduce((acc, data) => acc + data.value, 0) } residues</>
+                            <p className="text-center"> Total: { resCompData.reduce((acc, data) => acc + data.value, 0) } residues </p>
                         </Card>
                     </Col>
 
@@ -485,6 +509,8 @@ export function Pepr2ds() {
                             }
                             bordered={false}>
                             <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />
+                            <p className="text-center"> Total: { neighborResCompData.reduce((acc, data) => acc + data.value, 0) } residues </p>
+
                         </Card>
                     </Col>
                 </Row>
