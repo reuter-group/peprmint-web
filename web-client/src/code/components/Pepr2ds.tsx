@@ -111,13 +111,13 @@ export function Pepr2ds() {
 
 
     useEffect(() => {
-        addDomainTableData(defaultDomain); // load default dataset     
+        addDomainTableData(defaultDomain); // load default dataset
         console.log(selectedDomains);
     }, []);
 
 
     useEffect(() => {
-        // update ResCompData 
+        // update ResCompData
         let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
         for (let record of tableData) {
             resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
@@ -130,7 +130,7 @@ export function Pepr2ds() {
             if (record.nbl) {
                 const neighbors = record.nbl.split(';');
                 const neighborResNames = neighbors.map((n: string) => n.split('-')[0]);
-                for (let resName of neighborResNames) {                    
+                for (let resName of neighborResNames) {
                     neighborResComp.set(resName, (neighborResComp.get(resName) || 0) + 1);
                 }
             }
@@ -365,11 +365,11 @@ export function Pepr2ds() {
                 subtitle={"Peripheral Protein Protrusion DataSet"}
             />
             <Row className="mb-5">
-                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={6084} /> </Col>
+                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={5562} /> </Col>
                 <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={DOMAINS.length} /> </Col>
                 <Col md={2} className="bg-light mx-4 py-2 border" >
-                    <Statistic title="Complete dataset" value="156 MB" />
-                    <small><a className="text-muted" href="https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv">
+                    <Statistic title="Complete dataset" value="25.9 MB" />
+                    <small><a className="text-muted" href="https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv.zip">
                         <DownloadOutlined /> download</a> </small></Col>
             </Row>
 
