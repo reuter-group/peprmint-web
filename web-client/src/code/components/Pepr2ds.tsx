@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
 import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { References, PageHeader, PageHeaders, COLORS20 } from "./Utils";
+import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
 // import { presetPalettes } from '@ant-design/colors';
@@ -44,7 +44,7 @@ const loadCsvTable = async (domain: string) => {
 
 let selectedDomains = new Set<string>();
 
-function Chart(props: { chartData: any, chartType: string }) {
+function Chart(props: { chartData: Array<{name:string, value:number}>, chartType: string }) {
     const pieChart = (
         <PieChart width={450} height={400}>
             <Pie
@@ -57,8 +57,8 @@ function Chart(props: { chartData: any, chartType: string }) {
                 fill="#8884d8"
                 label
             >
-                {props.chartData.map((_: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS20[index]} />
+                {props.chartData.map((data, index: number) => (
+                    <Cell key={`cell-${index}`} fill={ RES_COLORS.get(data.name ) } />
                 ))}
             </Pie>
             <RTooltip />
@@ -71,7 +71,7 @@ function Chart(props: { chartData: any, chartType: string }) {
             <YAxis />
             <RTooltip />
             <Bar dataKey="value" fill="#8884d8" barSize={20} >
-                {props.chartData.map((_: any, index: number) => (
+                {props.chartData.map((_, index: number) => (
                     <Cell key={`cell-${index}`} fill={COLORS20[index]} />
                 ))}
             </Bar>
@@ -416,7 +416,9 @@ export function Pepr2ds() {
                         showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
                         showQuickJumper: true
                     }}
-                    // footer={() => }
+                    footer={() => <span> For details of each column, please <a className="text-primary" 
+                        href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">
+                        check here</a>. </span>}
                 />
 
             </Container>

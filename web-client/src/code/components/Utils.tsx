@@ -12,6 +12,30 @@ import { Col, Row } from "react-bootstrap";
 import { Link } from "react-router-dom";
 
 
+//From http://acces.ens-lyon.fr/biotic/rastop/help/colour.htm#shapelycolours
+export const RES_COLORS = new Map(Object.entries({
+    LEU: '#33FF00',
+    ILE: '#66FF00',
+    CYS: "#FFFF00",
+    MET: "#00FF00",
+    TYR: "#00FFCC",
+    TRP: "#00CCFF",
+    PHE: "#00FF66",
+    HIS: "#0066FF",
+    LYS: "#6600FF",
+    ARG: "#0000FF",
+    ASP: "#FF0000",
+    GLU: "#FF0066",
+    VAL: "#99FF00",
+    ALA: "#CCFF00",
+    GLY: "#FF9900",
+    PRO: "#FFCC00",
+    SER: "#FF3300",
+    ASN: "#CC00FF",
+    GLN: "#FF00CC",
+    THR: "#FF6600",
+    UNK: "#000000"
+}));
 
 export const COLORS20 = ['#5B8FF9', '#CDDDFD', '#61DDAA', '#CDF3E4', '#65789B',
             '#CED4DE', '#F6BD16', '#FCEBB9', '#7262fd', '#D3CEFD', 
