@@ -40,7 +40,6 @@ const loadCsvTable = async (domain: string) => {
     });
 }
 
-let selectedDomains = new Set<string>();
 
 function Chart(props: { chartData: Array<{name:string, value:number}>, chartType: string }) {
     const pieChart = (
@@ -84,7 +83,12 @@ export function Pepr2ds() {
 
     const title = <span> PePr<sup>2</sup>DS </span>;
 
+    const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set());
+
     const [tableData, setTableData] = useState<any[]>([]);
+    const [currentFilters, setCurrentFilters] = useState({});
+    const [currentTableData, setCurrentTableData] = useState<any[]>([]);
+
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
@@ -93,18 +97,48 @@ export function Pepr2ds() {
     const [resCompChartType, setResCompChartType] = useState('pie');
     const [neighborResCompChartType, setNeighborResCompChartType] = useState('pie');
 
+
+    const filterTableData = (data: any[]) => {
+        // filter the given data with the user defined filters
+        const columnFilters = Object.entries(currentFilters).filter(f => f[1] != null);
+      
+        return columnFilters.length == 0 
+            ? data
+            : data.filter(row => {
+                let flag = true; 
+                for (const [colName, filterKeywords] of columnFilters ) {     
+                    for (const keyword of filterKeywords as Array<string>){
+                        flag &&= (row[colName]!).includes(keyword)
+                    }
+                }
+                return flag
+            });
+        }
+       
+    
     const addDomainTableData = async (domain: string) => {
         setLoading(true);
-        selectedDomains.add(domain);
+        setSelectedDomains( ds => new Set(ds.add(domain)) );       
         const newData = await loadCsvTable(domain);
         setTableData([...tableData, ...newData]);
+
+        setCurrentTableData([...currentTableData, ...filterTableData(newData)]);
+
         setLoading(false);
     };
 
+
     const deleteDomainTableData = (domain: string) => {
         console.log('deleting..', domain, tableData.filter(d => d.dm != domain).length)
-        if (selectedDomains.has(domain)) selectedDomains.delete(domain);
+        if (selectedDomains.has(domain))
+            setSelectedDomains(ds => { 
+                const s = ds.delete(domain);
+                return new Set(ds)
+            })
+        
         setTableData(tableData.filter(d => d.dm != domain));
+
+        setCurrentTableData(currentTableData.filter(d => d.dm != domain));
     }
 
 
@@ -114,17 +148,17 @@ export function Pepr2ds() {
     }, []);
 
 
-    useEffect(() => {
+    useEffect(() => {        
         // update ResCompData
         let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
-        for (let record of tableData) {
+        for (let record of currentTableData) {
             resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
         }
         setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })));
 
         // update neighborResCompData
         let neighborResComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
-        for (let record of tableData) {
+        for (let record of currentTableData) {
             if (record.nbl) {
                 const neighbors = record.nbl.split(';');
                 const neighborResNames = neighbors.map((n: string) => n.split('-')[0]);
@@ -135,7 +169,7 @@ export function Pepr2ds() {
         }
         setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })));;
 
-    }, [tableData])
+    }, [currentTableData])
 
 
     const trueFalseRender = (b: any) => (b && b.toLowerCase() == 'true')
@@ -216,11 +250,11 @@ export function Pepr2ds() {
             title: 'Residue info',
             children: [
                 {
-                    title: 'name', dataIndex: 'rna', width: 65, key: 'resname',
+                    title: 'name', dataIndex: 'rna', width: 65,
                     filters: RESIDUES.map(r => { return { text: r, value: r } }),
                     onFilter: (value: any, record: any) => record.rna.includes(value)
                 },
-                { title: 'id', dataIndex: 'rnu', width: 45, key: 'resnum' },
+                { title: 'id', dataIndex: 'rnu', width: 45, },
             ]
         },
         {
@@ -333,8 +367,9 @@ export function Pepr2ds() {
 
 
     function changeTable(pagination: any, filters: any, sorter: any, extra: any) {
-        console.log('change table...', pagination, filters, sorter, extra);
-        setTableData(extra.currentDataSource)
+        // console.log('change table...', pagination, filters, sorter, extra);
+        setCurrentTableData(extra.currentDataSource);
+        setCurrentFilters(filters);
     }
 
     const changeDomainSelections = (domains: string[]) => {
@@ -436,6 +471,7 @@ export function Pepr2ds() {
                             }
                             bordered={false}>
                             <Chart chartData={resCompData} chartType={resCompChartType} />
+                            <>Total: { resCompData.reduce((acc, data) => acc + data.value, 0) } residues</>
                         </Card>
                     </Col>
 
