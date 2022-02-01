@@ -9,18 +9,16 @@ import { validCathId, validPdbID } from "../helpers";
 // import { presetPalettes } from '@ant-design/colors';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
+import * as Statistics from "../../datasets/statistics.json";
 
 // configurable options
-export const DOMAINS = ['ANNEXIN', 'C1', 'C2', 'C2DIS', 'PH', 'PLA', 'PLD', 'PX', 'START'];
-const defaultDomain = DOMAINS[1]; // C1
+const DOMAINS = Statistics.domainsList as Array<string>;
+const defaultDomain = DOMAINS[1]; // C1 domain
 
+const RESIDUES = Statistics.residueList as Array<string>;
 
-export const DATA_SOURCES = ['CATH', 'AlphaFold'];
-export const ExperimentalMethod = ['X-ray diffraction', 'Solution NMR', 'AFmodel', 'unknown']
-export const RESIDUES = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS',
-    'GLN', 'GLU', 'GLY', 'HIS', 'ILE',
-    'LEU', 'LYS', 'MET', 'PHE', 'PRO',
-    'SER', 'THR', 'TRP', 'TYR', 'VAL'];
+// const DATA_SOURCES = ['CATH', 'AlphaFold'];
+// const ExperimentalMethod = Statistics.experimentalMethod;
 
 // import all csv files under datasets/
 function importAllDatasets(r: __WebpackModuleApi.RequireContext) {
@@ -365,11 +363,11 @@ export function Pepr2ds() {
                 subtitle={"Peripheral Protein Protrusion DataSet"}
             />
             <Row className="mb-5">
-                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={5562} /> </Col>
-                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={DOMAINS.length} /> </Col>
+                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={Statistics.structures} /> </Col>
+                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={Statistics.domainsList.length } /> </Col>
                 <Col md={2} className="bg-light mx-4 py-2 border" >
                     <Statistic title="Complete dataset" value="25.9 MB" />
-                    <small><a className="text-muted" href="https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv.zip">
+                    <small><a className="text-muted" href={Statistics.downloadLink}>
                         <DownloadOutlined /> download</a> </small></Col>
             </Row>
 
