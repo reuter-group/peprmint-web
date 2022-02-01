@@ -78,6 +78,16 @@ module.exports = {
                         name: '/image/[name]_[hash:7].[ext]',
                     }
                 }
+            },
+            {
+                test: /.*\.csv$/i,
+                use: {
+                        loader: 'file-loader',
+                        options: {
+                            name: "datasets/[name].[ext]",
+                            emitFile: true,
+                        },
+                    },
             }
 
         ]
