@@ -84,7 +84,7 @@ module.exports = {
                 use: {
                         loader: 'file-loader',
                         options: {
-                            name: "datasets/[name].[ext]",
+                            name: "/datasets/[name].[ext]",
                             emitFile: true,
                         },
                     },
@@ -97,6 +97,7 @@ module.exports = {
     plugins: [
         new HtmlWebPackPlugin({ favicon: './src/image/favicon.svg', template: "./src/index.html", filename: "./index.html" }),
         new HtmlWebPackPlugin({ template: "./src/index.html", filename: "./pepr2vis/index.html" }),
+        new HtmlWebPackPlugin({ template: "./src/index.html", filename: "./pepr2ds/index.html" }),
     ],
 
     performance: { hints: false },

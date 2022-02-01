@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
-// import { presetPalettes } from '@ant-design/colors';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 import * as Statistics from "../../datasets/statistics.json";
@@ -34,7 +33,7 @@ const csvUrl = (domain: string) => DATASET_IMPORTS[`./domain_${domain.toUpperCas
 const loadCsvTable = async (domain: string) => {
     const csvData = await fetch(csvUrl(domain)).then(res => res.text());
     const table = Papa.parse(csvData, { header: true, skipEmptyLines: true });
-    console.log(`loaded ${table.data.length} row data`);
+    console.log(`loaded ${table.data.length} rows data`);
     return table.data.map((data: any, i) => {
         return { ...data, key: `${domain}-${i}` }
     });
@@ -52,7 +51,7 @@ const renderCustomizedLabel = ({
     value,
     name
   }: any) => {
-      console.log(cx, cy, midAngle, innerRadius, percent, value, name);
+    //   console.log(cx, cy, midAngle, innerRadius, percent, value, name);
     const radius = innerRadius + (outerRadius - innerRadius)*1.2;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
@@ -153,7 +152,6 @@ export function Pepr2ds() {
 
 
     const deleteDomainTableData = (domain: string) => {
-        console.log('deleting..', domain, tableData.filter(d => d.dm != domain).length)
         if (selectedDomains.has(domain))
             setSelectedDomains(ds => { 
                 const s = ds.delete(domain);
@@ -168,7 +166,7 @@ export function Pepr2ds() {
 
     useEffect(() => {
         addDomainTableData(defaultDomain); // load default dataset
-        console.log(selectedDomains);
+        // console.log(selectedDomains);
     }, []);
 
 
@@ -397,10 +395,8 @@ export function Pepr2ds() {
     }
 
     const changeDomainSelections = (domains: string[]) => {
-        console.log(`selected ${domains}`, selectedDomains);
-
         if (domains.length >= selectedDomains.size) {
-            console.log('adding...', domains.filter(d => !selectedDomains.has(d)))
+            // console.log('adding...', domains.filter(d => !selectedDomains.has(d)))
             domains.filter(d => !selectedDomains.has(d)).map(addDomainTableData)
         } else {
             selectedDomains.forEach(d => {
