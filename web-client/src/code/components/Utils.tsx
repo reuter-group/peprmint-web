@@ -130,7 +130,7 @@ export function PageHeader( props: {headerList: PageHeaders[], title:React.React
         : <></>;
 
     const pepr2visHeader = <Breadcrumb.Item> <span> <EyeOutlined className="align-middle"/> PePr<sup>2</sup>Vis</span> </Breadcrumb.Item>;
-    const pepr2dsHeader = <Breadcrumb.Item> <span> <FileSearchOutlined className="align-middle"/> PePr<sup>2</sup>DS</span> </Breadcrumb.Item>;
+    const pepr2dsHeader = <Breadcrumb.Item> <span> <FileSearchOutlined className="align-middle"/> PePr<sup>2</sup>DS<sup className="text-muted">BETA</sup></span> </Breadcrumb.Item>;
 
     const childHeader = props.headerList.length > 1 
         ? props.headerList[1] == PageHeaders.Pepr2vis ? pepr2visHeader : pepr2dsHeader
