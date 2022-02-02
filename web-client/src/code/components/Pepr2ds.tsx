@@ -9,6 +9,7 @@ import { validCathId, validPdbID } from "../helpers";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 
 import * as Statistics from "../../datasets/statistics.json";
+import { ExportToCsv } from "export-to-csv";
 
 // configurable options
 const DOMAINS = Statistics.domainsList as Array<string>;
@@ -35,7 +36,7 @@ const loadCsvTable = async (domain: string) => {
     const table = Papa.parse(csvData, { header: true, skipEmptyLines: true });
     console.log(`loaded ${table.data.length} rows data`);
     return table.data.map((data: any, i) => {
-        return { ...data, key: `${domain}-${i}` }
+        return { ...data, key: `${domain}-${i}` }  // add an extra key column
     });
 }
 
@@ -411,6 +412,60 @@ export function Pepr2ds() {
         setColumns([...defaultColumns, ...selectedOptionalColumns]);
     }
 
+
+    const tableHeaderTooltipMap = (dataIndex: string) => {
+        // for table headers with a customized Tooltip
+        switch (dataIndex) {
+            case "ibs": return "IBS"
+            case "cv": return "V"
+            case "pro": return "P"
+            case "hypro": return "H"
+            case "coin": return "C"
+            case "expo": return "E"
+            case "den": return "D"
+            default: return dataIndex
+        }
+    }
+
+
+    const onDownloadTableData = () => {
+        // download the user selected (not the complete) table data 
+        let selectedColumns: { title: string, dataIndex: string }[] = [];
+        for (let col of columns) {
+            if (col.children) {
+                selectedColumns = [...selectedColumns, ...col.children.map((child: { title: any; dataIndex: any; }) =>
+                    typeof (child.title) == "string"
+                        ? { title: child.title, dataIndex: child.dataIndex }
+                        : { title: tableHeaderTooltipMap(child.dataIndex), dataIndex: child.dataIndex }
+                )];
+            } else {
+                typeof (col.title) == "string"
+                    ? selectedColumns.push({ title: col.title, dataIndex: col.dataIndex })
+                    : selectedColumns.push({ title: tableHeaderTooltipMap(col.dataIndex), dataIndex: col.dataIndex })
+            }
+        }
+
+        const downloadData = currentTableData.map(row =>
+            Object.assign({}, selectedColumns.map(col => row[col.dataIndex]))
+        )
+
+        const options = {
+            filename: 'Dataset_PePr2DS',
+            fieldSeparator: ',',
+            quoteStrings: '"',
+            decimalSeparator: '.',
+            showLabels: true,
+            showTitle: false,
+            useTextFile: false,
+            useBom: true,
+            // useKeysAsHeaders: true,
+            headers: selectedColumns.map(col => col.title) // <-- Won't work with useKeysAsHeaders present!
+        };
+
+        const csvExporter = new ExportToCsv(options);
+        csvExporter.generateCsv(downloadData);
+    }
+
     return (
         <Container>
             <PageHeader headerList={[PageHeaders.Home, PageHeaders.Pepr2ds]}
@@ -472,18 +527,21 @@ export function Pepr2ds() {
                                     showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
                                     showQuickJumper: true
                                 }}
-                                footer={() => <span> For details of each column, please <a className="text-primary"
+                                footer={() => <> For details of each column, please <a className="text-primary"
                                     href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">
-                                    check here</a>. </span>}
+                                    check here</a>. </>}
                             />
-
+                            <br />
+                            <Row className="justify-content-end">
+                                <BButton type="primary" className="mr-3" onClick={onDownloadTableData}> Download (.csv) </BButton>
+                            </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
                 </BCard>
             </Accordion>
 
-            <br /> <br/>
-                        
+            <br /> <br />
+
             <Accordion defaultActiveKey="1">
                 <BCard className="border border-primary bg-light rounded-0">
                     <BCard.Header className="bg-secondary border-0">
