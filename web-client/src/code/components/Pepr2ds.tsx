@@ -50,21 +50,21 @@ const renderCustomizedLabel = ({
     fill,
     value,
     name
-  }: any) => {
+}: any) => {
     //   console.log(cx, cy, midAngle, innerRadius, percent, value, name);
-    const radius = innerRadius + (outerRadius - innerRadius)*1.2;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     return (
-      <text x={x} y={y} fill={fill}
-        textAnchor={x > cx ? "start" : "end"}       
-      >  
-        {`${name}: ${(percent * 100).toFixed(1)}%`}
-      </text>
+        <text x={x} y={y} fill={fill}
+            textAnchor={x > cx ? "start" : "end"}
+        >
+            {`${name}: ${(percent * 100).toFixed(1)}%`}
+        </text>
     );
-  };
+};
 
-function Chart(props: { chartData: Array<{name:string, value:number}>, chartType: string }) {
+function Chart(props: { chartData: Array<{ name: string, value: number }>, chartType: string }) {
     const pieChart = (
         <PieChart width={450} height={400}>
             <Pie
@@ -78,7 +78,7 @@ function Chart(props: { chartData: Array<{name:string, value:number}>, chartType
                 label={renderCustomizedLabel}
             >
                 {props.chartData.map((data, index: number) => (
-                    <Cell key={`cell-${index}`} fill={ RES_COLORS.get(data.name ) } />
+                    <Cell key={`cell-${index}`} fill={RES_COLORS.get(data.name)} />
                 ))}
             </Pie>
             <RTooltip />
@@ -124,24 +124,24 @@ export function Pepr2ds() {
     const filterTableData = (data: any[]) => {
         // filter the given data with the user defined filters
         const columnFilters = Object.entries(currentFilters).filter(f => f[1] != null);
-      
-        return columnFilters.length == 0 
+
+        return columnFilters.length == 0
             ? data
             : data.filter(row => {
-                let flag = true; 
-                for (const [colName, filterKeywords] of columnFilters ) {     
-                    for (const keyword of filterKeywords as Array<string>){
+                let flag = true;
+                for (const [colName, filterKeywords] of columnFilters) {
+                    for (const keyword of filterKeywords as Array<string>) {
                         flag &&= (row[colName]!).includes(keyword)
                     }
                 }
                 return flag
             });
-        }
-       
-    
+    }
+
+
     const addDomainTableData = async (domain: string) => {
         setLoading(true);
-        setSelectedDomains( ds => new Set(ds.add(domain)) );       
+        setSelectedDomains(ds => new Set(ds.add(domain)));
         const newData = await loadCsvTable(domain);
         setTableData([...tableData, ...newData]);
 
@@ -153,11 +153,11 @@ export function Pepr2ds() {
 
     const deleteDomainTableData = (domain: string) => {
         if (selectedDomains.has(domain))
-            setSelectedDomains(ds => { 
+            setSelectedDomains(ds => {
                 const s = ds.delete(domain);
                 return new Set(ds)
             })
-        
+
         setTableData(tableData.filter(d => d.dm != domain));
 
         setCurrentTableData(currentTableData.filter(d => d.dm != domain));
@@ -170,13 +170,13 @@ export function Pepr2ds() {
     }, []);
 
 
-    useEffect(() => {        
+    useEffect(() => {
         // update ResCompData
         let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
         for (let record of currentTableData) {
             resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
         }
-        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })).filter((e:any) => e.value!=0) );
+        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })).filter((e: any) => e.value != 0));
 
         // update neighborResCompData
         let neighborResComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
@@ -189,7 +189,7 @@ export function Pepr2ds() {
                 }
             }
         }
-        setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })).filter((e:any) => e.value!=0) );
+        setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })).filter((e: any) => e.value != 0));
 
     }, [currentTableData])
 
@@ -288,40 +288,40 @@ export function Pepr2ds() {
             title: 'Protrusion info',
             children: [
                 {
-                    title: <Tooltip title={<span>convex hull <b className="text-primary">V</b>ertex</span>}>V</Tooltip>, 
+                    title: <Tooltip title={<span>convex hull <b className="text-primary">V</b>ertex</span>}>V</Tooltip>,
                     dataIndex: 'cv', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.cv && record.cv.toLowerCase().includes(value)
                 },
 
                 {
-                    title: <Tooltip title={<span><b className="text-primary">P</b>rotrusion</span>}>P</Tooltip>, 
+                    title: <Tooltip title={<span><b className="text-primary">P</b>rotrusion</span>}>P</Tooltip>,
                     dataIndex: 'pro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.pro && record.pro.toLowerCase().includes(value)
                 },
 
                 {
-                    title: <Tooltip title={<span><b className="text-primary">H</b>ydrophobic protrusion</span>}>H</Tooltip>, 
+                    title: <Tooltip title={<span><b className="text-primary">H</b>ydrophobic protrusion</span>}>H</Tooltip>,
                     dataIndex: 'hypro', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.hypro && record.hypro.toLowerCase().includes(value)
                 },
 
                 {
-                    title: <Tooltip title={<span><b className="text-primary">C</b>o-insertable</span>}>C</Tooltip>, 
+                    title: <Tooltip title={<span><b className="text-primary">C</b>o-insertable</span>}>C</Tooltip>,
                     dataIndex: 'coin', width: 40, render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.coin && record.coin.toLowerCase().includes(value)
                 },
                 {
-                    title: <Tooltip title={<span>whether residue is <b className="text-primary">E</b>xposed (RSA &gt; 20%) or not (RSA &lt;= 20%)</span>}>E</Tooltip>, 
+                    title: <Tooltip title={<span>whether residue is <b className="text-primary">E</b>xposed (RSA &gt; 20%) or not (RSA &lt;= 20%)</span>}>E</Tooltip>,
                     dataIndex: 'expo', width: 40,
                     render: trueFalseRender, filters: trueFalseFilter,
                     onFilter: (value: any, record: any) => record.expo && record.expo.toLowerCase().includes(value)
                 },
                 { title: <Tooltip title={<span>protein <b className="text-primary">D</b>ensity</span>}>D</Tooltip>, dataIndex: 'den', width: 40, render: (v: string) => v && parseInt(v) > 0 ? v : <>-</> },
                 {
-                    title: 'neighbor residue list', dataIndex: 'nbl', width: 120, 
+                    title: 'neighbor residue list', dataIndex: 'nbl', width: 120,
                     ellipsis: { showTitle: false, },
-                    render: (nbl:string) => ( // customize the tooltip
-                        <Tooltip placement="topLeft" title={nbl.replace(/;/g, ' ')  }> {nbl} </Tooltip>                        
+                    render: (nbl: string) => ( // customize the tooltip
+                        <Tooltip placement="topLeft" title={nbl.replace(/;/g, ' ')}> {nbl} </Tooltip>
                     ),
                 }
             ]
@@ -419,98 +419,114 @@ export function Pepr2ds() {
             />
             <Row className="mb-5">
                 <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={Statistics.structures} /> </Col>
-                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={Statistics.domainsList.length } /> </Col>
+                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={Statistics.domainsList.length} /> </Col>
                 <Col md={2} className="bg-light mx-4 py-2 border" >
                     <Statistic title="Complete dataset" value="25.9 MB" />
                     <small><a className="text-muted" href={Statistics.downloadLink}>
                         <DownloadOutlined /> download</a> </small></Col>
             </Row>
 
-            <Container className="my-5 border border-primary bg-light">
-                <Row className="py-3 pl-4 bg-secondary">
-                    <h4> Dataset </h4>
-                </Row>
-                <Row className="my-4">
-                    <Col md={5}>
-                        Domains: &nbsp;
-                        <Select defaultValue={[defaultDomain]}
-                            mode="multiple"
-                            allowClear
-                            placeholder="Select domains"
-                            onChange={changeDomainSelections}
-                            style={{ width: 350 }}>
-                            {domainSelectOptions}
-                        </Select>
-                    </Col>
-                    <Col md={7}>
-                        Optional columns: &nbsp;
-                        <Select defaultValue={[]} style={{ width: 400 }}
-                            allowClear
-                            mode="multiple"
-                            placeholder="Select columns to display"
-                            onChange={changeColumnSelections}>
-                            {optionalColumnSelections}
-                        </Select>
-                    </Col>
-                </Row>
+            <Accordion defaultActiveKey="0">
+                <BCard className="border border-primary bg-light rounded-0">
+                    <BCard.Header className="bg-secondary border-0">
+                        <Accordion.Toggle as="h4" eventKey="0"> Dataset </Accordion.Toggle>
+                    </BCard.Header>
+                    <Accordion.Collapse eventKey="0">
+                        <BCard.Body>
+                            <Row className="my-4">
+                                <Col md={5}>
+                                    Domains: &nbsp;
+                                    <Select defaultValue={[defaultDomain]}
+                                        mode="multiple"
+                                        allowClear
+                                        placeholder="Select domains"
+                                        onChange={changeDomainSelections}
+                                        style={{ width: 350 }}>
+                                        {domainSelectOptions}
+                                    </Select>
+                                </Col>
+                                <Col md={7}>
+                                    Optional columns: &nbsp;
+                                    <Select defaultValue={[]} style={{ width: 400 }}
+                                        allowClear
+                                        mode="multiple"
+                                        placeholder="Select columns to display"
+                                        onChange={changeColumnSelections}>
+                                        {optionalColumnSelections}
+                                    </Select>
+                                </Col>
+                            </Row>
 
-                <Table bordered
-                    tableLayout="fixed"
-                    loading={loading}
-                    // title={tableTitle}
-                    columns={columns}
-                    dataSource={tableData}
-                    onChange={changeTable}
-                    scroll={{ y: 450 }}
-                    size="small"
-                    pagination={{
-                        pageSize: 20,
-                        position: ['topCenter'],
-                        showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
-                        showQuickJumper: true
-                    }}
-                    footer={() => <span> For details of each column, please <a className="text-primary" 
-                        href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">
-                        check here</a>. </span>}
-                />
+                            <Table bordered
+                                tableLayout="fixed"
+                                loading={loading}
+                                // title={tableTitle}
+                                columns={columns}
+                                dataSource={tableData}
+                                onChange={changeTable}
+                                scroll={{ y: 450 }}
+                                size="small"
+                                pagination={{
+                                    pageSize: 20,
+                                    position: ['topCenter'],
+                                    showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
+                                    showQuickJumper: true
+                                }}
+                                footer={() => <span> For details of each column, please <a className="text-primary"
+                                    href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">
+                                    check here</a>. </span>}
+                            />
 
-            </Container>
+                        </BCard.Body>
+                    </Accordion.Collapse>
+                </BCard>
+            </Accordion>
 
-            <Container className="my-5 border border-primary bg-light">
-                <Row className="py-3 pl-4 bg-secondary">
-                    <h4> Dataset Analyses </h4>
-                </Row>
-                <Row className="my-4 mx-2">
-                    <Col md={6} className="px-2 ">
-                        <Card title={<h5 > Residue Composition </h5>}
-                            extra={
-                                <Radio.Group size="small" onChange={e => setResCompChartType(e.target.value)} defaultValue="pie">
-                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
-                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
-                                </Radio.Group>
-                            }
-                            bordered={false}>
-                            <Chart chartData={resCompData} chartType={resCompChartType} />
-                            <p className="text-center"> Total: { resCompData.reduce((acc, data) => acc + data.value, 0) } residues </p>
-                        </Card>
-                    </Col>
+            <br /> <br/>
+                        
+            <Accordion defaultActiveKey="1">
+                <BCard className="border border-primary bg-light rounded-0">
+                    <BCard.Header className="bg-secondary border-0">
+                        <Accordion.Toggle as="h4" eventKey="1">
+                            Dataset Analyses
+                        </Accordion.Toggle>
+                    </BCard.Header>
+                    <Accordion.Collapse eventKey="1">
+                        <BCard.Body>
+                            <Row className="my-4 mx-2">
+                                <Col md={6} className="px-2 ">
+                                    <Card title={<h5 > Residue Composition </h5>}
+                                        extra={
+                                            <Radio.Group size="small" onChange={e => setResCompChartType(e.target.value)} defaultValue="pie">
+                                                <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                                                <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                                            </Radio.Group>
+                                        }
+                                        bordered={false}>
+                                        <Chart chartData={resCompData} chartType={resCompChartType} />
+                                        <p className="text-center"> Total: {resCompData.reduce((acc, data) => acc + data.value, 0)} residues </p>
+                                    </Card>
+                                </Col>
 
-                    <Col md={6} className="px-2 ">
-                        <Card title={<h5>Protrusion Neighbor Residue Composition</h5>}
-                            extra={
-                                <Radio.Group size="small" onChange={e => setNeighborResCompChartType(e.target.value)} defaultValue="pie">
-                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
-                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
-                                </Radio.Group>
-                            }
-                            bordered={false}>
-                            <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />
-                            <p className="text-center"> Total: { neighborResCompData.reduce((acc, data) => acc + data.value, 0) } residues </p>
+                                <Col md={6} className="px-2 ">
+                                    <Card title={<h5>Protrusion Neighbor Residue Composition</h5>}
+                                        extra={
+                                            <Radio.Group size="small" onChange={e => setNeighborResCompChartType(e.target.value)} defaultValue="pie">
+                                                <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                                                <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                                            </Radio.Group>
+                                        }
+                                        bordered={false}>
+                                        <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />
+                                        <p className="text-center"> Total: {neighborResCompData.reduce((acc, data) => acc + data.value, 0)} residues </p>
 
-                        </Card>
-                    </Col>
-                </Row>
-            </Container>
+                                    </Card>
+                                </Col>
+                            </Row>
+                        </BCard.Body>
+                    </Accordion.Collapse>
+                </BCard>
+            </Accordion>
 
         </Container >
     )
