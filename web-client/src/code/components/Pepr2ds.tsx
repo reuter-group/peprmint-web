@@ -281,7 +281,7 @@ export function Pepr2ds() {
             ]
         },
         {
-            title: <Tooltip title="experimental verified binding sites (?)">IBS</Tooltip>, dataIndex: 'ibs', width: 50, render: trueFalseRender, filters: trueFalseFilter,
+            title: <Tooltip title={<><b className="text-primary">I</b>nterfacial <b className="text-primary">B</b>inding <b className="text-primary">S</b>ite</>}>IBS</Tooltip>, dataIndex: 'ibs', width: 50, render: trueFalseRender, filters: trueFalseFilter,
             onFilter: (value: any, record: any) => record.ibs && record.ibs.toLowerCase().includes(value)
         },
 
@@ -551,6 +551,15 @@ export function Pepr2ds() {
                     </BCard.Header>
                     <Accordion.Collapse eventKey="1">
                         <BCard.Body>
+                            <Row className="mx-4"> For your selected dataset above, there are in total: </Row>
+                            <Row className="mx-4"> 
+                                <ul> 
+                                    <li> <b>{new Set(currentTableData.map(d=>d.pdb)).size}</b> unique PDB IDs, <b>{new Set(currentTableData.map(d=>d.cath)).size}</b> unique CATH IDs </li>
+                                    <li> <b>{currentTableData.length}</b> residues </li>
+                                    <li> <b>{currentTableData.filter(d => d.hypro && d.hypro.toLowerCase() == 'true' && d.ibs && d.ibs.toLowerCase() == 'true').length}</b> residues
+                                        which are both <b className="text-primary">H</b>ydrophobic protrusions and at <b className="text-primary">IBS</b> </li>
+                                </ul>
+                            </Row>
                             <Row className="my-4 mx-2">
                                 <Col md={6} className="px-2 ">
                                     <Card title={<h5 > Residue Composition </h5>}
@@ -562,7 +571,7 @@ export function Pepr2ds() {
                                         }
                                         bordered={false}>
                                         <Chart chartData={resCompData} chartType={resCompChartType} />
-                                        <p className="text-center"> Total: {resCompData.reduce((acc, data) => acc + data.value, 0)} residues </p>
+                                        <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p>
                                     </Card>
                                 </Col>
 
@@ -576,7 +585,7 @@ export function Pepr2ds() {
                                         }
                                         bordered={false}>
                                         <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />
-                                        <p className="text-center"> Total: {neighborResCompData.reduce((acc, data) => acc + data.value, 0)} residues </p>
+                                        <p className="text-center"> Total: <b>{neighborResCompData.reduce((acc, data) => acc + data.value, 0)}</b> residues </p>
 
                                     </Card>
                                 </Col>
