@@ -12,10 +12,10 @@ import * as Statistics from "../../datasets/statistics.json";
 import { ExportToCsv } from "export-to-csv";
 
 // configurable options
-const DOMAINS = Statistics.domainsList as Array<string>;
-const defaultDomain = DOMAINS[0]; // suggest to choose a smallest domain as default
+const DOMAINS = (Statistics.domainsList as Array<string>).sort();
+const defaultDomain = DOMAINS[1]; // suggest to choose a smallest size domain as default
 
-const RESIDUES = Statistics.residueList as Array<string>;
+const RESIDUES = (Statistics.residueList as Array<string>).sort();
 
 // const DATA_SOURCES = ['CATH', 'AlphaFold'];
 // const ExperimentalMethod = Statistics.experimentalMethod;
@@ -277,7 +277,9 @@ export function Pepr2ds() {
                     filters: RESIDUES.map(r => { return { text: r, value: r } }),
                     onFilter: (value: any, record: any) => record.rna.includes(value)
                 },
-                { title: 'id', dataIndex: 'rnu', width: 45, },
+                { title: 'id', dataIndex: 'rnu', width: 45, 
+                    sorter: (a: any, b: any) => a.rnu - b.rnu,
+                },
             ]
         },
         {
@@ -522,7 +524,7 @@ export function Pepr2ds() {
                                 scroll={{ y: 450 }}
                                 size="small"
                                 pagination={{
-                                    pageSize: 20,
+                                    defaultPageSize: 50,
                                     position: ['topCenter'],
                                     showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
                                     showQuickJumper: true
@@ -594,6 +596,7 @@ export function Pepr2ds() {
                     </Accordion.Collapse>
                 </BCard>
             </Accordion>
+            <br/>
 
         </Container >
     )
