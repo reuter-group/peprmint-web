@@ -1,14 +1,45 @@
 {
     "structures": 5562,
-   
-    "domainsList": ["ANNEXIN", "C1", "C2", "C2DIS", "PH", "PLA", "PLD", "PX", "START"], 
-    
-    "residueList": ["ALA", "ARG", "ASN", "ASP", "CYS",
-                    "GLN", "GLU", "GLY", "HIS", "ILE",
-                    "LEU", "LYS", "MET", "PHE", "PRO",
-                    "SER", "THR", "TRP", "TYR", "VAL"],
-    
-    "experimentalMethod": ["X-ray diffraction", "Solution NMR", "AFmodel", "unknown"],
-
+    "residueList": [
+        "ASN",
+        "SER",
+        "VAL",
+        "ASP",
+        "LEU",
+        "THR",
+        "GLY",
+        "PHE",
+        "PRO",
+        "LYS",
+        "ILE",
+        "GLN",
+        "ARG",
+        "HIS",
+        "MET",
+        "TYR",
+        "TRP",
+        "ALA",
+        "GLU",
+        "CYS"
+    ],
+    "domainsList": [
+        "PH",
+        "C2",
+        "START",
+        "C1",
+        "C2DIS",
+        "PX",
+        "PLD",
+        "ANNEXIN",
+        "PLA"
+    ],
+    "experimentalMethod": [
+        "Solution NMR",
+        "X-ray diffraction",
+        "unkown",
+        "AFmodel",
+        "X-ray solution scattering",
+        "Electron Microscopy"
+    ],
     "downloadLink": "https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv.zip"
 }
