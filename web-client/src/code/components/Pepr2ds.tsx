@@ -125,15 +125,15 @@ export function Pepr2ds() {
     const filterTableData = (data: any[]) => {
         // filter the given data with the user defined filters
         const columnFilters = Object.entries(currentFilters).filter(f => f[1] != null);
-
         return columnFilters.length == 0
             ? data
             : data.filter(row => {
                 let flag = true;
-                for (const [colName, filterKeywords] of columnFilters) {
-                    for (const keyword of filterKeywords as Array<string>) {
-                        flag &&= (row[colName]!).includes(keyword)
-                    }
+                for (const [colName, filterKeywords] of columnFilters) {                    
+                    flag = flag && row[colName] && ( 
+                                (filterKeywords as string[]).includes(row[colName].toLowerCase()) || 
+                                (filterKeywords as string[]).includes(row[colName]) 
+                            );        
                 }
                 return flag
             });
@@ -557,8 +557,7 @@ export function Pepr2ds() {
                             <Row className="mx-4"> 
                                 <ul> 
                                     <li> <b>{new Set(currentTableData.map(d=>d.pdb)).size}</b> unique PDB IDs, <b>{new Set(currentTableData.map(d=>d.cath)).size}</b> unique CATH IDs </li>
-                                    <li> <b>{currentTableData.length}</b> residues </li>
-                                    <li> <b>{currentTableData.filter(d => d.hypro && d.hypro.toLowerCase() == 'true' && d.ibs && d.ibs.toLowerCase() == 'true').length}</b> residues
+                                    <li> <b>{currentTableData.length}</b> residues, including <b>{currentTableData.filter(d => d.hypro && d.hypro.toLowerCase() == 'true' && d.ibs && d.ibs.toLowerCase() == 'true').length}</b> residues
                                         which are both <b className="text-primary">H</b>ydrophobic protrusions and at <b className="text-primary">IBS</b> </li>
                                 </ul>
                             </Row>
