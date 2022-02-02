@@ -1,0 +1,14 @@
+{
+    "structures": 5562,
+   
+    "domainsList": ["ANNEXIN", "C1", "C2", "C2DIS", "PH", "PLA", "PLD", "PX", "START"], 
+    
+    "residueList": ["ALA", "ARG", "ASN", "ASP", "CYS",
+                    "GLN", "GLU", "GLY", "HIS", "ILE",
+                    "LEU", "LYS", "MET", "PHE", "PRO",
+                    "SER", "THR", "TRP", "TYR", "VAL"],
+    
+    "experimentalMethod": ["X-ray diffraction", "Solution NMR", "AFmodel", "unknown"],
+
+    "downloadLink": "https://github.com/reuter-group/pepr2ds/blob/main/Ressources/datasets/PePr2DS.csv.zip"
+}

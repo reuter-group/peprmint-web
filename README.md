@@ -30,7 +30,7 @@ npx webpack serve  # development mode, automatically re-compile for new file cha
 - [x] add neighborhood information
 
 ### V1.3
-- [ ] add PePr^2DS beta version
+- [x] add PePr^2DS beta version
 
 ### V1.4
 - [ ] more features(TBD)/optmization for PePr^2DS 
