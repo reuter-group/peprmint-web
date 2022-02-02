@@ -13,7 +13,7 @@ import { ExportToCsv } from "export-to-csv";
 
 // configurable options
 const DOMAINS = Statistics.domainsList as Array<string>;
-const defaultDomain = DOMAINS[1]; // C1 domain
+const defaultDomain = DOMAINS[0]; // suggest to choose a smallest domain as default
 
 const RESIDUES = Statistics.residueList as Array<string>;
 

@@ -23,10 +23,10 @@
         "CYS"
     ],
     "domainsList": [
+        "C1",
         "PH",
         "C2",
-        "START",
-        "C1",
+        "START",        
         "C2DIS",
         "PX",
         "PLD",
