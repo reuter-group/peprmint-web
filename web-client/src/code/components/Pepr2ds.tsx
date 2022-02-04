@@ -1,7 +1,7 @@
-import { Button, Card, Input, Radio, Select, Space, Statistic, Table, Tooltip } from "antd";
+import { Alert, Button, Card, Input, Popover, Radio, Select, Space, Statistic, Table, Tooltip } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
-import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, SearchOutlined } from "@ant-design/icons";
+import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
 import Papa from "papaparse";
@@ -129,11 +129,11 @@ export function Pepr2ds() {
             ? data
             : data.filter(row => {
                 let flag = true;
-                for (const [colName, filterKeywords] of columnFilters) {                    
-                    flag = flag && row[colName] && ( 
-                                (filterKeywords as string[]).includes(row[colName].toLowerCase()) || 
-                                (filterKeywords as string[]).includes(row[colName]) 
-                            );        
+                for (const [colName, filterKeywords] of columnFilters) {
+                    flag = flag && row[colName] && (
+                        (filterKeywords as string[]).includes(row[colName].toLowerCase()) ||
+                        (filterKeywords as string[]).includes(row[colName])
+                    );
                 }
                 return flag
             });
@@ -277,7 +277,8 @@ export function Pepr2ds() {
                     filters: RESIDUES.map(r => { return { text: r, value: r } }),
                     onFilter: (value: any, record: any) => record.rna.includes(value)
                 },
-                { title: 'id', dataIndex: 'rnu', width: 45, 
+                {
+                    title: 'id', dataIndex: 'rnu', width: 45,
                     sorter: (a: any, b: any) => a.rnu - b.rnu,
                 },
             ]
@@ -472,16 +473,35 @@ export function Pepr2ds() {
         <Container>
             <PageHeader headerList={[PageHeaders.Home, PageHeaders.Pepr2ds]}
                 title={title}
-                subtitle={"Peripheral Protein Protrusion DataSet"}
+                subtitle={""} //{"Peripheral Protein Protrusion DataSet"}
             />
-            <Row className="mb-5">
-                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein structures" value={Statistics.structures} /> </Col>
-                <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic title="Protein domains" value={Statistics.domainsList.length} /> </Col>
-                <Col md={2} className="bg-light mx-4 py-2 border" >
-                    <Statistic title="Complete dataset" value="25.9 MB" />
-                    <small><a className="text-muted" href={Statistics.downloadLink}>
-                        <DownloadOutlined /> download</a> </small></Col>
-            </Row>
+            <Container className="mb-4 p-3 ">
+                <Row className="mb-3 mx-3 justify-content-center">
+                    <h5> PePr<sup>2</sup>DS is a dataset of <b> interfacial binding sites</b>(IBS) collected from {Statistics.domainsList.length} protein domains.</h5>
+                    <p className="font-weight-light"> (add short description here) The IBS are analyzed using the model for hydrophobic protrusions ...
+                        Interfacial binding sites collected: explain how. CATH domains, ….
+                    </p>
+                </Row>
+
+                <Row className="mb-2 justify-content-center">
+                    <Col md={2} className="bg-light mx-4 py-2 border"> <Statistic
+                        title={<>Protein structures <Popover placement="topLeft" content={(<> description here... <a className="text-primary" href="https://www.ebi.ac.uk/pdbe/">link example</a> </>)}>
+                            <QuestionCircleOutlined className="align-middle" /> </Popover></>}
+                        value={Statistics.structures} />
+                    </Col>
+
+                    <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic
+                        title={<>Protein domains <Popover placement="topLeft" content={Statistics.domainsList.toString()}>
+                            <QuestionCircleOutlined className="align-middle" /> </Popover></>}
+                        value={Statistics.domainsList.length} />
+                    </Col>
+
+                    <Col md={2} className="bg-light mx-4 py-2 border" > <Statistic
+                        title="Whole dataset" value="25.9 MB" />
+                        <small><a className="text-muted" href={Statistics.downloadLink}>
+                            <DownloadOutlined /> download</a> </small></Col>
+                </Row>
+            </Container>
 
             <Accordion defaultActiveKey="0">
                 <BCard className="border border-primary bg-light rounded-0">
@@ -526,7 +546,7 @@ export function Pepr2ds() {
                                 pagination={{
                                     defaultPageSize: 50,
                                     position: ['topCenter'],
-                                    showTotal: (total) => <span> Total <b>{total}</b> items, </span>,
+                                    showTotal: (total) => <span> Total <b>{total}</b> rows in the table, </span>,
                                     showQuickJumper: true
                                 }}
                                 footer={() => <> For details of each column, please <a className="text-primary"
@@ -535,7 +555,8 @@ export function Pepr2ds() {
                             />
                             <br />
                             <Row className="justify-content-end">
-                                <BButton type="primary" className="mr-3" onClick={onDownloadTableData}> Download (.csv) </BButton>
+                                <BButton type="primary" className="mr-3" onClick={onDownloadTableData}>
+                                    <DownloadOutlined /> Selected dataset (.csv) </BButton>
                             </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
@@ -548,17 +569,16 @@ export function Pepr2ds() {
                 <BCard className="border border-primary bg-light rounded-0">
                     <BCard.Header className="bg-secondary border-0">
                         <Accordion.Toggle as="h4" eventKey="1">
-                            Dataset Analyses
+                            Dataset Analyses for Your Selection
                         </Accordion.Toggle>
                     </BCard.Header>
                     <Accordion.Collapse eventKey="1">
                         <BCard.Body>
-                            <Row className="mx-4"> For your selected dataset above, there are in total: </Row>
-                            <Row className="mx-4"> 
-                                <ul> 
-                                    <li> <b>{new Set(currentTableData.map(d=>d.pdb)).size}</b> unique PDB IDs, <b>{new Set(currentTableData.map(d=>d.cath)).size}</b> unique CATH IDs </li>
+                            <Row >
+                                <ul>
+                                    <li> <b>{new Set(currentTableData.map(d => d.pdb)).size}</b> unique PDB IDs, <b>{new Set(currentTableData.map(d => d.cath)).size}</b> unique CATH IDs </li>
                                     <li> <b>{currentTableData.length}</b> residues, including <b>{currentTableData.filter(d => d.hypro && d.hypro.toLowerCase() == 'true' && d.ibs && d.ibs.toLowerCase() == 'true').length}</b> residues
-                                        which are both <b className="text-primary">H</b>ydrophobic protrusions and at <b className="text-primary">IBS</b> </li>
+                                        which are both <b>H</b>ydrophobic protrusions and at <b>IBS</b> </li>
                                 </ul>
                             </Row>
                             <Row className="my-4 mx-2">
@@ -595,7 +615,7 @@ export function Pepr2ds() {
                     </Accordion.Collapse>
                 </BCard>
             </Accordion>
-            <br/>
+            <br />
 
         </Container >
     )
