@@ -5,13 +5,16 @@
 
 
 ## Build:
+Assume you've [installed `node` and `npm`](https://nodejs.org/en/), and downloaded the source code:
 ```bash
-cd web-client/ 
-npm install  # only needed for the first time
+$ cd web-client/ 
 
-## local usage: 
-npx webpack serve  # development mode, automatically re-compile for new file changes
-# then page should be available at 
+$ npm install  # install the dependencies, only needed for the first time
+
+## run a development server on your local machine: 
+$ npx webpack serve  # this will automatically reload the server after any file modifications
+
+## then visit the webpage at: 
 ## http://localhost:8080
 ```
 
