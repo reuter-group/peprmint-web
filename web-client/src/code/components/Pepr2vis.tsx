@@ -28,9 +28,15 @@ export function Pepr2vis() {
                 // format: 'pdb', 
                 // isBinary: false, 
             }).then( () => {
-                if (pdbid) {
-                    setCheckedKeys(['0-0', '0-0-0', '0-0-0-0']);
-                    setconvexHullKey(['0-0', '0-0-0']);
+                // if (pdbid) { //TT: I commented it to have the convexhull with the protrusions visualized per default.
+                    // TAG: DEFAULT VISUALISATION OPTIONS.
+                    // The two next lines are to check the checkbox for visualisation options (under Basic Settings). They are just checkboxes, they do not trigger the 
+                    // visualisation yet.
+                    setCheckedKeys(['0-0', '0-0-0', '0-0-0-0']); // 0-0: "Show protrusions", 0-0-0: "Hydrophobic protrusions", "0-0-0-0": "co-insertable pairs"
+                    setconvexHullKey(['0-0', '0-0-0']); // 0-0: "Show convex hull", 0-0-0:"Show edges"
+                    
+                    // This is where you trigger the visualisation. To avoir bugs, if you remove something from here, remove it as well from the two previous lines
+                    // (remove the corresponding "0-0-x" key )
                     PluginWrapper.toggleProtrusion(ProtrusionVisualRef.NormalProtrusion).then(()=> {
                         PluginWrapper.toggleProtrusion(ProtrusionVisualRef.HydroProtrusion);
                         PluginWrapper.toggleProtrusion(ProtrusionVisualRef.ConvexHull).then(()=> {
@@ -38,7 +44,7 @@ export function Pepr2vis() {
                             PluginWrapper.togggleEdges(ProtrusionVisualRef.HydroProtrusion);    
                         });
                     });               
-                }
+                // } // endif (pdbid)
             });
         });
         

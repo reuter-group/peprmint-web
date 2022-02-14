@@ -518,7 +518,7 @@ export class MolStarWrapper {
         await this.plugin.build().to(StateElements.Model).applyOrUpdate(ProtrusionVisualRef.NormalProtrusion, CreateSphere, {
             centers: protrusionData.protrusionCbAtomInfoArray.map(a => a.coordinate).flat(),  
             centersLabel: protrusionData.protrusionCbAtomInfoArray.map( a => a.atomLabel ),
-            radius: 1.8,
+            radius: 1.2, // Modification: 1.8 -> 1.2 to have smaller non hydrophobic protrusions. 
             sphereColor: ColorNames.gray,
             stateLabel: ProtrusionVisualLabel.NormalProtrusion
         }).commit();

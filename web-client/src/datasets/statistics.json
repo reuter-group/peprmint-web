@@ -1,5 +1,5 @@
 {
-    "structures": 5562,
+    "structures": 3980,
     "residueList": [
         "ASN",
         "SER",
@@ -23,10 +23,10 @@
         "CYS"
     ],
     "domainsList": [
-        "C1",
         "PH",
         "C2",
-        "START",        
+        "START",
+        "C1",
         "C2DIS",
         "PX",
         "PLD",
@@ -37,7 +37,6 @@
         "Solution NMR",
         "X-ray diffraction",
         "unkown",
-        "AFmodel",
         "X-ray solution scattering",
         "Electron Microscopy"
     ],
