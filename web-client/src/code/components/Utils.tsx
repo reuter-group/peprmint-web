@@ -37,6 +37,7 @@ export const RES_COLORS = new Map(Object.entries({
     UNK: "#000000"
 }));
 
+// another color theme for residue visualization
 export const COLORS20 = ['#5B8FF9', '#CDDDFD', '#61DDAA', '#CDF3E4', '#65789B',
             '#CED4DE', '#F6BD16', '#FCEBB9', '#7262fd', '#D3CEFD', 
             '#78D3F8', '#D3EEF9', '#9661BC', '#DECFEA', '#F6903D',
