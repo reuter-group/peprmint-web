@@ -1,4 +1,4 @@
-import { Alert, Button, Card, Input, Popover, Radio, Select, Space, Statistic, Table, Tooltip } from "antd";
+import { Button, Card, Input, message, Popover, Radio, Select, Space, Statistic, Table, Tooltip } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
 import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
@@ -107,7 +107,7 @@ export function Pepr2ds() {
 
     const title = <span> PePr<sup>2</sup>DS </span>;
 
-    const [selectedDomains, setSelectedDomains] = useState<Set<string>>(new Set());
+    const [selectedDomains, setSelectedDomains] = useState<any[]>([]);
 
     const [tableData, setTableData] = useState<any[]>([]);
     const [currentFilters, setCurrentFilters] = useState({});
@@ -142,26 +142,30 @@ export function Pepr2ds() {
 
     const addDomainTableData = async (domain: string) => {
         setLoading(true);
-        setSelectedDomains(ds => new Set(ds.add(domain)));
+        setSelectedDomains(ds => [...ds, domain]);
         const newData = await loadCsvTable(domain);
         setTableData([...tableData, ...newData]);
-
         setCurrentTableData([...currentTableData, ...filterTableData(newData)]);
-
         setLoading(false);
     };
 
+    const addAllDomainTableData = async () => {
+
+        setLoading(true);
+        setSelectedDomains(DOMAINS);
+        const allData = await Promise.all(DOMAINS.map(loadCsvTable))
+        const allDataFlatted = allData.flat()
+        setTableData(allDataFlatted)
+        setCurrentTableData(filterTableData(allDataFlatted))
+        setLoading(false);
+    }
 
     const deleteDomainTableData = (domain: string) => {
-        if (selectedDomains.has(domain))
-            setSelectedDomains(ds => {
-                const s = ds.delete(domain);
-                return new Set(ds)
-            })
-
-        setTableData(tableData.filter(d => d.dm != domain));
-
-        setCurrentTableData(currentTableData.filter(d => d.dm != domain));
+        if (selectedDomains.includes(domain)) {
+            setSelectedDomains(ds => ds.filter(d => d != domain))
+            setTableData(tableData.filter(d => d.dm != domain));
+            setCurrentTableData(currentTableData.filter(d => d.dm != domain));
+        }
     }
 
 
@@ -386,7 +390,9 @@ export function Pepr2ds() {
     const { Option } = Select;
 
     const domainSelectOptions = DOMAINS.map(domain =>
-        <Option value={domain} key={domain}> {domain} </Option>)
+        <Option value={domain} key={domain}> {domain} </Option>).concat(
+            [<Option value='all' key="all">All Domains </Option>]
+        )
 
     const optionalColumnSelections = optionalColumns.map((oc, i) =>
         <Option value={oc.title} key={i}> {oc.title} </Option>)
@@ -398,17 +404,26 @@ export function Pepr2ds() {
         setCurrentFilters(filters);
     }
 
-    const changeDomainSelections = (domains: string[]) => {
-        if (domains.length >= selectedDomains.size) {
-            // console.log('adding...', domains.filter(d => !selectedDomains.has(d)))
-            domains.filter(d => !selectedDomains.has(d)).map(addDomainTableData)
+    const onSelectDomainSelection = (domain: string) => {
+        if (domain == 'all') {
+            if (selectedDomains.length < DOMAINS.length) {
+                addAllDomainTableData();
+            }
         } else {
-            selectedDomains.forEach(d => {
-                if (!domains.includes(d)) deleteDomainTableData(d);
-            })
+            addDomainTableData(domain)
         }
-
     }
+
+    const onDeselectDomainSelection = (domain: string) => {
+        deleteDomainTableData(domain)
+    }
+
+    const onClearDomainSelection = () => {
+        setSelectedDomains([]);
+        setTableData([]);
+        setCurrentTableData([]);
+    }
+
 
     const changeColumnSelections = (selectedColumns: string[]) => {
         const selectedOptionalColumns = selectedColumns.map((sc: string) => optionalColumns.find(oc => oc.title == sc));
@@ -433,6 +448,11 @@ export function Pepr2ds() {
 
     const onDownloadTableData = () => {
         // download the user selected (not the complete) table data 
+        if (currentTableData.length == 0) {
+            message.error('Your selected dataset is empty.');
+            return             
+        }
+
         let selectedColumns: { title: string, dataIndex: string }[] = [];
         for (let col of columns) {
             if (col.children) {
@@ -514,10 +534,14 @@ export function Pepr2ds() {
                                 <Col md={5}>
                                     Domains: &nbsp;
                                     <Select defaultValue={[defaultDomain]}
+                                        value={Array.from(selectedDomains)}
                                         mode="multiple"
                                         allowClear
                                         placeholder="Select domains"
-                                        onChange={changeDomainSelections}
+                                        // onChange={changeDomainSelections}                                        
+                                        onSelect={onSelectDomainSelection}
+                                        onDeselect={onDeselectDomainSelection}
+                                        onClear={onClearDomainSelection}
                                         style={{ width: 350 }}>
                                         {domainSelectOptions}
                                     </Select>
