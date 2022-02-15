@@ -264,7 +264,7 @@ export function Pepr2ds() {
         },
         {
             title: 'PDB ID', dataIndex: 'pdb', width: 55,
-            render: (pdbid: any) => validPdbID(pdbid) ? <Link to={"/pepr2vis/" + pdbid}> {pdbid} </Link> : <>{pdbid}</>,
+            render: (pdbid: any) => validPdbID(pdbid) ? <a href={"https://www.ebi.ac.uk/pdbe/entry/pdb/" + pdbid}> {pdbid} </a> : <>{pdbid}</>,
             ...getColumnSearchProps('pdb', 'PDB ID')
         },
         {
