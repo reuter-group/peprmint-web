@@ -135,6 +135,14 @@ export function Pepr2ds() {
     const [ssCompData, setSsCompData] = useState<any[]>([]);
     const [ssCompChartType, setSsCompChartType] = useState('pie');
 
+    const [proDenVis, setProDenVis] = useState(false);
+    const [proDenCompData, setProDenCompData] = useState<any[]>([]);
+    const [proDenCompChartType, setProDenCompChartType] = useState('pie');
+
+    const [proBloVis, setProBloVis] = useState(false);
+    const [proBloCompData, setProBloCompData] = useState<any[]>([]);
+    const [proBloCompChartType, setProBloCompChartType] = useState('pie');
+
 
     const filterTableData = (data: any[]) => {
         // filter the given data with the user defined filters
@@ -200,11 +208,7 @@ export function Pepr2ds() {
 
     useEffect(() => {
         // update ResCompData
-        let resComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
-        for (let record of currentTableData) {
-            resComp.set(record.rna, (resComp.get(record.rna) || 0) + 1)
-        }
-        setResCompData(Array.from(resComp, ([k, v]) => ({ name: k, value: v })).filter((e: any) => e.value != 0));
+        setResCompData(calculateCompData('rna', currentTableData));
 
         // update neighborResCompData
         let neighborResComp = new Map<string, number>(RESIDUES.map(r => [r, 0]));
@@ -220,9 +224,8 @@ export function Pepr2ds() {
         setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })).filter((e: any) => e.value != 0));
 
         // for optional data visualtion
-        if (ssVis) {
-            setSsCompData(calculateCompData('ss', currentTableData));
-        }
+        ssVis && setSsCompData(calculateCompData('ss', currentTableData));        
+        proBloVis && setProDenCompData(calculateCompData('pb', currentTableData ));
 
     }, [currentTableData])
 
@@ -518,15 +521,28 @@ export function Pepr2ds() {
     }
 
     const onSelectColumnDataVis = (colName: string) => {
-        console.log(`adding column ${colName}`)
         if(colName =='ss') {            
             setSsCompData(calculateCompData('ss', currentTableData));
             setSsVis(true);
-        };
+        }
+        else if(colName == 'pb') {
+            setProBloCompData(calculateCompData('pb', currentTableData));
+            setProBloVis(true);
+        }
     }
 
-    const onDeselectColumnDataVis = (colName: string) => { }
-    const onClearColumnDataVis = () => { }
+    const onDeselectColumnDataVis = (colName: string) => {
+        if(colName == 'ss') setSsVis(false);
+        else if(colName == 'pb') setProBloVis(false);
+        else if(colName == 'den') setProDenVis(false);      
+     }
+
+
+    const onClearColumnDataVis = () => { 
+        setSsVis(false);
+        setProBloVis(false);
+        setProDenVis(false);  
+    }
 
 
     return (
@@ -676,9 +692,8 @@ export function Pepr2ds() {
                                 </Col>
                             </Row>
 
-                            <Row>
-                                <ul>
-                                    <li> Analyses of more columns: &nbsp;
+                            <Row className="mt-5">
+                                <ul> <li> Analyses of more columns: &nbsp;
                                         <Select defaultValue={[]} style={{ width: 400 }}
                                             allowClear
                                             mode="multiple"
@@ -709,7 +724,23 @@ export function Pepr2ds() {
                                             }
                                             bordered={false}>
                                             <Chart chartData={ssCompData} chartType={ssCompChartType} chartSize="small" />
-                                            <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p>
+                                            {/* <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p> */}
+                                        </Card>
+                                    </Col>
+                                }
+
+                                {proBloVis &&
+                                    <Col md={4} className="px-2 my-2">
+                                        <Card title="Protein Block"
+                                            extra={
+                                                <Radio.Group size="small" onChange={e => setProBloCompChartType(e.target.value)} defaultValue="pie">
+                                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                                                </Radio.Group>
+                                            }
+                                            bordered={false}>
+                                            <Chart chartData={proBloCompData} chartType={proBloCompChartType} chartSize="small" />
+                                            {/* <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p> */}
                                         </Card>
                                     </Col>
                                 }
