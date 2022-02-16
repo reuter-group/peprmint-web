@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
 import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { References, PageHeader, PageHeaders, RES_COLORS } from "./Utils";
+import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
@@ -65,21 +65,27 @@ const renderCustomizedLabel = ({
     );
 };
 
-function Chart(props: { chartData: Array<{ name: string, value: number }>, chartType: string }) {
+function Chart(props: { chartData: Array<{ name: string, value: number }>, chartType: string, chartSize?: string }) {
+    const chartWidth = props.chartSize && props.chartSize == 'small' ? 300 : 450;
+    const chartHeight = props.chartSize && props.chartSize == 'small' ? 280 : 400;
+
     const pieChart = (
-        <PieChart width={450} height={400}>
+        <PieChart width={chartWidth} height={chartHeight}>
             <Pie
                 dataKey="value"
                 isAnimationActive={true}
                 data={props.chartData}
-                cx={220}
-                cy={200}
-                outerRadius={120}
+                cx={chartWidth * 0.48}
+                cy={chartHeight * 0.5}
+                outerRadius={chartWidth * 0.25}
                 fill="#8884d8"
                 label={renderCustomizedLabel}
             >
                 {props.chartData.map((data, index: number) => (
-                    <Cell key={`cell-${index}`} fill={RES_COLORS.get(data.name)} />
+                    <Cell key={`cell-${index}`} 
+                        // primarily use RES_COLOR for residue category data
+                        // use COLORS20 for other type of data
+                        fill={RES_COLORS.get(data.name) || COLORS20[index]} />
                 ))}
             </Pie>
             <RTooltip />
@@ -87,13 +93,13 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
     );
 
     const barChart = (
-        <BarChart width={450} height={400} data={props.chartData}>
+        <BarChart width={chartWidth} height={chartHeight} data={props.chartData}>
             <XAxis dataKey="name" />
             <YAxis />
             <RTooltip />
-            <Bar dataKey="value" fill="#8884d8" barSize={20} >
+            <Bar dataKey="value" fill="#8884d8" barSize={chartWidth / props.chartData.length * 0.9} >
                 {props.chartData.map((data, index: number) => (
-                    <Cell key={`cell-${index}`} fill={RES_COLORS.get(data.name)} />
+                    <Cell key={`cell-${index}`} fill={RES_COLORS.get(data.name) || COLORS20[index] } />
                 ))}
             </Bar>
         </BarChart>
@@ -116,10 +122,18 @@ export function Pepr2ds() {
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
+
+    // for data visusalisation
     const [resCompData, setResCompData] = useState<any[]>([]);
-    const [neighborResCompData, setNeighborResCompData] = useState<any[]>([]);
     const [resCompChartType, setResCompChartType] = useState('pie');
+
+    const [neighborResCompData, setNeighborResCompData] = useState<any[]>([]);
     const [neighborResCompChartType, setNeighborResCompChartType] = useState('pie');
+
+    // for optional data visualization
+    const [ssVis, setSsVis] = useState(false);
+    const [ssCompData, setSsCompData] = useState<any[]>([]);
+    const [ssCompChartType, setSsCompChartType] = useState('pie');
 
 
     const filterTableData = (data: any[]) => {
@@ -169,6 +183,15 @@ export function Pepr2ds() {
     }
 
 
+    const calculateCompData = (colDataIndex:string, tableData:any) => {
+        let compData = new Map<string, number>();
+            for (let record of tableData) {
+                compData.set(record[colDataIndex], (compData.get(record[colDataIndex]) || 0) + 1)
+            }
+            return Array.from(compData, ([k, v]) => ({ name: k, value: v }))
+    }
+
+
     useEffect(() => {
         addDomainTableData(defaultDomain); // load default dataset
         // console.log(selectedDomains);
@@ -195,6 +218,11 @@ export function Pepr2ds() {
             }
         }
         setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })).filter((e: any) => e.value != 0));
+
+        // for optional data visualtion
+        if (ssVis) {
+            setSsCompData(calculateCompData('ss', currentTableData));
+        }
 
     }, [currentTableData])
 
@@ -450,7 +478,7 @@ export function Pepr2ds() {
         // download the user selected (not the complete) table data 
         if (currentTableData.length == 0) {
             message.error('Your selected dataset is empty.');
-            return             
+            return
         }
 
         let selectedColumns: { title: string, dataIndex: string }[] = [];
@@ -488,6 +516,18 @@ export function Pepr2ds() {
         const csvExporter = new ExportToCsv(options);
         csvExporter.generateCsv(downloadData);
     }
+
+    const onSelectColumnDataVis = (colName: string) => {
+        console.log(`adding column ${colName}`)
+        if(colName =='ss') {            
+            setSsCompData(calculateCompData('ss', currentTableData));
+            setSsVis(true);
+        };
+    }
+
+    const onDeselectColumnDataVis = (colName: string) => { }
+    const onClearColumnDataVis = () => { }
+
 
     return (
         <Container>
@@ -615,7 +655,7 @@ export function Pepr2ds() {
                                             </Radio.Group>
                                         }
                                         bordered={false}>
-                                        <Chart chartData={resCompData} chartType={resCompChartType} />
+                                        {resCompData.length > 0 && <Chart chartData={resCompData} chartType={resCompChartType} />}
                                         <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p>
                                     </Card>
                                 </Col>
@@ -629,11 +669,50 @@ export function Pepr2ds() {
                                             </Radio.Group>
                                         }
                                         bordered={false}>
-                                        <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />
+                                        {neighborResCompData.length > 0 && <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />}
                                         <p className="text-center"> Total: <b>{neighborResCompData.reduce((acc, data) => acc + data.value, 0)}</b> residues </p>
 
                                     </Card>
                                 </Col>
+                            </Row>
+
+                            <Row>
+                                <ul>
+                                    <li> Analyses of more columns: &nbsp;
+                                        <Select defaultValue={[]} style={{ width: 400 }}
+                                            allowClear
+                                            mode="multiple"
+                                            placeholder="Select columns to visualise"
+                                            onSelect={onSelectColumnDataVis}
+                                            onDeselect={onDeselectColumnDataVis}
+                                            onClear={onClearColumnDataVis}
+                                        >
+                                            {[ // here you can add more columns to visualize
+                                                { name: 'Protein density', dataIndex: 'den' },
+                                                { name: 'Secondary structure', dataIndex: 'ss' },
+                                                { name: 'Protein Block', dataIndex: 'pb' },
+                                            ].map((col, i) => <Option value={col.dataIndex} key={i}> {col.name} </Option>)
+                                            }
+                                        </Select>
+                                    </li>
+                                </ul>
+                            </Row>
+                            <Row className="my-4 mx-2">
+                                {ssVis &&
+                                    <Col md={4} className="px-2 my-2">
+                                        <Card title="Secondary Structure"
+                                            extra={
+                                                <Radio.Group size="small" onChange={e => setSsCompChartType(e.target.value)} defaultValue="pie">
+                                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                                                </Radio.Group>
+                                            }
+                                            bordered={false}>
+                                            <Chart chartData={ssCompData} chartType={ssCompChartType} chartSize="small" />
+                                            <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p>
+                                        </Card>
+                                    </Col>
+                                }
                             </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
