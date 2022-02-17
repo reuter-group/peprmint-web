@@ -7,7 +7,7 @@ import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Uti
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
-
+import { LOW_DENSITY_THRESHOLD } from "../molstar";
 import * as Statistics from "../../datasets/statistics.json";
 import { ExportToCsv } from "export-to-csv";
 
@@ -53,7 +53,7 @@ const renderCustomizedLabel = ({
     name
 }: any) => {
     //   console.log(cx, cy, midAngle, innerRadius, percent, value, name);
-    const radius = innerRadius + (outerRadius - innerRadius) * 1.2;
+    const radius = innerRadius + (outerRadius - innerRadius) * 1.3;
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     return (
@@ -75,9 +75,9 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
                 dataKey="value"
                 isAnimationActive={true}
                 data={props.chartData}
-                cx={chartWidth * 0.48}
+                cx={chartWidth * 0.45}
                 cy={chartHeight * 0.5}
-                outerRadius={chartWidth * 0.25}
+                outerRadius={chartWidth * 0.22}
                 fill="#8884d8"
                 label={renderCustomizedLabel}
             >
@@ -110,14 +110,14 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
 
 
 function ChartCard(props: { cardTitle: string, chartData: Array<{ name: string, value: number }>, chartNote?:JSX.Element, chartType?: 'pie'|'bar', chartSize?: 'small' |'large' }) {
-    const [chartType, setChartType] = useState('pie');
+    const [chartType, setChartType] = useState(props.chartType?props.chartType:'pie');
     const col = props.chartSize && props.chartSize == 'small' ? 4: 6;
 
     return (
         <Col md={col} className="px-2 my-2">
             <Card title={props.cardTitle}
                 extra={
-                    <Radio.Group size="small" onChange={e => setChartType(e.target.value)} defaultValue="pie">
+                    <Radio.Group size="small" onChange={e => setChartType(e.target.value)} defaultValue={props.chartType?props.chartType:'pie'}>
                         <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
                         <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
                     </Radio.Group>
@@ -152,8 +152,8 @@ export function Pepr2ds() {
     const [ssVis, setSsVis] = useState(false);
     const [ssCompData, setSsCompData] = useState<any[]>([]);
 
-    // const [proDenVis, setProDenVis] = useState(false);
-    // const [proDenCompData, setProDenCompData] = useState<any[]>([]);
+    const [proDenVis, setProDenVis] = useState(false);
+    const [proDenCompData, setProDenCompData] = useState<any[]>([]);
 
     const [proBloVis, setProBloVis] = useState(false);
     const [proBloCompData, setProBloCompData] = useState<any[]>([]);
@@ -209,10 +209,34 @@ export function Pepr2ds() {
     const calculateCompData = (colDataIndex: string, tableData: any) => {
         let compData = new Map<string, number>();
         for (let record of tableData) {
-            compData.set(record[colDataIndex], (compData.get(record[colDataIndex]) || 0) + 1)
+            record[colDataIndex] && compData.set(record[colDataIndex], (compData.get(record[colDataIndex]) || 0) + 1)
         }
         return Array.from(compData, ([k, v]) => ({ name: k, value: v }))
     }
+
+    const groupData = (colDataIndex: string, dataType: 'int'|'float', tableData: any[], groupCount:number, groupLowBound?:number, groupUpBound?:number) => {
+        // scatter a column NUMBERs of the table into `groupCount` groups for data visualization
+        // NOTE: `groupCount` no more than 20
+        const parseNumber = dataType  == 'int' ? parseInt : parseFloat;
+        let selectedData = tableData.map(record => record[colDataIndex] && parseNumber(record[colDataIndex]))
+                    .filter(n => groupLowBound ? n > groupLowBound : n)
+                    .filter(n => groupUpBound ? n < groupUpBound : n);
+
+        const dataMax = Math.max(...selectedData);
+        const dataMin = Math.min(...selectedData);        
+        const step = Math.ceil((dataMax - dataMin + 1) / groupCount);
+
+        let dataGroups: number[][] = Array.from(Array(groupCount), _ => []);          
+        for (let n of selectedData) {
+            let groupIndex = Math.floor((n - dataMin) / step);
+            dataGroups[groupIndex].push(n);
+        }
+
+        return dataGroups.map((g,i) => {
+            return { name: `${dataMin+i*step}-${dataMin+(i+1)*step}`, value: g.length}
+        })
+    }
+
 
 
     useEffect(() => {
@@ -241,6 +265,7 @@ export function Pepr2ds() {
         // for optional data visualtion
         ssVis && setSsCompData(calculateCompData('ss', currentTableData));
         proBloVis && setProBloCompData(calculateCompData('pb', currentTableData));
+        proDenVis && setProDenCompData(groupData('den', 'int', currentTableData, 5, LOW_DENSITY_THRESHOLD));
 
     }, [currentTableData])
 
@@ -539,24 +564,26 @@ export function Pepr2ds() {
         if (colName == 'ss') {
             setSsCompData(calculateCompData('ss', currentTableData));
             setSsVis(true);
-        }
-        else if (colName == 'pb') {
+        }else if (colName == 'pb') {
             setProBloCompData(calculateCompData('pb', currentTableData));
             setProBloVis(true);
+        } else if (colName='den') {
+            setProDenCompData(groupData('den', 'int', currentTableData, 5, LOW_DENSITY_THRESHOLD));
+            setProDenVis(true);
         }
     }
 
     const onDeselectColumnDataVis = (colName: string) => {
         if (colName == 'ss') setSsVis(false);
         else if (colName == 'pb') setProBloVis(false);
-        // else if (colName == 'den') setProDenVis(false);
+        else if (colName == 'den') setProDenVis(false);
     }
 
 
     const onClearColumnDataVis = () => {
         setSsVis(false);
         setProBloVis(false);
-        // setProDenVis(false);
+        setProDenVis(false);
     }
 
 
@@ -703,9 +730,9 @@ export function Pepr2ds() {
                                         onClear={onClearColumnDataVis}
                                     >
                                         {[ // here you can add more columns to visualize
-                                            { name: 'Protein density', dataIndex: 'den' },
+                                            { name: 'Protein Block', dataIndex: 'pb' },                                        
+                                            { name: 'Protein Density', dataIndex: 'den' },
                                             { name: 'Secondary structure', dataIndex: 'ss' },
-                                            { name: 'Protein Block', dataIndex: 'pb' },
                                         ].map((col, i) => <Option value={col.dataIndex} key={i}> {col.name} </Option>)
                                         }
                                     </Select>
@@ -713,17 +740,27 @@ export function Pepr2ds() {
                                 </ul>
                             </Row>
                             <Row className="my-4 mx-2"> 
-                                {ssVis && <ChartCard cardTitle="Secondary Structure" 
+                                {proBloVis && currentTableData.length>0 && <ChartCard cardTitle="Protein Block" 
+                                                chartData={proBloCompData} 
+                                                chartSize="small"  
+                                                chartType="bar"
+                                                chartNote={<>Total: <b>{proBloCompData.reduce((acc, data) => acc + data.value, 0)}</b> protein blocks </>}
+                                                />  } 
+
+                                {proDenVis && currentTableData.length>0 && <ChartCard cardTitle="Protein Density" 
+                                                chartData={proDenCompData} 
+                                                chartSize="small"  
+                                                chartType="bar"
+                                                chartNote={<>Total: <b>{proDenCompData.reduce((acc, data) => acc + data.value, 0)}</b> residues 
+                                                        (with density &gt; <b>{LOW_DENSITY_THRESHOLD}</b>)
+                                                    </>}
+                                                />  } 
+
+                                {ssVis && currentTableData.length>0 && <ChartCard cardTitle="Secondary Structure" 
                                                     chartData={ssCompData} 
                                                     chartSize="small"
                                                     chartNote= {<>Total: <b>{ssCompData.reduce((acc, data) => acc + data.value, 0)}</b> secondary structures </>} 
-                                                    />  }
-
-                                {proBloVis && <ChartCard cardTitle="Protein Block" 
-                                                chartData={proBloCompData} 
-                                                chartSize="small"  
-                                                chartNote={<>Total: <b>{proBloCompData.reduce((acc, data) => acc + data.value, 0)}</b> protein blocks </>}
-                                                />  } 
+                                                    />  }                              
                             </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
