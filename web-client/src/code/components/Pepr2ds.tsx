@@ -82,7 +82,7 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
                 label={renderCustomizedLabel}
             >
                 {props.chartData.map((data, index: number) => (
-                    <Cell key={`cell-${index}`} 
+                    <Cell key={`cell-${index}`}
                         // primarily use RES_COLOR for residue category data
                         // use COLORS20 for other type of data
                         fill={RES_COLORS.get(data.name) || COLORS20[index]} />
@@ -99,7 +99,7 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
             <RTooltip />
             <Bar dataKey="value" fill="#8884d8" barSize={chartWidth / props.chartData.length * 0.9} >
                 {props.chartData.map((data, index: number) => (
-                    <Cell key={`cell-${index}`} fill={RES_COLORS.get(data.name) || COLORS20[index] } />
+                    <Cell key={`cell-${index}`} fill={RES_COLORS.get(data.name) || COLORS20[index]} />
                 ))}
             </Bar>
         </BarChart>
@@ -108,6 +108,27 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
     else { return barChart }
 }
 
+
+function ChartCard(props: { cardTitle: string, chartData: Array<{ name: string, value: number }>, chartNote?:JSX.Element, chartType?: 'pie'|'bar', chartSize?: 'small' |'large' }) {
+    const [chartType, setChartType] = useState('pie');
+    const col = props.chartSize && props.chartSize == 'small' ? 4: 6;
+
+    return (
+        <Col md={col} className="px-2 my-2">
+            <Card title={props.cardTitle}
+                extra={
+                    <Radio.Group size="small" onChange={e => setChartType(e.target.value)} defaultValue="pie">
+                        <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
+                        <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
+                    </Radio.Group>
+                }
+                bordered={false}>
+                <Chart chartData={props.chartData} chartType={chartType} chartSize={props.chartSize||'large'} />
+                <p className="text-center"> {props.chartNote} </p>
+            </Card>
+        </Col>
+    )
+}
 
 export function Pepr2ds() {
 
@@ -125,23 +146,17 @@ export function Pepr2ds() {
 
     // for data visusalisation
     const [resCompData, setResCompData] = useState<any[]>([]);
-    const [resCompChartType, setResCompChartType] = useState('pie');
-
     const [neighborResCompData, setNeighborResCompData] = useState<any[]>([]);
-    const [neighborResCompChartType, setNeighborResCompChartType] = useState('pie');
 
     // for optional data visualization
     const [ssVis, setSsVis] = useState(false);
     const [ssCompData, setSsCompData] = useState<any[]>([]);
-    const [ssCompChartType, setSsCompChartType] = useState('pie');
 
-    const [proDenVis, setProDenVis] = useState(false);
-    const [proDenCompData, setProDenCompData] = useState<any[]>([]);
-    const [proDenCompChartType, setProDenCompChartType] = useState('pie');
+    // const [proDenVis, setProDenVis] = useState(false);
+    // const [proDenCompData, setProDenCompData] = useState<any[]>([]);
 
     const [proBloVis, setProBloVis] = useState(false);
     const [proBloCompData, setProBloCompData] = useState<any[]>([]);
-    const [proBloCompChartType, setProBloCompChartType] = useState('pie');
 
 
     const filterTableData = (data: any[]) => {
@@ -191,12 +206,12 @@ export function Pepr2ds() {
     }
 
 
-    const calculateCompData = (colDataIndex:string, tableData:any) => {
+    const calculateCompData = (colDataIndex: string, tableData: any) => {
         let compData = new Map<string, number>();
-            for (let record of tableData) {
-                compData.set(record[colDataIndex], (compData.get(record[colDataIndex]) || 0) + 1)
-            }
-            return Array.from(compData, ([k, v]) => ({ name: k, value: v }))
+        for (let record of tableData) {
+            compData.set(record[colDataIndex], (compData.get(record[colDataIndex]) || 0) + 1)
+        }
+        return Array.from(compData, ([k, v]) => ({ name: k, value: v }))
     }
 
 
@@ -224,8 +239,8 @@ export function Pepr2ds() {
         setNeighborResCompData(Array.from(neighborResComp, ([k, v]) => ({ name: k, value: v })).filter((e: any) => e.value != 0));
 
         // for optional data visualtion
-        ssVis && setSsCompData(calculateCompData('ss', currentTableData));        
-        proBloVis && setProDenCompData(calculateCompData('pb', currentTableData ));
+        ssVis && setSsCompData(calculateCompData('ss', currentTableData));
+        proBloVis && setProBloCompData(calculateCompData('pb', currentTableData));
 
     }, [currentTableData])
 
@@ -521,27 +536,27 @@ export function Pepr2ds() {
     }
 
     const onSelectColumnDataVis = (colName: string) => {
-        if(colName =='ss') {            
+        if (colName == 'ss') {
             setSsCompData(calculateCompData('ss', currentTableData));
             setSsVis(true);
         }
-        else if(colName == 'pb') {
+        else if (colName == 'pb') {
             setProBloCompData(calculateCompData('pb', currentTableData));
             setProBloVis(true);
         }
     }
 
     const onDeselectColumnDataVis = (colName: string) => {
-        if(colName == 'ss') setSsVis(false);
-        else if(colName == 'pb') setProBloVis(false);
-        else if(colName == 'den') setProDenVis(false);      
-     }
+        if (colName == 'ss') setSsVis(false);
+        else if (colName == 'pb') setProBloVis(false);
+        // else if (colName == 'den') setProDenVis(false);
+    }
 
 
-    const onClearColumnDataVis = () => { 
+    const onClearColumnDataVis = () => {
         setSsVis(false);
         setProBloVis(false);
-        setProDenVis(false);  
+        // setProDenVis(false);
     }
 
 
@@ -662,88 +677,53 @@ export function Pepr2ds() {
                                 </ul>
                             </Row>
                             <Row className="my-4 mx-2">
-                                <Col md={6} className="px-2 ">
-                                    <Card title={<h5 > Residue Composition </h5>}
-                                        extra={
-                                            <Radio.Group size="small" onChange={e => setResCompChartType(e.target.value)} defaultValue="pie">
-                                                <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
-                                                <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
-                                            </Radio.Group>
-                                        }
-                                        bordered={false}>
-                                        {resCompData.length > 0 && <Chart chartData={resCompData} chartType={resCompChartType} />}
-                                        <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p>
-                                    </Card>
-                                </Col>
+                                {/* two large charts */}
 
-                                <Col md={6} className="px-2 ">
-                                    <Card title={<h5>Protrusion Neighbor Residue Composition</h5>}
-                                        extra={
-                                            <Radio.Group size="small" onChange={e => setNeighborResCompChartType(e.target.value)} defaultValue="pie">
-                                                <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
-                                                <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
-                                            </Radio.Group>
-                                        }
-                                        bordered={false}>
-                                        {neighborResCompData.length > 0 && <Chart chartData={neighborResCompData} chartType={neighborResCompChartType} />}
-                                        <p className="text-center"> Total: <b>{neighborResCompData.reduce((acc, data) => acc + data.value, 0)}</b> residues </p>
+                                { resCompData.length > 0 && 
+                                    <ChartCard cardTitle="Residue Composition"                                         
+                                        chartData={resCompData} 
+                                        chartNote= {<>Total: <b>{currentTableData.length}</b> residues </>} 
+                                        /> }     
 
-                                    </Card>
-                                </Col>
+                                { neighborResCompData.length > 0 && 
+                                    <ChartCard cardTitle="Protrusion Neighbor Residue Composition" 
+                                        chartData={neighborResCompData}
+                                        chartNote= {<>Total: <b>{neighborResCompData.reduce((acc, data) => acc + data.value, 0)}</b> neighbor residues</>} 
+                                        /> }
                             </Row>
 
                             <Row className="mt-5">
                                 <ul> <li> Analyses of more columns: &nbsp;
-                                        <Select defaultValue={[]} style={{ width: 400 }}
-                                            allowClear
-                                            mode="multiple"
-                                            placeholder="Select columns to visualise"
-                                            onSelect={onSelectColumnDataVis}
-                                            onDeselect={onDeselectColumnDataVis}
-                                            onClear={onClearColumnDataVis}
-                                        >
-                                            {[ // here you can add more columns to visualize
-                                                { name: 'Protein density', dataIndex: 'den' },
-                                                { name: 'Secondary structure', dataIndex: 'ss' },
-                                                { name: 'Protein Block', dataIndex: 'pb' },
-                                            ].map((col, i) => <Option value={col.dataIndex} key={i}> {col.name} </Option>)
-                                            }
-                                        </Select>
-                                    </li>
+                                    <Select defaultValue={[]} style={{ width: 400 }}
+                                        allowClear
+                                        mode="multiple"
+                                        placeholder="Select columns to visualise"
+                                        onSelect={onSelectColumnDataVis}
+                                        onDeselect={onDeselectColumnDataVis}
+                                        onClear={onClearColumnDataVis}
+                                    >
+                                        {[ // here you can add more columns to visualize
+                                            { name: 'Protein density', dataIndex: 'den' },
+                                            { name: 'Secondary structure', dataIndex: 'ss' },
+                                            { name: 'Protein Block', dataIndex: 'pb' },
+                                        ].map((col, i) => <Option value={col.dataIndex} key={i}> {col.name} </Option>)
+                                        }
+                                    </Select>
+                                </li>
                                 </ul>
                             </Row>
-                            <Row className="my-4 mx-2">
-                                {ssVis &&
-                                    <Col md={4} className="px-2 my-2">
-                                        <Card title="Secondary Structure"
-                                            extra={
-                                                <Radio.Group size="small" onChange={e => setSsCompChartType(e.target.value)} defaultValue="pie">
-                                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
-                                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
-                                                </Radio.Group>
-                                            }
-                                            bordered={false}>
-                                            <Chart chartData={ssCompData} chartType={ssCompChartType} chartSize="small" />
-                                            {/* <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p> */}
-                                        </Card>
-                                    </Col>
-                                }
+                            <Row className="my-4 mx-2"> 
+                                {ssVis && <ChartCard cardTitle="Secondary Structure" 
+                                                    chartData={ssCompData} 
+                                                    chartSize="small"
+                                                    chartNote= {<>Total: <b>{ssCompData.reduce((acc, data) => acc + data.value, 0)}</b> secondary structures </>} 
+                                                    />  }
 
-                                {proBloVis &&
-                                    <Col md={4} className="px-2 my-2">
-                                        <Card title="Protein Block"
-                                            extra={
-                                                <Radio.Group size="small" onChange={e => setProBloCompChartType(e.target.value)} defaultValue="pie">
-                                                    <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
-                                                    <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
-                                                </Radio.Group>
-                                            }
-                                            bordered={false}>
-                                            <Chart chartData={proBloCompData} chartType={proBloCompChartType} chartSize="small" />
-                                            {/* <p className="text-center"> Total: <b>{currentTableData.length}</b> residues </p> */}
-                                        </Card>
-                                    </Col>
-                                }
+                                {proBloVis && <ChartCard cardTitle="Protein Block" 
+                                                chartData={proBloCompData} 
+                                                chartSize="small"  
+                                                chartNote={<>Total: <b>{proBloCompData.reduce((acc, data) => acc + data.value, 0)}</b> protein blocks </>}
+                                                />  } 
                             </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
