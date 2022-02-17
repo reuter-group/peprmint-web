@@ -36,13 +36,10 @@ $ npx webpack serve  # this will automatically reload the server after any file 
 - [x] add PePr^2DS beta version
 
 ### V1.4
-- [ ] more features(TBD)/optmization for PePr^2DS 
-- [ ] add more documentation/information
+- [ ] more features/optmization for PePr^2DS: [issue #5](https://github.com/reuter-group/peprmint-web/issues/5)
+- [ ] documentation  
 - [ ] choose a license
-- [ ] migrate website URL (to affiliated institute domain) 
-
-### Features TBD
-- [ ] export report/script for external use, e.g. in PyMol
+- [ ] migrate website URL (to affiliated institute domain)
 
 
 ## Other notes:
