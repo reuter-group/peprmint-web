@@ -1,7 +1,7 @@
-import { Button, Card, Input, message, Popover, Radio, Select, Space, Statistic, Table, Tooltip } from "antd";
+import { Button, Card, Input, message, Popover, Radio, Select, Space, Statistic, Table, Tooltip, Upload } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
-import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, QuestionCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, QuestionCircleOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
 import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
 import Papa from "papaparse";
@@ -109,21 +109,21 @@ function Chart(props: { chartData: Array<{ name: string, value: number }>, chart
 }
 
 
-function ChartCard(props: { cardTitle: string, chartData: Array<{ name: string, value: number }>, chartNote?:JSX.Element, chartType?: 'pie'|'bar', chartSize?: 'small' |'large' }) {
-    const [chartType, setChartType] = useState(props.chartType?props.chartType:'pie');
-    const col = props.chartSize && props.chartSize == 'small' ? 4: 6;
+function ChartCard(props: { cardTitle: string, chartData: Array<{ name: string, value: number }>, chartNote?: JSX.Element, chartType?: 'pie' | 'bar', chartSize?: 'small' | 'large' }) {
+    const [chartType, setChartType] = useState(props.chartType ? props.chartType : 'pie');
+    const col = props.chartSize && props.chartSize == 'small' ? 4 : 6;
 
     return (
         <Col md={col} className="px-2 my-2">
             <Card title={props.cardTitle}
                 extra={
-                    <Radio.Group size="small" onChange={e => setChartType(e.target.value)} defaultValue={props.chartType?props.chartType:'pie'}>
+                    <Radio.Group size="small" onChange={e => setChartType(e.target.value)} defaultValue={props.chartType ? props.chartType : 'pie'}>
                         <Radio.Button value="pie"> <PieChartOutlined className="align-middle" /> </Radio.Button>
                         <Radio.Button value="bar"> <BarChartOutlined className="align-middle" /> </Radio.Button>
                     </Radio.Group>
                 }
                 bordered={false}>
-                <Chart chartData={props.chartData} chartType={chartType} chartSize={props.chartSize||'large'} />
+                <Chart chartData={props.chartData} chartType={chartType} chartSize={props.chartSize || 'large'} />
                 <p className="text-center"> {props.chartNote} </p>
             </Card>
         </Col>
@@ -214,26 +214,26 @@ export function Pepr2ds() {
         return Array.from(compData, ([k, v]) => ({ name: k, value: v }))
     }
 
-    const groupData = (colDataIndex: string, dataType: 'int'|'float', tableData: any[], groupCount:number, groupLowBound?:number, groupUpBound?:number) => {
+    const groupData = (colDataIndex: string, dataType: 'int' | 'float', tableData: any[], groupCount: number, groupLowBound?: number, groupUpBound?: number) => {
         // scatter a column NUMBERs of the table into `groupCount` groups for data visualization
         // NOTE: `groupCount` no more than 20
-        const parseNumber = dataType  == 'int' ? parseInt : parseFloat;
+        const parseNumber = dataType == 'int' ? parseInt : parseFloat;
         let selectedData = tableData.map(record => record[colDataIndex] && parseNumber(record[colDataIndex]))
-                    .filter(n => groupLowBound ? n > groupLowBound : n)
-                    .filter(n => groupUpBound ? n < groupUpBound : n);
+            .filter(n => groupLowBound ? n > groupLowBound : n)
+            .filter(n => groupUpBound ? n < groupUpBound : n);
 
         const dataMax = Math.max(...selectedData);
-        const dataMin = Math.min(...selectedData);        
+        const dataMin = Math.min(...selectedData);
         const step = Math.ceil((dataMax - dataMin + 1) / groupCount);
 
-        let dataGroups: number[][] = Array.from(Array(groupCount), _ => []);          
+        let dataGroups: number[][] = Array.from(Array(groupCount), _ => []);
         for (let n of selectedData) {
             let groupIndex = Math.floor((n - dataMin) / step);
             dataGroups[groupIndex].push(n);
         }
 
-        return dataGroups.map((g,i) => {
-            return { name: `${dataMin+i*step}-${dataMin+(i+1)*step}`, value: g.length}
+        return dataGroups.map((g, i) => {
+            return { name: `${dataMin + i * step}-${dataMin + (i + 1) * step}`, value: g.length }
         })
     }
 
@@ -564,10 +564,10 @@ export function Pepr2ds() {
         if (colName == 'ss') {
             setSsCompData(calculateCompData('ss', currentTableData));
             setSsVis(true);
-        }else if (colName == 'pb') {
+        } else if (colName == 'pb') {
             setProBloCompData(calculateCompData('pb', currentTableData));
             setProBloVis(true);
-        } else if (colName='den') {
+        } else if (colName = 'den') {
             setProDenCompData(groupData('den', 'int', currentTableData, 5, LOW_DENSITY_THRESHOLD));
             setProDenVis(true);
         }
@@ -586,6 +586,22 @@ export function Pepr2ds() {
         setProDenVis(false);
     }
 
+
+    const beforeUpload = (file: File) => {
+        if (file) {
+            // setSelectedFile(file);
+        }
+        // const isLt20M = file.size / 1024 / 1024 < 20;
+        // if (!isLt20M) {
+        //   message.error('Structure file must be smaller than 20MB!');
+        // }
+        message.info('loaded file:' + file.name)
+        return false; // stop sending HTTP request
+    }
+
+    const onRemove = (file: any) => {
+        // setSelectedFile(undefined);
+    };
 
     return (
         <Container>
@@ -629,8 +645,8 @@ export function Pepr2ds() {
                     <Accordion.Collapse eventKey="0">
                         <BCard.Body>
                             <Row className="my-4">
-                                <Col md={5}>
-                                    Domains: &nbsp;
+                                <Col md={7}>
+                                    1. Select domains: &nbsp;
                                     <Select defaultValue={[defaultDomain]}
                                         value={Array.from(selectedDomains)}
                                         mode="multiple"
@@ -640,13 +656,29 @@ export function Pepr2ds() {
                                         onSelect={onSelectDomainSelection}
                                         onDeselect={onDeselectDomainSelection}
                                         onClear={onClearDomainSelection}
-                                        style={{ width: 350 }}>
+                                        style={{ width: 450 }}>
                                         {domainSelectOptions}
                                     </Select>
                                 </Col>
-                                <Col md={7}>
-                                    Optional columns: &nbsp;
-                                    <Select defaultValue={[]} style={{ width: 400 }}
+
+                                <Col md={4}>
+                                    <Upload name="dsFile" accept=".csv, .txt" maxCount={1}
+                                        //  onChange={onChange}
+                                        beforeUpload={beforeUpload}
+                                        onRemove={onRemove}
+                                    >
+                                        <Button icon={<UploadOutlined />} className="border-primary" >Add my own dataset (.csv)</Button> &nbsp;
+                                        <Popover placement="topLeft" content={<> Optional; .csv, or .txt file </>}>
+                                            <QuestionCircleOutlined className="align-middle" /> </Popover>
+                                        {/* <Form.Text muted > PDB or mmCIF format</Form.Text> */}
+                                    </Upload>
+                                </Col>
+                            </Row>
+
+                            <Row className="my-4">
+                                <Col md="auto">
+                                    2. Select optional data columns: &nbsp;
+                                    <Select defaultValue={[]} style={{ width: 630 }}
                                         allowClear
                                         mode="multiple"
                                         placeholder="Select columns to display"
@@ -654,8 +686,8 @@ export function Pepr2ds() {
                                         {optionalColumnSelections}
                                     </Select>
                                 </Col>
-                            </Row>
 
+                            </Row>
                             <Table bordered
                                 tableLayout="fixed"
                                 loading={loading}
@@ -706,17 +738,17 @@ export function Pepr2ds() {
                             <Row className="my-4 mx-2">
                                 {/* two large charts */}
 
-                                { resCompData.length > 0 && 
-                                    <ChartCard cardTitle="Residue Composition"                                         
-                                        chartData={resCompData} 
-                                        chartNote= {<>Total: <b>{currentTableData.length}</b> residues </>} 
-                                        /> }     
+                                {resCompData.length > 0 &&
+                                    <ChartCard cardTitle="Residue Composition"
+                                        chartData={resCompData}
+                                        chartNote={<>Total: <b>{currentTableData.length}</b> residues </>}
+                                    />}
 
-                                { neighborResCompData.length > 0 && 
-                                    <ChartCard cardTitle="Protrusion Neighbor Residue Composition" 
+                                {neighborResCompData.length > 0 &&
+                                    <ChartCard cardTitle="Protrusion Neighbor Residue Composition"
                                         chartData={neighborResCompData}
-                                        chartNote= {<>Total: <b>{neighborResCompData.reduce((acc, data) => acc + data.value, 0)}</b> neighbor residues</>} 
-                                        /> }
+                                        chartNote={<>Total: <b>{neighborResCompData.reduce((acc, data) => acc + data.value, 0)}</b> neighbor residues</>}
+                                    />}
                             </Row>
 
                             <Row className="mt-5">
@@ -730,7 +762,7 @@ export function Pepr2ds() {
                                         onClear={onClearColumnDataVis}
                                     >
                                         {[ // here you can add more columns to visualize
-                                            { name: 'Protein Block', dataIndex: 'pb' },                                        
+                                            { name: 'Protein Block', dataIndex: 'pb' },
                                             { name: 'Protein Density', dataIndex: 'den' },
                                             { name: 'Secondary structure', dataIndex: 'ss' },
                                         ].map((col, i) => <Option value={col.dataIndex} key={i}> {col.name} </Option>)
@@ -739,28 +771,28 @@ export function Pepr2ds() {
                                 </li>
                                 </ul>
                             </Row>
-                            <Row className="my-4 mx-2"> 
-                                {proBloVis && currentTableData.length>0 && <ChartCard cardTitle="Protein Block" 
-                                                chartData={proBloCompData} 
-                                                chartSize="small"  
-                                                chartType="bar"
-                                                chartNote={<>Total: <b>{proBloCompData.reduce((acc, data) => acc + data.value, 0)}</b> protein blocks </>}
-                                                />  } 
+                            <Row className="my-4 mx-2">
+                                {proBloVis && currentTableData.length > 0 && <ChartCard cardTitle="Protein Block"
+                                    chartData={proBloCompData}
+                                    chartSize="small"
+                                    chartType="bar"
+                                    chartNote={<>Total: <b>{proBloCompData.reduce((acc, data) => acc + data.value, 0)}</b> protein blocks </>}
+                                />}
 
-                                {proDenVis && currentTableData.length>0 && <ChartCard cardTitle="Protein Density" 
-                                                chartData={proDenCompData} 
-                                                chartSize="small"  
-                                                chartType="bar"
-                                                chartNote={<>Total: <b>{proDenCompData.reduce((acc, data) => acc + data.value, 0)}</b> residues 
-                                                        (with density &gt; <b>{LOW_DENSITY_THRESHOLD}</b>)
-                                                    </>}
-                                                />  } 
+                                {proDenVis && currentTableData.length > 0 && <ChartCard cardTitle="Protein Density"
+                                    chartData={proDenCompData}
+                                    chartSize="small"
+                                    chartType="bar"
+                                    chartNote={<>Total: <b>{proDenCompData.reduce((acc, data) => acc + data.value, 0)}</b> residues
+                                        (with density &gt; <b>{LOW_DENSITY_THRESHOLD}</b>)
+                                    </>}
+                                />}
 
-                                {ssVis && currentTableData.length>0 && <ChartCard cardTitle="Secondary Structure" 
-                                                    chartData={ssCompData} 
-                                                    chartSize="small"
-                                                    chartNote= {<>Total: <b>{ssCompData.reduce((acc, data) => acc + data.value, 0)}</b> secondary structures </>} 
-                                                    />  }                              
+                                {ssVis && currentTableData.length > 0 && <ChartCard cardTitle="Secondary Structure"
+                                    chartData={ssCompData}
+                                    chartSize="small"
+                                    chartNote={<>Total: <b>{ssCompData.reduce((acc, data) => acc + data.value, 0)}</b> secondary structures </>}
+                                />}
                             </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
