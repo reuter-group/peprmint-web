@@ -37,7 +37,6 @@ $ npx webpack serve  # this will automatically reload the server after any file 
 
 ### V1.4
 - [ ] more features/optmization for PePr^2DS: [issue #5](https://github.com/reuter-group/peprmint-web/issues/5)
-- [ ] documentation  
 - [ ] choose a license
 - [ ] migrate website URL (to affiliated institute domain)
 

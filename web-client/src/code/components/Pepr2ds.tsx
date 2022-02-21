@@ -147,9 +147,15 @@ export function Pepr2ds() {
     const [resCompData, setResCompData] = useState<any[]>([]);
     const [neighborResCompData, setNeighborResCompData] = useState<any[]>([]);
 
-    // for optional data visualization
-    const [ssVis, setSsVis] = useState(false);
-    const [ssCompData, setSsCompData] = useState<any[]>([]);
+    // For optional data visualization:
+    // each data column needs two pairs of variables to control the visualization:
+    // take Secondary Structure Visualization as example:
+    const [ssVis, setSsVis] = useState(false); 
+    // boolean variable `ssVis` controls to show/hide the chart 
+    // function `setSsVis` must be used when you want to modify `ssVis`
+    const [ssCompData, setSsCompData] = useState<any[]>([]); 
+    // Array/list `ssCompData` stores the data (Python dictionary-like) for visualization: [{name: 'C', value:128}, {name:'H', value:52}...]
+    // function `setSsCompData` must be used to assign/update `ssCompData`
 
     const [proDenVis, setProDenVis] = useState(false);
     const [proDenCompData, setProDenCompData] = useState<any[]>([]);
