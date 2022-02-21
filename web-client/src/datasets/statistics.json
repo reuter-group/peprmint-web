@@ -33,6 +33,12 @@
         "ANNEXIN",
         "PLA"
     ],
+
+    "tableHeaders": ["dm","cath","pdb","uacc","uid","rna","ibs","chain","rnu","bf",
+                    "ss","ssf","pb","dt","em","rsl","rsa","cv","pro","hypro",
+                    "coin","nbl","den","expo","s35","s60","s95","s100","u50","u90",
+                    "u100","origin","loc","taxon"],
+    
     "experimentalMethod": [
         "Solution NMR",
         "X-ray diffraction",

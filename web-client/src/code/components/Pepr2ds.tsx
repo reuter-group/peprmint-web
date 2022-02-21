@@ -1,12 +1,12 @@
-import { Button, Card, Input, message, Popover, Radio, Select, Space, Statistic, Table, Tooltip, Upload } from "antd";
+import { Button, Card, Input, message, Popconfirm, Popover, Radio, Select, Space, Statistic, Table, Tooltip, Upload } from "antd";
 import React, { useEffect, useState, useRef } from "react";
 import { Col, Container, Row, Button as BButton, Accordion, Card as BCard } from "react-bootstrap";
 import { BarChartOutlined, CheckCircleTwoTone, DownloadOutlined, PieChartOutlined, QuestionCircleOutlined, SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import { Link } from "react-router-dom";
-import { References, PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
+import { PageHeader, PageHeaders, RES_COLORS, COLORS20 } from "./Utils";
 import Papa from "papaparse";
 import { validCathId, validPdbID } from "../helpers";
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, CartesianGrid, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 import { LOW_DENSITY_THRESHOLD } from "../molstar";
 import * as Statistics from "../../datasets/statistics.json";
 import { ExportToCsv } from "export-to-csv";
@@ -16,9 +16,6 @@ const DOMAINS = (Statistics.domainsList as Array<string>).sort();
 const defaultDomain = DOMAINS[1]; // suggest to choose a smallest size domain as default
 
 const RESIDUES = (Statistics.residueList as Array<string>).sort();
-
-// const DATA_SOURCES = ['CATH', 'AlphaFold'];
-// const ExperimentalMethod = Statistics.experimentalMethod;
 
 // import all csv files under datasets/
 function importAllDatasets(r: __WebpackModuleApi.RequireContext) {
@@ -36,7 +33,7 @@ const loadCsvTable = async (domain: string) => {
     const table = Papa.parse(csvData, { header: true, skipEmptyLines: true });
     console.log(`loaded ${table.data.length} rows data`);
     return table.data.map((data: any, i) => {
-        return { ...data, key: `${domain}-${i}` }  // add an extra key column
+        return { ...data, key: `${domain}-${i}` }  // add an extra key for identity
     });
 }
 
@@ -143,6 +140,8 @@ export function Pepr2ds() {
     const [loading, setLoading] = useState(true);
     const [searchText, setSearchText] = useState('');
     const [searchedColumn, setSearchedColumn] = useState('');
+
+    const [downloadLongHeaders, setDownloadLongHeaders] = useState(1);
 
     // for data visusalisation
     const [resCompData, setResCompData] = useState<any[]>([]);
@@ -328,10 +327,8 @@ export function Pepr2ds() {
         // { title: '#', dataIndex: 'key', width: 70, },
         {
             title: 'Domain', dataIndex: 'dm', width: 70,
-            sorter: (a: any, b: any) => DOMAINS.indexOf(a.dm) - DOMAINS.indexOf(b.dm),
-            // sortDirections: ['descend'],
-            // filters: DOMAINS.map(domain => { return { text: domain, value: domain.toLowerCase() } }),
-            // onFilter: (value: any, record: any) => record.domain.toLowerCase().includes(value)
+            // sorter: (a: any, b: any) => DOMAINS.indexOf(a.dm) - DOMAINS.indexOf(b.dm),
+            ...getColumnSearchProps('dm', 'Domain')           
         },
         {
             title: 'PDB ID', dataIndex: 'pdb', width: 55,
@@ -553,7 +550,7 @@ export function Pepr2ds() {
             useTextFile: false,
             useBom: true,
             // useKeysAsHeaders: true,
-            headers: selectedColumns.map(col => col.title) // <-- Won't work with useKeysAsHeaders present!
+            headers: selectedColumns.map(col => downloadLongHeaders == 1 ? col.title : col.dataIndex) // <-- Won't work with useKeysAsHeaders present!
         };
 
         const csvExporter = new ExportToCsv(options);
@@ -597,10 +594,9 @@ export function Pepr2ds() {
         Papa.parse(file, {
             header: true,
             skipEmptyLines: true,
-            complete: function (results) {                                        
-                // const mandatoryHeaders = ['dm','cath','pdb','chain','uacc','uid','rna','ibs','rnu','bf','ss','ssf','pb','dt','em'];
-                const validHeaders = Object.keys(tableData[0]); //  //tableData empty ?! 
-                const validDataHeaders = Object.keys(results.data[0] as Object).filter(h => validHeaders.includes(h));
+            complete: function (results) {
+                const tableHeaders = Statistics.tableHeaders as string[];
+                const validDataHeaders = Object.keys(results.data[0] as Object).filter(h => tableHeaders.includes(h));
                 if (validDataHeaders.length == 0) {
                     message.error(<>No valid data parsed from {file.name} <br /> Please check the format requirement for the data file <a
                         href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">defined here</a>.</>,
@@ -608,7 +604,7 @@ export function Pepr2ds() {
                     return
                 }
 
-                const dataTemplate = Object.fromEntries(validHeaders.map(h => [h, ""]))
+                const dataTemplate = Object.fromEntries(tableHeaders.map(h => [h, ""]))
                 let newData = results.data;
 
                 newData.forEach(data => {
@@ -624,7 +620,7 @@ export function Pepr2ds() {
                     return [...filteredTable, ...newData]
                 });
 
-                setCurrentTableData(ctd=>{
+                setCurrentTableData(ctd => {
                     const filteredTable = ctd.filter(d => d.key.slice(0, 7) != 'upload-');
                     return [...filteredTable, ...filterTableData(newData)]
                 });
@@ -637,15 +633,9 @@ export function Pepr2ds() {
                     <a href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">defined here</a>.</>);
             }
         });
-         
+
         return false; // stop sending HTTP request
     }
-
-    // const onChangeUpload = (f:any) =>{
-    //     console.log('on change upload...')
-    //     console.log(f)
-    // }
-
 
     const onRemoveUpload = (file: any) => {
         setTableData(tableData.filter(d => d.key.slice(0, 7) != 'upload-'));
@@ -702,8 +692,7 @@ export function Pepr2ds() {
                                         value={Array.from(selectedDomains)}
                                         mode="multiple"
                                         allowClear
-                                        placeholder="Select default domain dataset"
-                                        // onChange={changeDomainSelections}                                        
+                                        placeholder="Pre-defined domain dataset"
                                         onSelect={onSelectDomainSelection}
                                         onDeselect={onDeselectDomainSelection}
                                         onClear={onClearDomainSelection}
@@ -714,16 +703,18 @@ export function Pepr2ds() {
 
                                 <Col md={4}>
                                     <Upload name="dsFile" accept=".csv" maxCount={1}
-                                        // onChange={onChangeUpload}
                                         beforeUpload={beforeUpload}
                                         onRemove={onRemoveUpload}
                                     >
                                         <Button icon={<UploadOutlined />} className="border-primary" >Load my own dataset (.csv)</Button> &nbsp;
-                                        <Popover placement="topLeft" content={<>Optional, <b>one .csv</b> file that meets PePr<sup>2</sup>DS' <a 
-                                            href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">format requirements</a> </>}>
+                                        <Popover placement="topLeft" content={<>Optional, <b>one .csv</b> file that meets PePr<sup>2</sup>DS' <a
+                                            className="text-primary"
+                                            onClick={e => e.stopPropagation()}
+                                            href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">format requirements</a> 
+                                            </>}>                                            
                                             <QuestionCircleOutlined className="align-middle" /> </Popover>
                                     </Upload>
-                                </Col>
+                                </Col>                            
                             </Row>
 
                             <Row className="my-4">
@@ -760,8 +751,23 @@ export function Pepr2ds() {
                             />
                             <br />
                             <Row className="justify-content-end">
-                                <BButton type="primary" className="mr-3" onClick={onDownloadTableData}>
-                                    <DownloadOutlined /> Selected dataset (.csv) </BButton>
+                                <Popconfirm placement="topRight"                                   
+                                    title={<> 
+                                        <p><span className="text-muted">Note 1:</span> unselected optional columns will NOT be downloaded.</p>
+                                        <p><span className="text-muted">Note 2:</span> choose which <b>table headers</b> to use: </p>
+                                        <Radio.Group onChange={e => setDownloadLongHeaders(e.target.value)} value={downloadLongHeaders}>
+                                            <Space direction="vertical">
+                                                <Radio value={1}>same headers as they are displayed on the table above</Radio>
+                                                <Radio value={2}>short headers so that the .csv file can be re-loaded by PePr<sup>2</sup>DS</Radio>
+                                            </Space>
+                                        </Radio.Group> </>}
+                                    onConfirm={onDownloadTableData}
+                                    okText="Download"
+                                    cancelText="Cancel"
+                                >
+                                    <BButton type="primary" className="mr-3" >
+                                        <DownloadOutlined /> Selected dataset (.csv) </BButton>
+                                </Popconfirm>
                             </Row>
                         </BCard.Body>
                     </Accordion.Collapse>
