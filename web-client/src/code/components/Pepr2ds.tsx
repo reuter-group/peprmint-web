@@ -588,20 +588,71 @@ export function Pepr2ds() {
 
 
     const beforeUpload = (file: File) => {
-        if (file) {
-            // setSelectedFile(file);
+        const sizeLimit = file.size / 1024 / 1024 < 50; // size limit: 50MB
+        if (!sizeLimit) {
+            message.error('Dataset file must be smaller than 50MB.');
+            return Upload.LIST_IGNORE
         }
-        // const isLt20M = file.size / 1024 / 1024 < 20;
-        // if (!isLt20M) {
-        //   message.error('Structure file must be smaller than 20MB!');
-        // }
-        message.info('loaded file:' + file.name)
+
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function (results) {                                        
+                // const mandatoryHeaders = ['dm','cath','pdb','chain','uacc','uid','rna','ibs','rnu','bf','ss','ssf','pb','dt','em'];
+                const validHeaders = Object.keys(tableData[0]); //  //tableData empty ?! 
+                const validDataHeaders = Object.keys(results.data[0] as Object).filter(h => validHeaders.includes(h));
+                if (validDataHeaders.length == 0) {
+                    message.error(<>No valid data parsed from {file.name} <br /> Please check the format requirement for the data file <a
+                        href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">defined here</a>.</>,
+                        4);
+                    return
+                }
+
+                const dataTemplate = Object.fromEntries(validHeaders.map(h => [h, ""]))
+                let newData = results.data;
+
+                newData.forEach(data => {
+                    let tempData = { ...dataTemplate, data } as Object
+                    return Object.fromEntries(Object.entries(tempData).filter(([k, v]) => validDataHeaders.includes(k)))
+                })
+                newData = results.data.map((data: any, i) => {
+                    return { ...data, key: `upload-${i}` }  // use a special key to identify the uploaded dataset
+                })
+
+                setTableData(td => {
+                    const filteredTable = td.filter(d => d.key.slice(0, 7) != 'upload-');
+                    return [...filteredTable, ...newData]
+                });
+
+                setCurrentTableData(ctd=>{
+                    const filteredTable = ctd.filter(d => d.key.slice(0, 7) != 'upload-');
+                    return [...filteredTable, ...filterTableData(newData)]
+                });
+
+                // finish loading dataset
+                message.success(`Successfully loaded ${newData.length} rows data from ${file.name}`, 3);
+            },
+            error: function (error, file) {
+                message.error(<>This file {file.name} can not be parsed correctly. Please check if its format is valid as
+                    <a href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">defined here</a>.</>);
+            }
+        });
+         
         return false; // stop sending HTTP request
     }
 
-    const onRemove = (file: any) => {
-        // setSelectedFile(undefined);
+    // const onChangeUpload = (f:any) =>{
+    //     console.log('on change upload...')
+    //     console.log(f)
+    // }
+
+
+    const onRemoveUpload = (file: any) => {
+        setTableData(tableData.filter(d => d.key.slice(0, 7) != 'upload-'));
+        setCurrentTableData(currentTableData.filter(d => d.key.slice(0, 7) != 'upload-'));
+        message.success(`Data from ${file.name} is removed`, 3);
     };
+
 
     return (
         <Container>
@@ -651,7 +702,7 @@ export function Pepr2ds() {
                                         value={Array.from(selectedDomains)}
                                         mode="multiple"
                                         allowClear
-                                        placeholder="Select domains"
+                                        placeholder="Select default domain dataset"
                                         // onChange={changeDomainSelections}                                        
                                         onSelect={onSelectDomainSelection}
                                         onDeselect={onDeselectDomainSelection}
@@ -662,15 +713,15 @@ export function Pepr2ds() {
                                 </Col>
 
                                 <Col md={4}>
-                                    <Upload name="dsFile" accept=".csv, .txt" maxCount={1}
-                                        //  onChange={onChange}
+                                    <Upload name="dsFile" accept=".csv" maxCount={1}
+                                        // onChange={onChangeUpload}
                                         beforeUpload={beforeUpload}
-                                        onRemove={onRemove}
+                                        onRemove={onRemoveUpload}
                                     >
-                                        <Button icon={<UploadOutlined />} className="border-primary" >Add my own dataset (.csv)</Button> &nbsp;
-                                        <Popover placement="topLeft" content={<> Optional; .csv, or .txt file </>}>
+                                        <Button icon={<UploadOutlined />} className="border-primary" >Load my own dataset (.csv)</Button> &nbsp;
+                                        <Popover placement="topLeft" content={<>Optional, <b>one .csv</b> file that meets PePr<sup>2</sup>DS' <a 
+                                            href="https://github.com/reuter-group/peprmint-web/blob/main/web-client/src/datasets/README.md">format requirements</a> </>}>
                                             <QuestionCircleOutlined className="align-middle" /> </Popover>
-                                        {/* <Form.Text muted > PDB or mmCIF format</Form.Text> */}
                                     </Upload>
                                 </Col>
                             </Row>
