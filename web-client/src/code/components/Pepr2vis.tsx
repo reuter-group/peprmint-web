@@ -69,7 +69,7 @@ export function Pepr2vis() {
                         convexHullKey={convexHullKey} setConvexHullKey={setconvexHullKey}
                         recalculateKey={recalculateKey} setRecalculateKey={setRecalculateKey} />
                 </Col>
-                <Col className="pt-4"> <div id="molstar-div" style={{ height: 650 }} /> </Col>
+                <Col className="pt-4"> <div id="molstar-div" style={{ height: 685 }} /> </Col>
             </Row>
 
             <References />
